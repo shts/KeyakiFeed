@@ -1,0 +1,162 @@
+@CHARSET "UTF-8";
+
+*{
+    font-family: "Avenir Next", Verdana, "貂ｸ繧ｴ繧ｷ繝�け", "Yu Gothic", "繝｡繧､繝ｪ繧ｪ", Meiryo, "繝偵Λ繧ｮ繝手ｧ偵ざ Pro W3", "Hiragino Kaku Gothic Pro",  Osaka, sans-serif;
+}
+h4{
+    font-size: 24px;
+    color: #666;
+}
+table {
+    width: 100%;
+}
+td {
+    width: 14%;
+}
+a {
+    text-decoration: underline;
+    outline: none;
+    color: #5fb955;
+}
+.badge{
+background-color:#5fb955 !important;
+}
+table.cale_table{
+    border: solid 2px #5fb955;
+    background: #5fb955;
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+    border-radius: 6px;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    border-collapse: separate;
+    color:#fff;
+    text-align:center;
+}
+table.cale_table > tbody > tr:first-child{
+    background: #fff;
+    border-radius: 6px;
+}
+table.cale_table > tbody > tr:first-child > td:first-child{
+    border-radius: 4px 0 0 0;
+}
+table.cale_table > tbody > tr:first-child > td:last-child{
+    border-radius: 0 4px 0 0;
+}
+.cale_month{
+    font-size: 15px;
+}
+.cale_day0,.cale_day1,.cale_day2,.cale_day3,.cale_day4,.cale_day5,.cale_day6{
+   color:#fff;
+   text-align:center;
+}
+.cale_day0 > a,.cale_day1 > a,.cale_day2 > a,.cale_day3 > a,.cale_day4 > a,.cale_day5 > a,.cale_day6 > a{
+   color:#fff;
+}
+
+table.kiji_head{
+    border: solid 2px #5fb955;
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+    border-radius: 6px;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    border-collapse: separate;
+}
+td.date{
+    background: #5fb955;
+    color: #fff;
+    text-align: center;
+    padding: 5px;
+    font-family: futura,arial;
+    font-weight: normal;
+    line-height: 1;
+    overflow: hidden;
+    vertical-align: middle;
+    width:25%;
+}
+td.title{
+    color: #5fb955;
+    vertical-align: middle;
+    width:75%;
+    padding:10px;
+}
+
+.kiji_yearmonth{
+    font-size: 20px;
+}
+.kiji_day{
+    font-size: 40px;
+}
+.kiji_week{
+
+}
+.kiji_member{
+    display:block;
+    border-bottom: dashed 1px #5fb955;
+    font-weight: normal;
+    line-height: 1;
+    padding-bottom: 5px;
+}
+.kiji_title{
+    display:block;
+    padding-top: 5px;
+    font-size: 100%;
+    line-height: 1.2;
+    font-weight: bold;
+}
+.kiji_body{
+    padding: 10px;
+    border-bottom: solid 1px #5fb955;
+}
+.kiji_body img {
+    max-width: 100%;
+    height: auto;
+}
+.kiji_foot{
+    margin-bottom: 20px;
+}
+.pager {
+    font-size: 12px;
+}
+.pager td>a{
+    width:100%;
+    /*white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;*/
+}
+td.previous{
+    text-align:left;
+}
+td.next{
+    text-align:right;
+}
+td.previous,td.next{
+    width: 45%;
+}
+.logo{
+    width:100%;
+}
+.nav>li>a{
+    padding: 3px 15px;
+}
+.member_form{
+    width:100%;
+}
+.member_form_select{
+    width:100%;
+    border-radius: 4px;
+    font-size:17px;
+    border: solid 2px #5fb955;
+    background-color:#fff;
+    appearance:button;
+}
+.cale_prev a,.cale_next a {
+    text-decoration: initial;
+}
+img{
+ max-width:100%;
+ height:auto;
+}

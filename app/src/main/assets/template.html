@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="bootstrap.min.css" rel="stylesheet">
+    <link href="jumbotron-narrow.css" rel="stylesheet">
+    <link href="asp-form.css" rel="stylesheet">
+    <link href="common.css" rel="stylesheet">
+    <title>欅坂46オフィシャルブログ</title>
+    <script type="text/javascript">
+    window.onload = function()
+    {
+      var kiji_yearmonth = document.getElementById('kiji_yearmonth');
+      kiji_yearmonth.innerText = JavaScriptInterface.getYearMonth();
+
+      var kiji_day = document.getElementById('kiji_day');
+      kiji_day.innerText = JavaScriptInterface.getDay();
+
+      var kiji_week = document.getElementById('kiji_week');
+      kiji_week.innerText = JavaScriptInterface.getWeek();
+
+      var kiji_body = document.getElementById('kiji_body');
+      kiji_body.innerHTML = JavaScriptInterface.getBody();
+
+      var kiji_title = document.getElementById('kiji_title');
+      kiji_title.innerText = JavaScriptInterface.getTitle();
+
+      var kiji_member = document.getElementById('kiji_member');
+      kiji_member.innerText = JavaScriptInterface.getAuthor();
+
+      var kiji_foot = document.getElementById('kiji_foot');
+      kiji_foot.innerText = JavaScriptInterface.getPublishedDate();
+    };
+    </script>
+</head>
+<body>
+<div class="container">
+
+    <div class="col-lg-12">
+        <h1>
+            <img src="ttl_toriizaka46.png" alt="欅坂46" class="logo">
+            </a>
+        </h1>
+    </div>
+    <h4>欅坂46 OFFICIAL BLOG </h4>
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="kiji">
+                <table class="kiji_head">
+                    <td class="date">
+                        <!-- yearmonth -->
+                        <span class="kiji_yearmonth" id="kiji_yearmonth"></span>
+                        <br>
+                        <!-- day -->
+                        <span class="kiji_day" id="kiji_day"></span>
+                        <!-- week -->
+                        <span class="kiji_week" id="kiji_week"></span>
+                    </td>
+                    <td class="title">
+                        <!-- author -->
+                        <span class="kiji_member" id="kiji_member"></span>
+                        <!-- title -->
+                        <span class="kiji_title" id="kiji_title"></span>
+                    </td>
+                </table>
+                <!-- body -->
+                <!--
+                <div class="kiji_body" id="kiji_body">
+                </div>
+                -->
+                <div id="kiji_body"></div>
+                <!-- date -->
+                <div class="kiji_foot" id="kiji_foot">
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent" android:background="@color/primary">
+
+    <ImageView
+        android:src="@drawable/forest"
+        android:layout_alignParentBottom="true"
+        android:layout_width="match_parent"
+        android:scaleType="centerCrop"
+        android:layout_height="80dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <ImageView
+            android:id="@+id/profile_image"
+            style="@style/ProfileImageViewStyle.Large"
+            android:layout_gravity="center_horizontal"/>
+
+        <LinearLayout
+            android:layout_gravity="center_horizontal"
+            android:layout_margin="8dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/name_main"
+                style="@style/MemberDetailHeader.TextView.Name.Main"
+                android:text="小林 由衣"
+                />
+            <TextView
+                android:id="@+id/name_sub"
+                style="@style/MemberDetailHeader.TextView.Name.Sub"
+                android:text="こばやし ゆい"
+                />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/birthday"
+            android:text="@string/property_name_birthday"
+            style="@style/MemberDetailHeader.TextView.Properties"
+            />
+        <TextView
+            android:id="@+id/birthplace"
+            android:text="@string/property_name_birthplace"
+            style="@style/MemberDetailHeader.TextView.Properties"
+            />
+        <TextView
+            android:id="@+id/blood_type"
+            android:text="@string/property_name_blood_type"
+            style="@style/MemberDetailHeader.TextView.Properties"
+            />
+        <TextView
+            android:id="@+id/constellation"
+            android:text="@string/property_name_constellation"
+            style="@style/MemberDetailHeader.TextView.Properties"
+            />
+        <TextView
+            android:id="@+id/height"
+            android:text="@string/property_name_height"
+            style="@style/MemberDetailHeader.TextView.Properties"
+            />
+    </LinearLayout>
+
+</RelativeLayout>

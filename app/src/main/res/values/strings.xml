@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">KeyakiFeed</string>
+
+    <string name="notify_start_download_ticker">ダウンロードを開始します</string>
+    <string name="notify_start_download_title">ダウンロード中</string>
+    <string name="notify_start_download_text">ダウンロード中</string>
+
+    <string name="notify_finish_download_ticker">ダウンロードが完了しました</string>
+    <string name="notify_finish_download_title">ダウンロードが完了しました</string>
+    <string name="notify_finish_download_text">ダウンロードが完了しました</string>
+
+    <string name="dialog_confirm_download_title">画像をダウンロード</string>
+    <string name="dialog_confirm_download_message">ダウンロードしますか？</string>
+    <string name="dialog_confirm_download_positive_btn">はい</string>
+    <string name="dialog_confirm_download_negative_btn">いいえ</string>
+
+    <string name="toast_failed_download">ダウンロードできませんでした</string>
+
+    <string name="property_name_birthday">誕生日 : %1$s</string>
+    <string name="property_name_birthplace">出身地 : %1$s</string>
+    <string name="property_name_blood_type">血液型 : %1$s</string>
+    <string name="property_name_constellation">星座 : %1$s</string>
+    <string name="property_name_height">身長 : %1$s</string>
+</resources>
