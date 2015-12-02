@@ -55,6 +55,7 @@ application
 ADDED from AndroidManifest.xml:22:5
 MERGED from com.android.support:appcompat-v7:23.0.0:22:5
 MERGED from com.android.support:support-v4:23.0.0:22:5
+MERGED from com.android.support:support-v4:23.0.0:22:5
 MERGED from com.android.support:design:22.2.0:22:5
 MERGED from com.android.support:appcompat-v7:23.0.0:22:5
 MERGED from com.android.support:support-v4:23.0.0:22:5
@@ -159,6 +160,8 @@ ADDED from AndroidManifest.xml:67:17
 uses-sdk
 INJECTED from AndroidManifest.xml:0:0 reason: use-sdk injection requested
 MERGED from com.android.support:appcompat-v7:23.0.0:20:5
+MERGED from com.android.support:support-v4:23.0.0:20:5
+MERGED from com.github.machinarius:preferencefragment:0.1.1:18:5
 MERGED from com.android.support:support-v4:23.0.0:20:5
 MERGED from com.android.support:design:22.2.0:20:5
 MERGED from com.android.support:appcompat-v7:23.0.0:20:5
