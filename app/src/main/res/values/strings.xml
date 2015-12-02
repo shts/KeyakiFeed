@@ -3,6 +3,15 @@
 
     <string name="app_name">KeyakiFeed</string>
 
+    <!-- settings -->
+    <string name="setting_category_title_notification">通知設定</string>
+    <string name="setting_title_notification">ブログ更新通知</string>
+    <string name="setting_summary_notification">ブログ更新通知を受け取るかどうか設定できます</string>
+
+    <string name="setting_title_notification_restriction">ブログ更新通知制限</string>
+    <string name="setting_summary_notification_restriction">推しメン登録したメンバーのみブログ更新通知を受け取るかどうか設定できます</string>
+
+    <!-- notification -->
     <string name="notify_start_download_ticker">ダウンロードを開始します</string>
     <string name="notify_start_download_title">ダウンロード中</string>
     <string name="notify_start_download_text">ダウンロード中</string>

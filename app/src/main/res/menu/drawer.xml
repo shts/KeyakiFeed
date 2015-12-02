@@ -14,5 +14,9 @@
             android:id="@+id/menu_member"
             android:icon="@drawable/ic_group_black_18dp"
             android:title="メンバー" />
+        <item
+            android:id="@+id/menu_settings"
+            android:icon="@drawable/ic_settings_black_18dp"
+            android:title="設定" />
     </group>
 </menu>

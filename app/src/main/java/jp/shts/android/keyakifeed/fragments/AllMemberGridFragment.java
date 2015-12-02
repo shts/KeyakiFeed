@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -103,7 +104,9 @@ public class AllMemberGridFragment extends Fragment {
         Member.getQuery().findInBackground(new FindCallback<Member>() {
             @Override
             public void done(List<Member> members, ParseException e) {
-                if (e == null) {
+                if (e != null || members == null || members.isEmpty()) {
+                    Log.e(TAG, "cannot get members", e);
+                } else {
                     adapter = new AllMemberGridListAdapter(getContext(), members);
                     gridView.setAdapter(adapter);
                 }

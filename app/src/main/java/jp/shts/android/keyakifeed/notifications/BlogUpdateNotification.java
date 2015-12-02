@@ -17,6 +17,7 @@ import com.squareup.picasso.Picasso;
 import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.activities.BlogActivity;
 import jp.shts.android.keyakifeed.models.Entry;
+import jp.shts.android.keyakifeed.models.Favorite;
 import jp.shts.android.keyakifeed.utils.PreferencesUtils;
 import jp.shts.android.keyakifeed.views.transformations.CircleTransformation;
 
@@ -35,7 +36,12 @@ public class BlogUpdateNotification {
     private static final String NOTIFICATION_RESTRICTION_ENABLE = "pref_key_blog_updated_notification_restriction_enable";
 
     public static void show(final Context context, final String entryObjectId) {
-        // TODO: Check need notify
+        final boolean isEnableNotification
+                = PreferencesUtils.getBoolean(context, NOTIFICATION_ENABLE, true);
+        if (!isEnableNotification) {
+            Log.d(TAG, "do not show notification because of notification disable");
+            return;
+        }
         Entry entry = Entry.createWithoutData(Entry.class, entryObjectId);
         entry.fetchIfNeededInBackground(new GetCallback<Entry>() {
             @Override
@@ -43,10 +49,28 @@ public class BlogUpdateNotification {
                 if (e != null || entry == null) {
                     Log.e(TAG, "cannot get entry : entryObjectId(" + entryObjectId + ")", e);
                 } else {
+                    if (isRestriction(context, entry)) {
+                        Log.d(TAG, "do not show notification because of notification restriction");
+                        return;
+                    }
                     show(context, entry);
                 }
             }
         });
+    }
+
+    private static boolean isRestriction(Context context, Entry entry) {
+        final boolean isRestriction = PreferencesUtils.getBoolean(
+                context, NOTIFICATION_RESTRICTION_ENABLE, false);
+        if (!isRestriction) {
+            // 通知制限設定をしていない場合はそのまま通知するようfalseを返却する
+            Log.d(TAG, "restriction is not setting");
+            return false;
+        }
+        final boolean exist = Favorite.exist(entry.getAuthorId());
+        // お気に入りメンバー登録済みの場合false, お気に入りメンバー登録済みでない場合trueを返却する
+        Log.d(TAG, "restriction exist(" + exist + ")");
+        return !exist;
     }
 
     private static void show(final Context context, final Entry entry) {

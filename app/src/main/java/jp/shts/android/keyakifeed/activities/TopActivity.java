@@ -15,6 +15,7 @@ import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.fragments.AllFeedListFragment;
 import jp.shts.android.keyakifeed.fragments.AllMemberGridFragment;
 import jp.shts.android.keyakifeed.fragments.FavoriteMemberFeedListFragment;
+import jp.shts.android.keyakifeed.fragments.SettingsFragment;
 import jp.shts.android.keyakifeed.utils.PreferencesUtils;
 
 public class TopActivity extends AppCompatActivity {
@@ -75,6 +76,10 @@ public class TopActivity extends AppCompatActivity {
                 toolbar.setTitle("すべてのメンバー");
                 fragment = AllMemberGridFragment.newInstance(
                         AllMemberGridFragment.ListenerType.START_DETAIL);
+                break;
+            case R.id.menu_settings:
+                toolbar.setTitle("設定");
+                fragment = new SettingsFragment();
                 break;
             default:
                 return;
