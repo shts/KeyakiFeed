@@ -1,8 +1,10 @@
 package jp.shts.android.keyakifeed.fragments;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
+import android.media.MediaScannerConnection;
+import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -22,11 +24,15 @@ import com.github.jorgecastilloprz.listeners.FABProgressListener;
 import com.parse.GetCallback;
 import com.parse.ParseException;
 
+import java.io.File;
+import java.util.List;
+
 import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.dialogs.DownloadConfirmDialog;
 import jp.shts.android.keyakifeed.models.Entry;
 import jp.shts.android.keyakifeed.utils.DateUtils;
-import jp.shts.android.keyakifeed.utils.ImageDownloadClient;
+import jp.shts.android.keyakifeed.utils.SdCardUtils;
+import jp.shts.android.keyakifeed.utils.SimpleImageDownloader;
 
 public class BlogFragment extends Fragment {
 
@@ -59,10 +65,10 @@ public class BlogFragment extends Fragment {
 
     private String entryObjectId;
     private Entry entry;
-    private WebView webView;
-    private Toolbar toolbar;
     private FABProgressCircle fabProgressCircle;
-    private FloatingActionButton fab;
+    private CoordinatorLayout coordinatorLayout;
+
+    private Uri recentDownloadedUri;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -76,7 +82,7 @@ public class BlogFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_blog, null);
 
-        toolbar = (Toolbar) view.findViewById(R.id.toolbar);
+        final Toolbar toolbar = (Toolbar) view.findViewById(R.id.toolbar);
         toolbar.setNavigationIcon(R.drawable.ic_clear_white_24dp);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -85,38 +91,7 @@ public class BlogFragment extends Fragment {
             }
         });
 
-        final CoordinatorLayout coordinatorLayout = (CoordinatorLayout) view.findViewById(R.id.coordinator);
-        fabProgressCircle = (FABProgressCircle) view.findViewById(R.id.progress);
-        fabProgressCircle.attachListener(new FABProgressListener() {
-            @Override
-            public void onFABProgressAnimationEnd() {
-                Snackbar.make(webView, "完了しました", Snackbar.LENGTH_LONG)
-                        .setAction("Action", new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                Log.d(TAG, "action");
-                            }
-                        })
-                        .setActionTextColor(getResources().getColor(R.color.accent))
-                        .show();
-            }
-        });
-        fab = (FloatingActionButton) view.findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                fabProgressCircle.show();
-                android.os.Handler handler = new Handler();
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        fabProgressCircle.beginFinalAnimation();
-                    }
-                }, 1500);
-            }
-        });
-
-        webView = (WebView) view.findViewById(R.id.browser);
+        final WebView webView = (WebView) view.findViewById(R.id.browser);
         webView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
@@ -125,11 +100,33 @@ public class BlogFragment extends Fragment {
                 return false;
             }
         });
-
         webView.getSettings().setJavaScriptEnabled(true);
-
         JavaScriptInterface javaScriptInterface = new JavaScriptInterface();
         webView.addJavascriptInterface(javaScriptInterface, "JavaScriptInterface");
+
+        coordinatorLayout = (CoordinatorLayout) view.findViewById(R.id.coordinator);
+        fabProgressCircle = (FABProgressCircle) view.findViewById(R.id.progress);
+        fabProgressCircle.attachListener(new FABProgressListener() {
+            @Override
+            public void onFABProgressAnimationEnd() {
+                showSnackbar();
+            }
+        });
+
+        final FloatingActionButton fab = (FloatingActionButton) view.findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final List<String> urls = entry.getImageUrlList();
+                if (urls == null || urls.isEmpty()) {
+                    Toast.makeText(getActivity(),
+                            R.string.toast_failed_download, Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                fabProgressCircle.show();
+                download(urls);
+            }
+        });
 
         entry = Entry.createWithoutData(Entry.class, entryObjectId);
         entry.fetchIfNeededInBackground(new GetCallback<Entry>() {
@@ -148,7 +145,6 @@ public class BlogFragment extends Fragment {
 
     private void showDownloadConfirmDialog(WebView webView) {
         WebView.HitTestResult hr = webView.getHitTestResult();
-
         if ((WebView.HitTestResult.IMAGE_TYPE == hr.getType())
                 || (WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE == hr.getType())) {
             final String url = hr.getExtra();
@@ -156,8 +152,7 @@ public class BlogFragment extends Fragment {
             confirmDialog.setCallbacks(new DownloadConfirmDialog.Callbacks() {
                 @Override
                 public void onClickPositiveButton() {
-                    boolean ret = ImageDownloadClient.get(getContext(), url);
-                    if (!ret) {
+                    if (!download(url)) {
                         Toast.makeText(getActivity(),
                                 R.string.toast_failed_download, Toast.LENGTH_SHORT).show();
                     }
@@ -167,6 +162,60 @@ public class BlogFragment extends Fragment {
             });
             confirmDialog.show(getFragmentManager(), TAG);
         }
+    }
+
+    private boolean download(String url) {
+        return new SimpleImageDownloader(getActivity(), url) {
+            @Override
+            public void onResponse(File file) {
+                super.onResponse(file);
+                SdCardUtils.scanFile(getActivity(),
+                        file, new MediaScannerConnection.OnScanCompletedListener() {
+                            @Override
+                            public void onScanCompleted(String path, Uri uri) {
+                                Log.w(TAG, "path(" + path + ") uri(" + uri + ")");
+                                recentDownloadedUri = uri;
+                                showSnackbar();
+                            }
+                        });
+            }
+        }.get();
+    }
+
+    private boolean download(List<String> urls) {
+        return new SimpleImageDownloader(getActivity(), urls) {
+            @Override
+            public void onResponse(File file) {
+                super.onResponse(file);
+                SdCardUtils.scanFile(getActivity(),
+                        file, new MediaScannerConnection.OnScanCompletedListener() {
+                            @Override
+                            public void onScanCompleted(String path, Uri uri) {
+                                Log.w(TAG, "path(" + path + ") uri(" + uri + ")");
+                                recentDownloadedUri = uri;
+                            }
+                        });
+            }
+            @Override
+            public void onFinish(List<Response> responseList) {
+                fabProgressCircle.beginFinalAnimation();
+            }
+        }.get();
+    }
+
+    private void showSnackbar() {
+        Snackbar.make(coordinatorLayout, "ダウンロード完了しました", Snackbar.LENGTH_LONG)
+                .setAction("確認する", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent intent = new Intent();
+                        intent.setAction(Intent.ACTION_VIEW);
+                        intent.setDataAndType(recentDownloadedUri, "image/jpeg");
+                        getActivity().startActivity(intent);
+                    }
+                })
+                .setActionTextColor(getResources().getColor(R.color.accent))
+                .show();
     }
 
 }

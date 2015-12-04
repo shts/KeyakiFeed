@@ -29,7 +29,9 @@ public class SdCardUtils {
     }
 
     public static String getDownloadFilePath(String url) {
-        return getDownloadFilePath() + File.separator + "download" + File.separator + url;
+        final String[] splitedUrl = url.split("/");
+        final String fileName = splitedUrl[splitedUrl.length - 1];
+        return getDownloadFilePath() + File.separator + "download" + File.separator + fileName;
     }
 
     /**
