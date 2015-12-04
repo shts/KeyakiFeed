@@ -2,7 +2,11 @@ package jp.shts.android.keyakifeed.fragments;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -13,6 +17,8 @@ import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.widget.Toast;
 
+import com.github.jorgecastilloprz.FABProgressCircle;
+import com.github.jorgecastilloprz.listeners.FABProgressListener;
 import com.parse.GetCallback;
 import com.parse.ParseException;
 
@@ -55,6 +61,8 @@ public class BlogFragment extends Fragment {
     private Entry entry;
     private WebView webView;
     private Toolbar toolbar;
+    private FABProgressCircle fabProgressCircle;
+    private FloatingActionButton fab;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -74,6 +82,37 @@ public class BlogFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 getActivity().finish();
+            }
+        });
+
+        final CoordinatorLayout coordinatorLayout = (CoordinatorLayout) view.findViewById(R.id.coordinator);
+        fabProgressCircle = (FABProgressCircle) view.findViewById(R.id.progress);
+        fabProgressCircle.attachListener(new FABProgressListener() {
+            @Override
+            public void onFABProgressAnimationEnd() {
+                Snackbar.make(webView, "完了しました", Snackbar.LENGTH_LONG)
+                        .setAction("Action", new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                Log.d(TAG, "action");
+                            }
+                        })
+                        .setActionTextColor(getResources().getColor(R.color.accent))
+                        .show();
+            }
+        });
+        fab = (FloatingActionButton) view.findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fabProgressCircle.show();
+                android.os.Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        fabProgressCircle.beginFinalAnimation();
+                    }
+                }, 1500);
             }
         });
 

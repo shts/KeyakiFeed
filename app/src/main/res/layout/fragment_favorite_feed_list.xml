@@ -39,6 +39,7 @@
     </FrameLayout>
 </jp.shts.android.keyakifeed.views.MultiSwipeRefreshLayout>
     <android.support.design.widget.FloatingActionButton
+        style="@style/FabMargin"
         android:id="@+id/fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

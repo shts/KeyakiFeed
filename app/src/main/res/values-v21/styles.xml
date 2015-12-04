@@ -11,4 +11,8 @@
     <style name="NotificationText" parent="android:TextAppearance.Material.Notification"></style>
     <style name="NotificationTitle" parent="android:TextAppearance.Material.Notification.Title"></style>
 
+    <style name="FabMargin">
+        <item name="android:layout_margin">16dp</item>
+    </style>
+
 </resources>
