@@ -8,6 +8,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 
@@ -46,11 +47,21 @@ public class TopActivity extends AppCompatActivity {
                 new NavigationView.OnNavigationItemSelectedListener() {
                     @Override
                     public boolean onNavigationItemSelected(MenuItem menuItem) {
-                        setup(menuItem.getItemId());
+                        drawerLayout.closeDrawers();
+                        final int id = menuItem.getItemId();
+                        if (id == getPreFragmentId()) {
+                            return false;
+                        }
+                        setupFragment(id);
                         return false;
                     }
                 });
-        setup(getPreFragmentId());
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        setupFragment(getPreFragmentId());
     }
 
     private int getPreFragmentId() {
@@ -61,11 +72,7 @@ public class TopActivity extends AppCompatActivity {
         PreferencesUtils.setInt(this, "pre-fragment", id);
     }
 
-    private void setup(int id) {
-        drawerLayout.closeDrawers();
-        if (id == getPreFragmentId()) {
-            return;
-        }
+    private void setupFragment(int id) {
         Fragment fragment = null;
         switch (id) {
             case R.id.menu_all_feed:
@@ -86,6 +93,7 @@ public class TopActivity extends AppCompatActivity {
                 fragment = new SettingsFragment();
                 break;
             default:
+                Log.e(TAG, "failed to change fragment");
                 return;
         }
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
