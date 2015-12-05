@@ -12,8 +12,7 @@ import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 
-import com.parse.FindCallback;
-import com.parse.ParseException;
+import com.squareup.otto.Subscribe;
 
 import java.util.List;
 
@@ -21,6 +20,7 @@ import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.activities.BlogActivity;
 import jp.shts.android.keyakifeed.adapters.AllFeedListAdapter;
 import jp.shts.android.keyakifeed.models.Entry;
+import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
 
 public class AllFeedListFragment extends Fragment {
 
@@ -42,6 +42,23 @@ public class AllFeedListFragment extends Fragment {
         }
     };
 
+    /**
+     * Cache for page change
+     */
+    private static List<Entry> cache;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        BusHolder.get().register(this);
+    }
+
+    @Override
+    public void onDestroy() {
+        BusHolder.get().unregister(this);
+        super.onDestroy();
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -50,7 +67,9 @@ public class AllFeedListFragment extends Fragment {
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                getAllFeeds();
+                // clear cache
+                cache = null;
+                getAllEntries();
             }
         });
         swipeRefreshLayout.setColorSchemeResources(R.color.primary, R.color.primary, R.color.primary, R.color.primary);
@@ -64,7 +83,6 @@ public class AllFeedListFragment extends Fragment {
         });
         footerView = (LinearLayout) inflater.inflate(R.layout.list_item_more_load, null);
         footerView.setVisibility(View.GONE);
-
         listView.addFooterView(footerView);
         return view;
     }
@@ -72,28 +90,40 @@ public class AllFeedListFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        getAllFeeds();
-    }
-
-    private void getAllFeeds() {
-        Log.v(TAG, "getAllFeeds start");
-        Entry.getQuery(PAGE_LIMIT, counter).findInBackground(new FindCallback<Entry>() {
-            @Override
-            public void done(List<Entry> entries, ParseException e) {
-                if (e != null || entries == null || entries.isEmpty()) {
-                    Log.e(TAG, "cannot get entries", e);
-                    return;
-                }
-                allFeedListAdapter = new AllFeedListAdapter(getActivity(), entries);
-                allFeedListAdapter.setPageMaxScrolledListener(scrolledListener);
-                listView.setAdapter(allFeedListAdapter);
-                if (swipeRefreshLayout != null) {
-                    if (swipeRefreshLayout.isRefreshing()) {
-                        swipeRefreshLayout.setRefreshing(false);
-                    }
+        if (cache == null) {
+            getAllEntries();
+        } else {
+            allFeedListAdapter = new AllFeedListAdapter(getActivity(), cache);
+            allFeedListAdapter.setPageMaxScrolledListener(scrolledListener);
+            listView.setAdapter(allFeedListAdapter);
+            if (swipeRefreshLayout != null) {
+                if (swipeRefreshLayout.isRefreshing()) {
+                    swipeRefreshLayout.setRefreshing(false);
                 }
             }
-        });
+        }
+    }
+
+    private void getAllEntries() {
+        counter = 0;
+        Entry.all(Entry.getQuery(PAGE_LIMIT, counter));
+    }
+
+    @Subscribe
+    public void onGotAllEntries(Entry.GetEntriesCallback.All all) {
+        if (swipeRefreshLayout != null) {
+            if (swipeRefreshLayout.isRefreshing()) {
+                swipeRefreshLayout.setRefreshing(false);
+            }
+        }
+        if (all.e != null || all.entries == null || all.entries.isEmpty()) {
+            Log.e(TAG, "cannot get entries", all.e);
+            return;
+        }
+        cache = all.entries;
+        allFeedListAdapter = new AllFeedListAdapter(getActivity(), all.entries);
+        allFeedListAdapter.setPageMaxScrolledListener(scrolledListener);
+        listView.setAdapter(allFeedListAdapter);
     }
 
     private void getNextFeed() {
@@ -101,21 +131,22 @@ public class AllFeedListFragment extends Fragment {
             footerView.setVisibility(View.VISIBLE);
         }
         counter++;
-        Entry.getQuery(PAGE_LIMIT, (counter * PAGE_LIMIT)).findInBackground(new FindCallback<Entry>() {
-            @Override
-            public void done(List<Entry> entries, ParseException e) {
-                if (e != null || entries == null || entries.isEmpty()) {
-                    Log.e(TAG, "cannot get entries", e);
-                    return;
-                }
-                if (allFeedListAdapter != null) {
-                    allFeedListAdapter.addAll(entries);
-                    allFeedListAdapter.notifyDataSetChanged();
-                }
-                if (footerView != null) {
-                    footerView.setVisibility(View.GONE);
-                }
-            }
-        });
+        Entry.next(Entry.getQuery(PAGE_LIMIT, (counter * PAGE_LIMIT)));
     }
+
+    @Subscribe
+    public void onGotNextEntries(Entry.GetEntriesCallback.Next next) {
+        if (footerView != null) {
+            footerView.setVisibility(View.GONE);
+        }
+        if (next.e != null || next.entries == null || next.entries.isEmpty()) {
+            Log.e(TAG, "cannot get entries", next.e);
+            return;
+        }
+        if (allFeedListAdapter != null) {
+            allFeedListAdapter.addAll(next.entries);
+            allFeedListAdapter.notifyDataSetChanged();
+        }
+    }
+
 }

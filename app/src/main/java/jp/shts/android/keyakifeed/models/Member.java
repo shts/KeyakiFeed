@@ -1,8 +1,14 @@
 package jp.shts.android.keyakifeed.models;
 
+import com.parse.FindCallback;
 import com.parse.ParseClassName;
+import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
+
+import java.util.List;
+
+import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
 
 @ParseClassName("Member")
 public class Member extends ParseObject {
@@ -12,6 +18,27 @@ public class Member extends ParseObject {
     public static ParseQuery<Member> getQuery() {
         ParseQuery<Member> query = ParseQuery.getQuery(Member.class);
         return query;
+    }
+
+    public static void all(ParseQuery<Member> query) {
+        query.findInBackground(new FindCallback<Member>() {
+            @Override
+            public void done(List<Member> members, ParseException e) {
+                BusHolder.get().post(new GetMembersCallback(members, e));
+            }
+        });
+    }
+
+    /**
+     * For event bus callbacks
+     */
+    public static class GetMembersCallback {
+        public final List<Member> members;
+        public final ParseException e;
+        GetMembersCallback(List<Member> members, ParseException e) {
+            this.members = members;
+            this.e = e;
+        }
     }
 
     public String getNameMain() {

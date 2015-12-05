@@ -12,9 +12,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.parse.FindCallback;
-import com.parse.ParseException;
 import com.parse.ParseQuery;
+import com.squareup.otto.Subscribe;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +23,7 @@ import jp.shts.android.keyakifeed.activities.AllMemberActivity;
 import jp.shts.android.keyakifeed.adapters.FavoriteFeedListAdapter;
 import jp.shts.android.keyakifeed.models.Entry;
 import jp.shts.android.keyakifeed.models.Favorite;
+import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
 import jp.shts.android.keyakifeed.views.MultiSwipeRefreshLayout;
 
 public class FavoriteMemberFeedListFragment extends Fragment {
@@ -33,13 +33,29 @@ public class FavoriteMemberFeedListFragment extends Fragment {
     private MultiSwipeRefreshLayout multiSwipeRefreshLayout;
     private RecyclerView recyclerView;
     private View emptyView;
-    private FloatingActionButton fab;
+
+    /**
+     * Cache for page change
+     */
+    private static List<Entry> cache;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        BusHolder.get().register(this);
+    }
+
+    @Override
+    public void onDestroy() {
+        BusHolder.get().unregister(this);
+        super.onDestroy();
+    }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_favorite_feed_list, null);
-        fab = (FloatingActionButton) view.findViewById(R.id.fab);
+        final FloatingActionButton fab = (FloatingActionButton) view.findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -56,6 +72,8 @@ public class FavoriteMemberFeedListFragment extends Fragment {
         multiSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
+                // clear cache
+                cache = null;
                 setupFavoriteMemberFeed();
             }
         });
@@ -63,6 +81,14 @@ public class FavoriteMemberFeedListFragment extends Fragment {
         multiSwipeRefreshLayout.setColorSchemeResources(
                 R.color.primary, R.color.primary, R.color.primary, R.color.primary);
         setupFavoriteMemberFeed();
+
+        if (cache != null) {
+            recyclerView.setAdapter(new FavoriteFeedListAdapter(getActivity(), cache));
+            setVisibilityEmptyView(false);
+            if (multiSwipeRefreshLayout.isRefreshing()) {
+                multiSwipeRefreshLayout.setRefreshing(false);
+            }
+        }
         return view;
     }
 
@@ -70,41 +96,39 @@ public class FavoriteMemberFeedListFragment extends Fragment {
         setVisibilityEmptyView(false);
         ParseQuery<Favorite> query = ParseQuery.getQuery(Favorite.class);
         query.fromLocalDatastore();
-        query.findInBackground(new FindCallback<Favorite>() {
-            @Override
-            public void done(List<Favorite> favorites, ParseException e) {
-                if (e != null || favorites == null || favorites.isEmpty()) {
-                    if (multiSwipeRefreshLayout.isRefreshing()) {
-                        multiSwipeRefreshLayout.setRefreshing(false);
-                    }
-                    setVisibilityEmptyView(true);
-                    return;
-                }
-                List<String> ids = new ArrayList<>();
-                for (Favorite favorite : favorites) {
-                    ids.add(favorite.getMemberObjectId());
-                }
-                ParseQuery<Entry> query = Entry.getQuery(30, 0);
-                query.whereContainedIn("author_id", ids);
-                query.findInBackground(new FindCallback<Entry>() {
-                    @Override
-                    public void done(List<Entry> entries, ParseException e) {
-                        if (e != null || entries == null || entries.isEmpty()) {
-                            if (multiSwipeRefreshLayout.isRefreshing()) {
-                                multiSwipeRefreshLayout.setRefreshing(false);
-                            }
-                            setVisibilityEmptyView(true);
-                            return;
-                        }
-                        recyclerView.setAdapter(new FavoriteFeedListAdapter(getActivity(), entries));
-                        setVisibilityEmptyView(false);
-                        if (multiSwipeRefreshLayout.isRefreshing()) {
-                            multiSwipeRefreshLayout.setRefreshing(false);
-                        }
-                    }
-                });
+        Favorite.all(query);
+    }
+
+    @Subscribe
+    public void GotAllFavorites(Favorite.GetFavoritesCallback callback) {
+        if (callback.e != null || callback.favorites == null || callback.favorites.isEmpty()) {
+            setVisibilityEmptyView(true);
+            if (multiSwipeRefreshLayout.isRefreshing()) {
+                multiSwipeRefreshLayout.setRefreshing(false);
             }
-        });
+            return;
+        }
+        List<String> ids = new ArrayList<>();
+        for (Favorite favorite : callback.favorites) {
+            ids.add(favorite.getMemberObjectId());
+        }
+        final ParseQuery<Entry> query = Entry.getQuery(30, 0);
+        query.whereContainedIn("author_id", ids);
+        Entry.all(query);
+    }
+
+    @Subscribe
+    public void onGotAllEntries(Entry.GetEntriesCallback.All all) {
+        if (multiSwipeRefreshLayout.isRefreshing()) {
+            multiSwipeRefreshLayout.setRefreshing(false);
+        }
+        if (all.e != null || all.entries == null || all.entries.isEmpty()) {
+            setVisibilityEmptyView(true);
+            return;
+        }
+        cache = all.entries;
+        recyclerView.setAdapter(new FavoriteFeedListAdapter(getActivity(), all.entries));
+        setVisibilityEmptyView(false);
     }
 
     private void setVisibilityEmptyView(boolean isVisible) {

@@ -12,17 +12,22 @@
         android:visibility="gone"
         app:theme="@style/ThemeOverlay.AppCompat.Light"
         />
-    <GridView
-        android:padding="16dp"
-        android:id="@+id/gridview"
+    <android.support.v4.widget.SwipeRefreshLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/refresh"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:columnWidth="40dp"
-        android:minHeight="40dp"
-        android:numColumns="3"
-        android:verticalSpacing="8dp"
-        android:horizontalSpacing="8dp"
-        android:stretchMode="columnWidth"
-        android:gravity="center"/>
-
+        android:layout_height="match_parent">
+        <GridView
+            android:padding="16dp"
+            android:id="@+id/gridview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:columnWidth="40dp"
+            android:minHeight="40dp"
+            android:numColumns="3"
+            android:verticalSpacing="8dp"
+            android:horizontalSpacing="8dp"
+            android:stretchMode="columnWidth"
+            android:gravity="center"/>
+    </android.support.v4.widget.SwipeRefreshLayout>
 </LinearLayout>

@@ -50,18 +50,22 @@ public class TopActivity extends AppCompatActivity {
                         return false;
                     }
                 });
-        setup(getPreFragment());
+        setup(getPreFragmentId());
     }
 
-    private int getPreFragment() {
+    private int getPreFragmentId() {
         return PreferencesUtils.getInt(this, "pre-fragment", R.id.menu_all_feed);
     }
 
-    private void setPreFragment(int id) {
+    private void setPreFragmentId(int id) {
         PreferencesUtils.setInt(this, "pre-fragment", id);
     }
 
     private void setup(int id) {
+        drawerLayout.closeDrawers();
+        if (id == getPreFragmentId()) {
+            return;
+        }
         Fragment fragment = null;
         switch (id) {
             case R.id.menu_all_feed:
@@ -87,7 +91,6 @@ public class TopActivity extends AppCompatActivity {
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         ft.replace(R.id.container, fragment, fragment.toString());
         ft.commit();
-        setPreFragment(id);
-        drawerLayout.closeDrawers();
+        setPreFragmentId(id);
     }
 }

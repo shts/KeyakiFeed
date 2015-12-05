@@ -2,6 +2,7 @@ package jp.shts.android.keyakifeed.models;
 
 import android.util.Log;
 
+import com.parse.FindCallback;
 import com.parse.ParseClassName;
 import com.parse.ParseException;
 import com.parse.ParseObject;
@@ -10,6 +11,8 @@ import com.parse.ParseQuery;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+
+import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
 
 @ParseClassName("Favorite")
 public class Favorite extends ParseObject {
@@ -21,6 +24,27 @@ public class Favorite extends ParseObject {
         query.whereEqualTo("memberObjectId", memberObjectId);
         query.fromLocalDatastore();
         return query;
+    }
+
+    public static void all(ParseQuery<Favorite> query) {
+        query.findInBackground(new FindCallback<Favorite>() {
+            @Override
+            public void done(List<Favorite> favorites, ParseException e) {
+                BusHolder.get().post(new GetFavoritesCallback(favorites, e));
+            }
+        });
+    }
+
+    /**
+     * For event bus callbacks
+     */
+    public static class GetFavoritesCallback {
+        public final List<Favorite> favorites;
+        public final ParseException e;
+        GetFavoritesCallback(List<Favorite> favorites, ParseException e) {
+            this.favorites = favorites;
+            this.e = e;
+        }
     }
 
     public static boolean exist(String memberObjectId) {
