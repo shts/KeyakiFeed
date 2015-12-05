@@ -13,22 +13,17 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
-import com.parse.FindCallback;
-import com.parse.GetCallback;
-import com.parse.ParseException;
-import com.parse.ParseObject;
 import com.parse.ParseQuery;
-
-import java.util.List;
+import com.squareup.otto.Subscribe;
 
 import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.activities.BlogActivity;
 import jp.shts.android.keyakifeed.adapters.MemberDetailFeedListAdapter;
 import jp.shts.android.keyakifeed.models.Entry;
 import jp.shts.android.keyakifeed.models.Member;
+import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
 import jp.shts.android.keyakifeed.views.MemberDetailHeader;
 
-// TODO: refresh handle
 public class MemberDetailFragment extends Fragment {
 
     private static final String TAG = MemberDetailFragment.class.getSimpleName();
@@ -47,11 +42,17 @@ public class MemberDetailFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         memberObjectId = getArguments().getString("memberObjectId");
+        BusHolder.get().register(this);
+    }
+
+    @Override
+    public void onDestroy() {
+        BusHolder.get().unregister(this);
+        super.onDestroy();
     }
 
     private SwipeRefreshLayout swipeRefreshLayout;
     private ListView listView;
-    private MemberDetailFeedListAdapter adapter;
 
     @Nullable
     @Override
@@ -79,24 +80,21 @@ public class MemberDetailFragment extends Fragment {
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                // TODO:
-                //getAllFeeds();
+                setupAdapter(memberObjectId);
             }
         });
-
-        Member member = ParseObject.createWithoutData(Member.class, memberObjectId);
-        member.fetchIfNeededInBackground(new GetCallback<Member>() {
-            @Override
-            public void done(Member member, ParseException e) {
-                if (e != null) {
-                    Log.e(TAG, "failed to get member : id(" + memberObjectId + ")", e);
-                    return;
-                }
-                setupHeader(member);
-                setupAdaper(member);
-            }
-        });
+        Member.fetch(memberObjectId);
         return view;
+    }
+
+    @Subscribe
+    public void onFetchedMember(Member.FetchMemberCallback callback) {
+        if (callback.e != null) {
+            Log.e(TAG, "failed to get member : id(" + memberObjectId + ")", callback.e);
+            return;
+        }
+        setupHeader(callback.member);
+        setupAdapter(memberObjectId);
     }
 
     private void setupHeader(Member member) {
@@ -105,19 +103,23 @@ public class MemberDetailFragment extends Fragment {
         listView.addHeaderView(header, null , false);
     }
 
-    private void setupAdaper(Member member) {
+    private void setupAdapter(String memberObjectId) {
         ParseQuery<Entry> query = Entry.getQuery(30, 0);
-        query.whereEqualTo("author_id", member.getObjectId());
-        query.findInBackground(new FindCallback<Entry>() {
-            @Override
-            public void done(List<Entry> entries, ParseException e) {
-                if (e != null || entries == null || entries.isEmpty()) {
-                    Log.e(TAG, "failed to get member entry", e);
-                    return;
-                }
-                adapter = new MemberDetailFeedListAdapter(getActivity(), entries);
-                listView.setAdapter(adapter);
-            }
-        });
+        query.whereEqualTo("author_id", memberObjectId);
+        Entry.all(query);
+    }
+
+    @Subscribe
+    public void onGotEntries(Entry.GetEntriesCallback.All all) {
+        if (swipeRefreshLayout.isRefreshing()) {
+            swipeRefreshLayout.setRefreshing(false);
+        }
+        if (all.e != null || all.entries == null || all.entries.isEmpty()) {
+            Log.e(TAG, "failed to get member entry", all.e);
+            return;
+        }
+        MemberDetailFeedListAdapter adapter
+                = new MemberDetailFeedListAdapter(getActivity(), all.entries);
+        listView.setAdapter(adapter);
     }
 }

@@ -1,6 +1,7 @@
 package jp.shts.android.keyakifeed.models;
 
 import com.parse.FindCallback;
+import com.parse.GetCallback;
 import com.parse.ParseClassName;
 import com.parse.ParseException;
 import com.parse.ParseObject;
@@ -29,6 +30,16 @@ public class Member extends ParseObject {
         });
     }
 
+    public static void fetch(String memberObjectId) {
+        ParseObject.createWithoutData(Member.class, memberObjectId)
+                .fetchIfNeededInBackground(new GetCallback<Member>() {
+                    @Override
+                    public void done(Member member, ParseException e) {
+                        BusHolder.get().post(new FetchMemberCallback(member, e));
+                    }
+                });
+    }
+
     /**
      * For event bus callbacks
      */
@@ -37,6 +48,18 @@ public class Member extends ParseObject {
         public final ParseException e;
         GetMembersCallback(List<Member> members, ParseException e) {
             this.members = members;
+            this.e = e;
+        }
+    }
+
+    /**
+     * For event bus callbacks
+     */
+    public static class FetchMemberCallback {
+        public final Member member;
+        public final ParseException e;
+        FetchMemberCallback(Member member, ParseException e) {
+            this.member = member;
             this.e = e;
         }
     }
