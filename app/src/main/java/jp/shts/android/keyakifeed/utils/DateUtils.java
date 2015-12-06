@@ -2,6 +2,7 @@ package jp.shts.android.keyakifeed.utils;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 
 public class DateUtils {
 
@@ -11,6 +12,8 @@ public class DateUtils {
 
     public static String dateToString(Date date) {
         Calendar datetime = Calendar.getInstance();
+        TimeZone timeZone = TimeZone.getTimeZone("JST");
+        datetime.setTimeZone(timeZone);
         datetime.setTime(date);
         return datetime.get(Calendar.YEAR) + "/" + (datetime.get(Calendar.MONTH) + 1)
                 + "/" + datetime.get(Calendar.DATE) + "  "
