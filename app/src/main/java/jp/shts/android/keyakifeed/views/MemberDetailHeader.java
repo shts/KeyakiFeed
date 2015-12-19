@@ -19,6 +19,8 @@ public class MemberDetailHeader extends RelativeLayout {
 
     private static final String TAG = MemberDetailHeader.class.getSimpleName();
 
+    private View rootView;
+
     private ImageView profileImageView;
 
     private TextView nameMainTextView;
@@ -42,35 +44,56 @@ public class MemberDetailHeader extends RelativeLayout {
     }
 
     private void init() {
-        View root = LayoutInflater.from(getContext()).inflate(R.layout.view_member_detail, this);
-        profileImageView = (ImageView) root.findViewById(R.id.profile_image);
-        nameMainTextView = (TextView) root.findViewById(R.id.name_main);
-        nameSubTextView = (TextView) root.findViewById(R.id.name_sub);
-        birthdayTextView = (TextView) root.findViewById(R.id.birthday);
-        birthplaceTextView = (TextView) root.findViewById(R.id.birthplace);
-        bloodTypeTextView = (TextView) root.findViewById(R.id.blood_type);
-        constellationTextView = (TextView) root.findViewById(R.id.constellation);
-        heightTextView = (TextView) root.findViewById(R.id.height);
+        rootView = LayoutInflater.from(getContext()).inflate(R.layout.view_member_detail, this);
+        profileImageView = (ImageView) rootView.findViewById(R.id.profile_image);
+        nameMainTextView = (TextView) rootView.findViewById(R.id.name_main);
+        nameSubTextView = (TextView) rootView.findViewById(R.id.name_sub);
+        birthdayTextView = (TextView) rootView.findViewById(R.id.birthday);
+        birthplaceTextView = (TextView) rootView.findViewById(R.id.birthplace);
+        bloodTypeTextView = (TextView) rootView.findViewById(R.id.blood_type);
+        constellationTextView = (TextView) rootView.findViewById(R.id.constellation);
+        heightTextView = (TextView) rootView.findViewById(R.id.height);
 
         int height = (int) ( /*240*/ 280 * getContext().getResources().getDisplayMetrics().density);
-        root.setLayoutParams(new AbsListView.LayoutParams(
+        rootView.setLayoutParams(new AbsListView.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, height));
     }
 
     public void setup(Member member) {
-        final Context context = getContext();
-        PicassoHelper.loadAndCircleTransform(
-                context, profileImageView, member.getProfileImageUrl());
+        int height = (int) ( /*240*/ 280 * getContext().getResources().getDisplayMetrics().density);
+        if ("6QoBeRdiA9".equals(member.getObjectId())) {
+            // 運営ブログの場合
+            profileImageView.setBackgroundResource(R.drawable.ic_account_circle_black_48dp);
+            nameMainTextView.setText(member.getNameMain());
 
-        nameMainTextView.setText(member.getNameMain());
-        nameSubTextView.setText(member.getNameSub());
+            nameSubTextView.setVisibility(View.GONE);
+            birthdayTextView.setVisibility(View.GONE);
+            birthplaceTextView.setVisibility(View.GONE);
+            bloodTypeTextView.setVisibility(View.GONE);
+            constellationTextView.setVisibility(View.GONE);
+            heightTextView.setVisibility(View.GONE);
 
-        final Resources res = context.getResources();
-        birthdayTextView.setText(res.getString(R.string.property_name_birthday, member.getBirthday()));
-        birthplaceTextView.setText(res.getString(R.string.property_name_birthplace, member.getBirthPlace()));
-        bloodTypeTextView.setText(res.getString(R.string.property_name_blood_type, member.getBloodType()));
-        constellationTextView.setText(res.getString(R.string.property_name_constellation, member.getConstellation()));
-        heightTextView.setText(res.getString(R.string.property_name_height, member.getHeight()));
+            height = (int) ( /*240*/ 200 * getContext().getResources().getDisplayMetrics().density);
+
+        } else {
+            // そのほかメンバーのブログの場合
+            final Context context = getContext();
+            PicassoHelper.loadAndCircleTransform(
+                    context, profileImageView, member.getProfileImageUrl());
+
+            nameMainTextView.setText(member.getNameMain());
+            nameSubTextView.setText(member.getNameSub());
+
+            final Resources res = context.getResources();
+            birthdayTextView.setText(res.getString(R.string.property_name_birthday, member.getBirthday()));
+            birthplaceTextView.setText(res.getString(R.string.property_name_birthplace, member.getBirthPlace()));
+            bloodTypeTextView.setText(res.getString(R.string.property_name_blood_type, member.getBloodType()));
+            constellationTextView.setText(res.getString(R.string.property_name_constellation, member.getConstellation()));
+            heightTextView.setText(res.getString(R.string.property_name_height, member.getHeight()));
+        }
+
+        rootView.setLayoutParams(new AbsListView.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, height));
     }
 
 }
