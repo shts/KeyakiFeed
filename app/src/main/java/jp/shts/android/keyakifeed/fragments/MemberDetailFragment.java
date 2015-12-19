@@ -42,13 +42,18 @@ public class MemberDetailFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         memberObjectId = getArguments().getString("memberObjectId");
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
         BusHolder.get().register(this);
     }
 
     @Override
-    public void onDestroy() {
+    public void onPause() {
+        super.onPause();
         BusHolder.get().unregister(this);
-        super.onDestroy();
     }
 
     private SwipeRefreshLayout swipeRefreshLayout;

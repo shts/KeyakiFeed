@@ -48,15 +48,15 @@ public class AllFeedListFragment extends Fragment {
     private static List<Entry> cache;
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        BusHolder.get().register(this);
+    public void onPause() {
+        super.onPause();
+        BusHolder.get().unregister(this);
     }
 
     @Override
-    public void onDestroy() {
-        BusHolder.get().unregister(this);
-        super.onDestroy();
+    public void onResume() {
+        super.onResume();
+        BusHolder.get().register(this);
     }
 
     @Nullable
