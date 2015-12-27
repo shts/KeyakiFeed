@@ -59,6 +59,7 @@ class ImageDownloader {
             Log.w(TAG, "cannot start download because of enable network");
             return false;
         }
+        onStart();
         final int N = urls.size();
         for (int i = 0; i < N; i++) {
             client.get(urls.get(i), handlers.get(i));
@@ -69,7 +70,7 @@ class ImageDownloader {
     private void addCounter() {
         counter++;
         if (urls.size() >= counter) {
-            onFinish(responseList);
+            onComplete(responseList);
         }
     }
 
@@ -112,7 +113,7 @@ class ImageDownloader {
 
     public void onResponse(Response response) {}
 
-    public void onFinish(List<Response> responseList) {}
+    public void onComplete(List<Response> responseList) {}
 
 
 }

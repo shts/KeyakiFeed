@@ -15,6 +15,7 @@ import android.view.View;
 import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.fragments.AllFeedListFragment;
 import jp.shts.android.keyakifeed.fragments.AllMemberGridFragment;
+import jp.shts.android.keyakifeed.fragments.BlogFragment2;
 import jp.shts.android.keyakifeed.fragments.FavoriteMemberFeedListFragment;
 import jp.shts.android.keyakifeed.fragments.SettingsFragment;
 import jp.shts.android.keyakifeed.utils.PreferencesUtils;
