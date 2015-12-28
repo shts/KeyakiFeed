@@ -15,7 +15,6 @@ import android.view.View;
 import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.fragments.AllFeedListFragment;
 import jp.shts.android.keyakifeed.fragments.AllMemberGridFragment;
-import jp.shts.android.keyakifeed.fragments.BlogFragment2;
 import jp.shts.android.keyakifeed.fragments.FavoriteMemberFeedListFragment;
 import jp.shts.android.keyakifeed.fragments.SettingsFragment;
 import jp.shts.android.keyakifeed.utils.PreferencesUtils;
@@ -93,6 +92,11 @@ public class TopActivity extends AppCompatActivity {
                 toolbar.setTitle("設定");
                 fragment = new SettingsFragment();
                 break;
+            case R.id.menu_request:
+            case R.id.menu_about_app:
+            case R.id.menu_lisences:
+                startActivity(OtherMenuActivity.getStartIntent(this, id));
+                return;
             default:
                 Log.e(TAG, "failed to change fragment");
                 return;

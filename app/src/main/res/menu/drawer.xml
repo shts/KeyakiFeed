@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <group
+        android:id="@+id/menu_main_group"
         android:checkableBehavior="single">
         <item
             android:id="@+id/menu_all_feed"
@@ -18,5 +19,18 @@
             android:id="@+id/menu_settings"
             android:icon="@drawable/ic_settings_black_18dp"
             android:title="設定" />
+    </group>
+    <group
+        android:id="@+id/menu_other_group"
+        android:checkableBehavior="single">
+        <item
+            android:id="@+id/menu_request"
+            android:title="ご意見・ご要望" />
+        <item
+            android:id="@+id/menu_about_app"
+            android:title="このアプリについて" />
+        <item
+            android:id="@+id/menu_lisences"
+            android:title="オープンソースライセンス" />
     </group>
 </menu>

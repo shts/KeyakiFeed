@@ -37,6 +37,7 @@
         <activity android:name=".activities.BlogActivity" />
         <activity android:name=".activities.MemberDetailActivity" />
         <activity android:name=".activities.AllMemberActivity" />
+        <activity android:name=".activities.OtherMenuActivity" />
 
         <!-- for push service START -->
         <service android:name="com.parse.PushService" />
