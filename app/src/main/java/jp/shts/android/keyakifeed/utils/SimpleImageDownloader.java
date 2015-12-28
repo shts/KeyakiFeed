@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
+
 public class SimpleImageDownloader extends ImageDownloader {
 
     private static final String TAG = SimpleImageDownloader.class.getSimpleName();
@@ -20,18 +22,18 @@ public class SimpleImageDownloader extends ImageDownloader {
         super(context, urls);
     }
 
+    public static class Callback {
+        public File file;
+        Callback(File file) { this.file = file; }
+    }
+
     @Override
     public void onResponse(Response response) {
-        if (response.result == Response.Result.SUCCESS) {
-            onResponse(response.file);
-        } else {
+        if (response.result != Response.Result.SUCCESS) {
             Log.e(TAG, "failed to download image : response("
                     + response.toString() + ")");
         }
+        BusHolder.get().post(new Callback(response.file));
     }
 
-    public void onResponse(File file) {
-        Log.v(TAG, "image downloaded : file("
-                + (file == null ? "null" : file.getAbsolutePath()) + ")");
-    }
 }

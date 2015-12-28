@@ -7,6 +7,8 @@ import android.util.Log;
 import java.io.File;
 import java.util.List;
 
+import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
+
 /**
  * 設定された秒数までコールバックを待ち合わせる画像ダウンローダー
  * ダウンロードが早く終了しチラついて見える現象を回避するため
@@ -22,6 +24,23 @@ public class WaitMinimunImageDownloader extends ImageDownloader {
     private List<Response> responseList;
     private final Object LOCK = new Object();
 
+    /**
+     * ダウンロード完了のコールバック
+     */
+    public static class Callback {
+        /** 1ファイルのダウンロード終了ごとにコールされる */
+        public static class ResponseDownloadImage {
+            public final File file;
+            ResponseDownloadImage(File file) { this.file = file; }
+        }
+        /** すべてのファイルのダウンロードが終了したらコールされる */
+        public static class CompleteDownloadImage {
+            public List<Response> responseList;
+            CompleteDownloadImage(List<Response> responseList) { this.responseList = responseList; }
+        }
+    }
+
+
     @Override
     final public void onStart() {
         super.onStart();
@@ -35,7 +54,7 @@ public class WaitMinimunImageDownloader extends ImageDownloader {
                 synchronized (LOCK) {
                     isTimeUp = true;
                     if (isFinishDownload) {
-                        onFinish(responseList);
+                        BusHolder.get().post(new Callback.CompleteDownloadImage(responseList));
                     }
                 }
             }
@@ -44,18 +63,11 @@ public class WaitMinimunImageDownloader extends ImageDownloader {
 
     @Override
     final public void onResponse(Response response) {
-        Log.i(TAG, "onResponse");
-        if (response.result == Response.Result.SUCCESS) {
-            onResponse(response.file);
-        } else {
+        if (response.result != Response.Result.SUCCESS) {
             Log.e(TAG, "failed to download image : response("
                     + response.toString() + ")");
         }
-    }
-
-    public void onResponse(File file) {
-        Log.v(TAG, "image downloaded : file("
-                + (file == null ? "null" : file.getAbsolutePath()) + ")");
+        BusHolder.get().post(new Callback.ResponseDownloadImage(response.file));
     }
 
     @Override
@@ -65,15 +77,10 @@ public class WaitMinimunImageDownloader extends ImageDownloader {
         synchronized (LOCK) {
             isFinishDownload = true;
             if (isTimeUp) {
-                onFinish(responseList);
+                BusHolder.get().post(new Callback.CompleteDownloadImage(responseList));
             }
         }
     }
-
-    /**
-     * 待ち合わせも含みすべてのダウンロードが完了
-     */
-    public void onFinish(List<Response> responseList) {}
 
     /**
      * 待ち合わせ時間(ms)

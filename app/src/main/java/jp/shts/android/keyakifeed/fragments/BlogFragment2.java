@@ -1,5 +1,6 @@
 package jp.shts.android.keyakifeed.fragments;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
@@ -20,13 +21,14 @@ import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.parse.GetCallback;
 import com.parse.ParseException;
+import com.squareup.otto.Subscribe;
 
-import java.io.File;
 import java.util.List;
 
 import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.dialogs.DownloadConfirmDialog;
 import jp.shts.android.keyakifeed.models.Entry;
+import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
 import jp.shts.android.keyakifeed.utils.DateUtils;
 import jp.shts.android.keyakifeed.utils.SdCardUtils;
 import jp.shts.android.keyakifeed.utils.ShareUtils;
@@ -76,12 +78,24 @@ public class BlogFragment2 extends Fragment {
         entryObjectId = getArguments().getString("entryObjectId");
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        BusHolder.get().register(this);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        BusHolder.get().unregister(this);
+    }
+
+    @SuppressLint("AddJavascriptInterface")
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.fragment_blog2, null);
 
-        // Toolbar set up
         final Toolbar toolbar = (Toolbar) view.findViewById(R.id.toolbar);
         toolbar.setNavigationIcon(R.drawable.ic_clear_white_24dp);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
@@ -91,7 +105,6 @@ public class BlogFragment2 extends Fragment {
             }
         });
 
-        // FloatingActionsMenu set up
         floatingActionsMenu = (FloatingActionsMenu) view.findViewById(R.id.multiple_actions);
         FloatingActionButton fabShare = (FloatingActionButton) view.findViewById(R.id.fab_action_share);
         fabShare.setOnClickListener(new View.OnClickListener() {
@@ -109,7 +122,7 @@ public class BlogFragment2 extends Fragment {
                 fabDownload.setTitle("ダウンロード中です ...");
                 if (!download(entry.getImageUrlList())) {
                     showSnackbar(false);
-                };
+                }
             }
         });
 
@@ -164,70 +177,83 @@ public class BlogFragment2 extends Fragment {
     }
 
     private boolean download(List<String> urlList) {
-        return new WaitMinimunImageDownloader(getActivity(), urlList) {
-            @Override
-            public void onResponse(File file) {
-                SdCardUtils.scanFile(getActivity(),
-                        file, new MediaScannerConnection.OnScanCompletedListener() {
-                            @Override
-                            public void onScanCompleted(String path, Uri uri) {
-                                Log.w(TAG, "path(" + path + ") uri(" + uri + ")");
-                                recentDownloadedUri = uri;
-                            }
-                        });
-            }
-            @Override
-            public void onFinish(List<Response> responseList) {
-                showSnackbar(true);
-            }
-        }.get();
+        return new WaitMinimunImageDownloader(getActivity(), urlList).get();
     }
 
     private boolean download(String url) {
-        return new SimpleImageDownloader(getActivity(), url) {
-            @Override
-            public void onResponse(File file) {
-                super.onResponse(file);
-                SdCardUtils.scanFile(getActivity(),
-                        file, new MediaScannerConnection.OnScanCompletedListener() {
-                            @Override
-                            public void onScanCompleted(String path, Uri uri) {
-                                Log.w(TAG, "path(" + path + ") uri(" + uri + ")");
-                                recentDownloadedUri = uri;
-                                showSnackbar(true);
-                            }
-                        });
-            }
-        }.get();
+        return new SimpleImageDownloader(getActivity(), url).get();
+    }
+
+    /**
+     * WaitMinimunImageDownloader のコールバック
+     * @param callback callback
+     */
+    @Subscribe
+    public void onFinishDownload(
+            WaitMinimunImageDownloader.Callback.ResponseDownloadImage callback) {
+        if (callback != null && callback.file != null) {
+            SdCardUtils.scanFile(getActivity(), callback.file,
+                    new MediaScannerConnection.OnScanCompletedListener() {
+                        @Override
+                        public void onScanCompleted(String path, Uri uri) {
+                            Log.w(TAG, "path(" + path + ") uri(" + uri + ")");
+                            recentDownloadedUri = uri;
+                        }
+                    });
+        }
+    }
+
+    /**
+     * WaitMinimunImageDownloader のコールバック
+     * @param callback callback
+     */
+    @Subscribe
+    public void onFinishDownload(
+            WaitMinimunImageDownloader.Callback.CompleteDownloadImage callback) {
+        // TODO: レスポンスリスト内にerrorがないことを確認してからSnackbarを表示すること
+        // TODO: 一部画像のダウンロードに失敗した場合はその旨を通知すること
+        showSnackbar(true);
+    }
+
+    /**
+     * SimpleImageDownloader のコールバック
+     * @param callback callback
+     */
+    @Subscribe
+    public void onFinishDownload(SimpleImageDownloader.Callback callback) {
+        if (callback != null && callback.file != null) {
+            SdCardUtils.scanFile(getActivity(), callback.file,
+                    new MediaScannerConnection.OnScanCompletedListener() {
+                        @Override
+                        public void onScanCompleted(String path, Uri uri) {
+                            Log.w(TAG, "path(" + path + ") uri(" + uri + ")");
+                            recentDownloadedUri = uri;
+                            showSnackbar(true);
+                        }
+                    });
+        }
     }
 
     private void showSnackbar(final boolean isSucceed) {
-        getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-
-                fabDownload.setColorNormalResId(R.color.accent);
-                fabDownload.setTitle("画像をダウンロードする");
-
-                if (isSucceed) {
-                    Snackbar.make(coordinatorLayout, "ダウンロード完了しました", Snackbar.LENGTH_LONG)
-                            .setAction("確認する", new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    Intent intent = new Intent();
-                                    intent.setAction(Intent.ACTION_VIEW);
-                                    intent.setDataAndType(recentDownloadedUri, "image/jpeg");
-                                    getActivity().startActivity(intent);
-                                }
-                            })
-                            .setActionTextColor(getResources().getColor(R.color.accent))
-                            .show();
-                } else {
-                    Snackbar.make(coordinatorLayout, "ダウンロードに失敗しました。通信環境をご確認下さい", Snackbar.LENGTH_LONG)
-                            .show();
-                }
-            }
-        });
+        fabDownload.setColorNormalResId(R.color.accent);
+        fabDownload.setTitle("画像をダウンロードする");
+        if (isSucceed) {
+            Snackbar.make(coordinatorLayout, "ダウンロード完了しました", Snackbar.LENGTH_LONG)
+                    .setAction("確認する", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent intent = new Intent();
+                            intent.setAction(Intent.ACTION_VIEW);
+                            intent.setDataAndType(recentDownloadedUri, "image/jpeg");
+                            getActivity().startActivity(intent);
+                        }
+                    })
+                    .setActionTextColor(getResources().getColor(R.color.accent))
+                    .show();
+        } else {
+            Snackbar.make(coordinatorLayout, "ダウンロードに失敗しました。通信環境をご確認下さい", Snackbar.LENGTH_LONG)
+                    .show();
+        }
     }
 
 }

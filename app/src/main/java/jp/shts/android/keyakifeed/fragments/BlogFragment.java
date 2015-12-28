@@ -165,42 +165,44 @@ public class BlogFragment extends Fragment {
     }
 
     private boolean download(String url) {
-        return new SimpleImageDownloader(getActivity(), url) {
-            @Override
-            public void onResponse(File file) {
-                super.onResponse(file);
-                SdCardUtils.scanFile(getActivity(),
-                        file, new MediaScannerConnection.OnScanCompletedListener() {
-                            @Override
-                            public void onScanCompleted(String path, Uri uri) {
-                                Log.w(TAG, "path(" + path + ") uri(" + uri + ")");
-                                recentDownloadedUri = uri;
-                                showSnackbar();
-                            }
-                        });
-            }
-        }.get();
+//        return new SimpleImageDownloader(getActivity(), url) {
+//            @Override
+//            public void onResponse(File file) {
+//                super.onResponse(file);
+//                SdCardUtils.scanFile(getActivity(),
+//                        file, new MediaScannerConnection.OnScanCompletedListener() {
+//                            @Override
+//                            public void onScanCompleted(String path, Uri uri) {
+//                                Log.w(TAG, "path(" + path + ") uri(" + uri + ")");
+//                                recentDownloadedUri = uri;
+//                                showSnackbar();
+//                            }
+//                        });
+//            }
+//        }.get();
+        return true;
     }
 
     private boolean download(List<String> urls) {
-        return new SimpleImageDownloader(getActivity(), urls) {
-            @Override
-            public void onResponse(File file) {
-                super.onResponse(file);
-                SdCardUtils.scanFile(getActivity(),
-                        file, new MediaScannerConnection.OnScanCompletedListener() {
-                            @Override
-                            public void onScanCompleted(String path, Uri uri) {
-                                Log.w(TAG, "path(" + path + ") uri(" + uri + ")");
-                                recentDownloadedUri = uri;
-                            }
-                        });
-            }
-            @Override
-            public void onComplete(List<Response> responseList) {
-                fabProgressCircle.beginFinalAnimation();
-            }
-        }.get();
+//        return new SimpleImageDownloader(getActivity(), urls) {
+//            @Override
+//            public void onResponse(File file) {
+//                super.onResponse(file);
+//                SdCardUtils.scanFile(getActivity(),
+//                        file, new MediaScannerConnection.OnScanCompletedListener() {
+//                            @Override
+//                            public void onScanCompleted(String path, Uri uri) {
+//                                Log.w(TAG, "path(" + path + ") uri(" + uri + ")");
+//                                recentDownloadedUri = uri;
+//                            }
+//                        });
+//            }
+//            @Override
+//            public void onComplete(List<Response> responseList) {
+//                fabProgressCircle.beginFinalAnimation();
+//            }
+//        }.get();
+        return true;
     }
 
     private void showSnackbar() {
