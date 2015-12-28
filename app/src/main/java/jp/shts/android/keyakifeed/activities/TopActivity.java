@@ -1,5 +1,6 @@
 package jp.shts.android.keyakifeed.activities;
 
+import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
@@ -49,7 +50,7 @@ public class TopActivity extends AppCompatActivity {
                     public boolean onNavigationItemSelected(MenuItem menuItem) {
                         drawerLayout.closeDrawers();
                         final int id = menuItem.getItemId();
-                        if (id == getPreFragmentId()) {
+                        if (id == getLastSelectedMenuId()) {
                             return false;
                         }
                         setupFragment(id);
@@ -61,14 +62,14 @@ public class TopActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        setupFragment(getPreFragmentId());
+        setupFragment(getLastSelectedMenuId());
     }
 
-    private int getPreFragmentId() {
+    private int getLastSelectedMenuId() {
         return PreferencesUtils.getInt(this, "pre-fragment", R.id.menu_all_feed);
     }
 
-    private void setPreFragmentId(int id) {
+    private void setLastSelectedMenuId(int id) {
         PreferencesUtils.setInt(this, "pre-fragment", id);
     }
 
@@ -101,9 +102,11 @@ public class TopActivity extends AppCompatActivity {
                 Log.e(TAG, "failed to change fragment");
                 return;
         }
+        navigationView.getMenu().findItem(id).setChecked(true);
+
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         ft.replace(R.id.container, fragment, fragment.toString());
         ft.commit();
-        setPreFragmentId(id);
+        setLastSelectedMenuId(id);
     }
 }

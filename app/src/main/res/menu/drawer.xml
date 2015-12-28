@@ -21,8 +21,7 @@
             android:title="設定" />
     </group>
     <group
-        android:id="@+id/menu_other_group"
-        android:checkableBehavior="single">
+        android:id="@+id/menu_other_group">
         <item
             android:id="@+id/menu_request"
             android:title="ご意見・ご要望" />
