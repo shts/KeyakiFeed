@@ -2,6 +2,7 @@ package jp.shts.android.keyakifeed;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+
 import jp.shts.android.keyakifeed.activities.TopActivity;
 
 

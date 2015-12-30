@@ -38,6 +38,15 @@
         <activity android:name=".activities.MemberDetailActivity" />
         <activity android:name=".activities.AllMemberActivity" />
         <activity android:name=".activities.OtherMenuActivity" />
+        <activity android:name=".activities.DeepLinkActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- deep link from default -->
+                <data android:scheme="http" android:host="keyakizaka46-mirror.herokuapp.com" android:pathPrefix="/entry/show/"/>
+            </intent-filter>
+        </activity>
 
         <!-- for push service START -->
         <service android:name="com.parse.PushService" />
