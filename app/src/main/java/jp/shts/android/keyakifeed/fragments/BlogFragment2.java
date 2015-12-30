@@ -2,6 +2,7 @@ package jp.shts.android.keyakifeed.fragments;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.MediaScannerConnection;
@@ -180,7 +181,7 @@ public class BlogFragment2 extends Fragment {
     private void download(List<String> urlList) {
         if (!hasPermission()) {
             // 権限がない場合はリクエスト
-            requestPermissions(new String[]{ Manifest.permission.WRITE_EXTERNAL_STORAGE }, REQUEST_DOWNLOAD_ALL);
+            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_DOWNLOAD_ALL);
             downloadTargetList = urlList;
             return;
         }
@@ -193,7 +194,7 @@ public class BlogFragment2 extends Fragment {
     private void download(String url) {
         if (!hasPermission()) {
             // 権限がない場合はリクエスト
-            requestPermissions(new String[]{ Manifest.permission.WRITE_EXTERNAL_STORAGE }, REQUEST_DOWNLOAD);
+            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_DOWNLOAD);
             downloadTarget = url;
             return;
         }
@@ -278,7 +279,15 @@ public class BlogFragment2 extends Fragment {
                         public void onScanCompleted(String path, Uri uri) {
                             Log.w(TAG, "path(" + path + ") uri(" + uri + ")");
                             recentDownloadedUri = uri;
-                            showSnackbar(true);
+                            final Activity activity = getActivity();
+                            if (activity != null) {
+                                activity.runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        showSnackbar(true);
+                                    }
+                                });
+                            }
                         }
                     });
         }
