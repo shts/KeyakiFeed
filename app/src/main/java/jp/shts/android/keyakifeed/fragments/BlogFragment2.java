@@ -1,14 +1,18 @@
 package jp.shts.android.keyakifeed.fragments;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -120,9 +124,7 @@ public class BlogFragment2 extends Fragment {
             public void onClick(View v) {
                 fabDownload.setColorNormalResId(R.color.primary);
                 fabDownload.setTitle("ダウンロード中です ...");
-                if (!download(entry.getImageUrlList())) {
-                    showSnackbar(false);
-                }
+                download(entry.getImageUrlList());
             }
         });
 
@@ -165,9 +167,7 @@ public class BlogFragment2 extends Fragment {
             confirmDialog.setCallbacks(new DownloadConfirmDialog.Callbacks() {
                 @Override
                 public void onClickPositiveButton() {
-                    if (!download(url)) {
-                        showSnackbar(false);
-                    }
+                    download(url);
                 }
                 @Override
                 public void onClickNegativeButton() {}
@@ -176,12 +176,62 @@ public class BlogFragment2 extends Fragment {
         }
     }
 
-    private boolean download(List<String> urlList) {
-        return new WaitMinimunImageDownloader(getActivity(), urlList).get();
+    private List<String> downloadTargetList;
+    private void download(List<String> urlList) {
+        if (!hasPermission()) {
+            // 権限がない場合はリクエスト
+            requestPermissions(new String[]{ Manifest.permission.WRITE_EXTERNAL_STORAGE }, REQUEST_DOWNLOAD_ALL);
+            downloadTargetList = urlList;
+            return;
+        }
+        if (!new WaitMinimunImageDownloader(getActivity(), urlList).get()) {
+            showSnackbar(false);
+        }
     }
 
-    private boolean download(String url) {
-        return new SimpleImageDownloader(getActivity(), url).get();
+    private String downloadTarget;
+    private void download(String url) {
+        if (!hasPermission()) {
+            // 権限がない場合はリクエスト
+            requestPermissions(new String[]{ Manifest.permission.WRITE_EXTERNAL_STORAGE }, REQUEST_DOWNLOAD);
+            downloadTarget = url;
+            return;
+        }
+        if (!new SimpleImageDownloader(getActivity(), url).get()) {
+            showSnackbar(false);
+        }
+    }
+
+    private static final int REQUEST_DOWNLOAD = 1;
+    private static final int REQUEST_DOWNLOAD_ALL = 2;
+
+    private boolean hasPermission() {
+        final int permission = ContextCompat.checkSelfPermission(
+                getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        return permission == PackageManager.PERMISSION_GRANTED;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (REQUEST_DOWNLOAD == requestCode) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                download(downloadTarget);
+            } else {
+                fabDownload.setColorNormalResId(R.color.accent);
+                fabDownload.setTitle("画像をダウンロードする");
+                Snackbar.make(coordinatorLayout, "アプリに書き込み権限がないためダウンロードできません。", Snackbar.LENGTH_LONG)
+                        .show();
+            }
+        } else if (REQUEST_DOWNLOAD_ALL == requestCode) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                download(downloadTargetList);
+            } else {
+                fabDownload.setColorNormalResId(R.color.accent);
+                fabDownload.setTitle("画像をダウンロードする");
+                Snackbar.make(coordinatorLayout, "アプリに書き込み権限がないためダウンロードできません。", Snackbar.LENGTH_LONG)
+                        .show();
+            }
+        }
     }
 
     /**
