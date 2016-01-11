@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import com.parse.ParseQuery;
@@ -27,6 +28,17 @@ import jp.shts.android.keyakifeed.views.MemberDetailHeader;
 public class MemberDetailFragment extends Fragment {
 
     private static final String TAG = MemberDetailFragment.class.getSimpleName();
+
+    private static final int PAGE_LIMIT = 30;
+    private int counter = 0;
+
+    private final MemberDetailFeedListAdapter.OnPageMaxScrolledListener pageMaxScrolledListener
+            = new MemberDetailFeedListAdapter.OnPageMaxScrolledListener() {
+        @Override
+        public void onScrolledMaxPage() {
+            getNextFeed();
+        }
+    };
 
     public static MemberDetailFragment newMemberDetailFragment(String memberObjectId) {
         Bundle bundle = new Bundle();
@@ -58,6 +70,8 @@ public class MemberDetailFragment extends Fragment {
 
     private SwipeRefreshLayout swipeRefreshLayout;
     private ListView listView;
+    private MemberDetailFeedListAdapter adapter;
+    private LinearLayout footerView;
 
     @Nullable
     @Override
@@ -88,6 +102,10 @@ public class MemberDetailFragment extends Fragment {
                 setupAdapter(memberObjectId);
             }
         });
+        footerView = (LinearLayout) inflater.inflate(R.layout.list_item_more_load, null);
+        footerView.setVisibility(View.GONE);
+        listView.addFooterView(footerView);
+
         Member.fetch(memberObjectId);
         return view;
     }
@@ -109,7 +127,8 @@ public class MemberDetailFragment extends Fragment {
     }
 
     private void setupAdapter(String memberObjectId) {
-        ParseQuery<Entry> query = Entry.getQuery(30, 0);
+        counter = 0;
+        ParseQuery<Entry> query = Entry.getQuery(PAGE_LIMIT, counter);
         query.whereEqualTo("author_id", memberObjectId);
         Entry.all(query);
     }
@@ -123,8 +142,33 @@ public class MemberDetailFragment extends Fragment {
             Log.e(TAG, "failed to get member entry", all.e);
             return;
         }
-        MemberDetailFeedListAdapter adapter
-                = new MemberDetailFeedListAdapter(getActivity(), all.entries);
+        adapter = new MemberDetailFeedListAdapter(getActivity(), all.entries);
+        adapter.setPageMaxScrolledListener(pageMaxScrolledListener);
         listView.setAdapter(adapter);
+    }
+
+    private void getNextFeed() {
+        if (footerView != null) {
+            footerView.setVisibility(View.VISIBLE);
+        }
+        counter++;
+        ParseQuery<Entry> query = Entry.getQuery(PAGE_LIMIT, (counter * PAGE_LIMIT));
+        query.whereEqualTo("author_id", memberObjectId);
+        Entry.next(query);
+    }
+
+    @Subscribe
+    public void onGotNextEntries(Entry.GetEntriesCallback.Next next) {
+        if (footerView != null) {
+            footerView.setVisibility(View.GONE);
+        }
+        if (next.e != null || next.entries == null || next.entries.isEmpty()) {
+            Log.e(TAG, "cannot get entries", next.e);
+            return;
+        }
+        if (adapter != null) {
+            adapter.addAll(next.entries);
+            adapter.notifyDataSetChanged();
+        }
     }
 }
