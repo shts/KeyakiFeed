@@ -1,6 +1,5 @@
 package jp.shts.android.keyakifeed.activities;
 
-import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
@@ -57,11 +56,6 @@ public class TopActivity extends AppCompatActivity {
                         return false;
                     }
                 });
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
         setupFragment(getLastSelectedMenuId());
     }
 
