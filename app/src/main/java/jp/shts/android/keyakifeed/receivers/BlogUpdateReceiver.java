@@ -24,10 +24,14 @@ public class BlogUpdateReceiver extends BroadcastReceiver {
             String data = extra.getString("com.parse.Data");
             JSONObject json = new JSONObject(data);
             // 取り出したデータを変数へ
-            final String entryObjectId = json.getString("_objectId");
-            Log.i(TAG, "entryObjectId(" + entryObjectId + ")");
+            final String entryObjectId = json.getString("_entryObjectId");
+            final String title = json.getString("_title");
+            final String author = json.getString("_author");
+            final String author_id = json.getString("_author_id");
+            final String author_image_url = json.getString("_author_image_url");
 
-            BlogUpdateNotification.show(context, entryObjectId);
+            BlogUpdateNotification.show(context, entryObjectId,
+                title, author, author_id, author_image_url);
 
         } catch (JSONException e) {
             Log.e(TAG, "cannot get entryObjectId", e);
