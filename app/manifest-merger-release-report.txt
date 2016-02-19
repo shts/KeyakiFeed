@@ -66,7 +66,6 @@ MERGED from com.android.support:support-v4:23.0.0:22:5
 MERGED from com.android.support:support-v4:23.0.0:22:5
 MERGED from com.github.jorgecastilloprz:fabprogresscircle:1.01:11:5
 MERGED from com.android.support:cardview-v7:21.0.3:16:5
-MERGED from com.android.support:recyclerview-v7:21.0.3:17:5
 MERGED from com.android.support:support-v4:23.0.0:22:5
 MERGED from com.getbase:floatingactionbutton:1.10.1:12:5
 MERGED from com.google.android.gms:play-services-ads:7.5.0:24:5
@@ -232,7 +231,7 @@ MERGED from com.android.support:support-v4:23.0.0:20:5
 MERGED from com.android.support:support-v4:23.0.0:20:5
 MERGED from com.github.jorgecastilloprz:fabprogresscircle:1.01:7:5
 MERGED from com.android.support:cardview-v7:21.0.3:15:5
-MERGED from com.android.support:recyclerview-v7:21.0.3:15:5
+MERGED from com.android.support:recyclerview-v7:22.2.1:20:5
 MERGED from com.android.support:support-v4:23.0.0:20:5
 MERGED from com.getbase:floatingactionbutton:1.10.1:8:5
 MERGED from com.google.android.gms:play-services-ads:7.5.0:23:5
@@ -247,12 +246,6 @@ MERGED from com.android.support:support-v4:23.0.0:20:5
 	android:minSdkVersion
 		INJECTED from AndroidManifest.xml:0:0
 		INJECTED from AndroidManifest.xml:0:0
-activity#android.support.v7.widget.TestActivity
-ADDED from com.android.support:recyclerview-v7:21.0.3:18:9
-	android:label
-		ADDED from com.android.support:recyclerview-v7:21.0.3:18:19
-	android:name
-		ADDED from com.android.support:recyclerview-v7:21.0.3:18:60
 activity#com.google.android.gms.ads.purchase.InAppPurchaseActivity
 ADDED from com.google.android.gms:play-services-ads:7.5.0:30:9
 	android:theme
