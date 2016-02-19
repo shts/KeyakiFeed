@@ -17,7 +17,7 @@
             android:title="メンバー" />
         <item
             android:id="@+id/menu_matome"
-            android:icon="@drawable/ic_group_black_18dp"
+            android:icon="@drawable/ic_signal_cellular_4_bar_black_18dp"
             android:title="まとめ" />
         <item
             android:id="@+id/menu_settings"
