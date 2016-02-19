@@ -20,6 +20,7 @@ import jp.shts.android.keyakifeed.adapters.MatomeFeedListAdapter;
 import jp.shts.android.keyakifeed.api.MatomeFeedClient;
 import jp.shts.android.keyakifeed.entities.FeedItem;
 import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
+import jp.shts.android.keyakifeed.views.KeyakiFeedAdView;
 
 public class MatomeFeedListFragment extends Fragment {
 
@@ -27,23 +28,32 @@ public class MatomeFeedListFragment extends Fragment {
 
     private ListView listView;
     private SwipeRefreshLayout swipeRefreshLayout;
+    private KeyakiFeedAdView keyakiFeedAdView;
 
     @Override
     public void onPause() {
         super.onPause();
         BusHolder.get().unregister(this);
+        keyakiFeedAdView.pause();
     }
 
     @Override
     public void onResume() {
         super.onResume();
         BusHolder.get().register(this);
+        keyakiFeedAdView.resume();
+    }
+
+    @Override
+    public void onDestroy() {
+        keyakiFeedAdView.destroy();
+        super.onDestroy();
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_matome_feed_list, null);
+        final View view = inflater.inflate(R.layout.fragment_matome_feed_list, null);
         swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.refresh);
         swipeRefreshLayout.setColorSchemeResources(R.color.primary, R.color.primary, R.color.primary, R.color.primary);
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -53,6 +63,7 @@ public class MatomeFeedListFragment extends Fragment {
             }
         });
         listView = (ListView) view.findViewById(R.id.matome_feed_list);
+        keyakiFeedAdView = (KeyakiFeedAdView) view.findViewById(R.id.ad_view);
         MatomeFeedClient.get();
         return view;
     }

@@ -13,6 +13,7 @@ import android.webkit.WebView;
 import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.entities.FeedItem;
 import jp.shts.android.keyakifeed.utils.ShareUtils;
+import jp.shts.android.keyakifeed.views.KeyakiFeedAdView;
 
 public class MatomeBrowseFragment extends Fragment {
 
@@ -25,6 +26,8 @@ public class MatomeBrowseFragment extends Fragment {
         fragment.setArguments(bundle);
         return fragment;
     }
+
+    private KeyakiFeedAdView keyakiFeedAdView;
 
     @Nullable
     @Override
@@ -52,9 +55,29 @@ public class MatomeBrowseFragment extends Fragment {
             }
         });
 
+        keyakiFeedAdView = (KeyakiFeedAdView) view.findViewById(R.id.ad_view);
+
         final WebView webView = (WebView) view.findViewById(R.id.browser);
         webView.loadUrl(feedItem.url);
 
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        keyakiFeedAdView.resume();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        keyakiFeedAdView.pause();
+    }
+
+    @Override
+    public void onDestroy() {
+        keyakiFeedAdView.destroy();
+        super.onDestroy();
     }
 }

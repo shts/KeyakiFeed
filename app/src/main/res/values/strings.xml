@@ -32,4 +32,5 @@
     <string name="property_name_blood_type">血液型 : %1$s</string>
     <string name="property_name_constellation">星座 : %1$s</string>
     <string name="property_name_height">身長 : %1$s</string>
+
 </resources>
