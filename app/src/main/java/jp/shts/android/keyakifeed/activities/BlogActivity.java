@@ -9,7 +9,6 @@ import android.support.v7.app.AppCompatActivity;
 
 import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.fragments.BlogFragment;
-import jp.shts.android.keyakifeed.fragments.BlogFragment2;
 
 public class BlogActivity extends AppCompatActivity {
 
@@ -26,9 +25,7 @@ public class BlogActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-//        BlogFragment blogFragment = BlogFragment.newBlogFragment(
-//                getIntent().getStringExtra("entryObjectId"));
-        BlogFragment2 blogFragment = BlogFragment2.newInstance(
+        BlogFragment blogFragment = BlogFragment.newInstance(
                 getIntent().getStringExtra("entryObjectId"));
 
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
