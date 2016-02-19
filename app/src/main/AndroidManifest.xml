@@ -38,6 +38,7 @@
         <activity android:name=".activities.MemberDetailActivity" />
         <activity android:name=".activities.AllMemberActivity" />
         <activity android:name=".activities.OtherMenuActivity" />
+        <activity android:name=".activities.MatomeBrowseActivity" />
         <activity android:name=".activities.DeepLinkActivity">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
