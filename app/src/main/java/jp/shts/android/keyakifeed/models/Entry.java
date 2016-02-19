@@ -62,6 +62,7 @@ public class Entry extends ParseObject {
                 super(entries, e);
             }
         }
+        public boolean hasError() { return e != null || (entries == null || entries.isEmpty()); }
     }
 
     public String getAuthor() {

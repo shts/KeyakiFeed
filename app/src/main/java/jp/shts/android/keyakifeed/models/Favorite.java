@@ -2,11 +2,13 @@ package jp.shts.android.keyakifeed.models;
 
 import android.util.Log;
 
+import com.parse.DeleteCallback;
 import com.parse.FindCallback;
 import com.parse.ParseClassName;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
+import com.parse.SaveCallback;
 
 import java.util.List;
 import java.util.Objects;
@@ -47,6 +49,19 @@ public class Favorite extends ParseObject {
         }
     }
 
+    /**
+     * 推しメン登録状態変更通知
+     */
+    public static class ChangedFavoriteState {
+        public enum Action { ADD, REMOVE }
+        public final Action action;
+        public final ParseException e;
+        public ChangedFavoriteState(Action action, ParseException e) {
+            this.action = action;
+            this.e = e;
+        }
+    }
+
     public static boolean exist(String memberObjectId) {
         try {
             List<Favorite> favoriteList = getQuery(memberObjectId).find();
@@ -68,17 +83,16 @@ public class Favorite extends ParseObject {
 
     public static void add(String memberObjectId) {
         Log.v(TAG, "add member(" + memberObjectId + ")");
-        try {
-            Favorite favorite = new Favorite();
-            UUID uuid = UUID.randomUUID();
-//            favorite.add("uuid", uuid.toString());
-//            favorite.add("memberObjectId", memberObjectId);
-            favorite.setUuid(uuid.toString());
-            favorite.setMemberObjectId(memberObjectId);
-            favorite.pin();
-        } catch (ParseException e) {
-            Log.e(TAG, "cannot pin", e);
-        }
+        Favorite favorite = new Favorite();
+        UUID uuid = UUID.randomUUID();
+        favorite.setUuid(uuid.toString());
+        favorite.setMemberObjectId(memberObjectId);
+        favorite.pinInBackground(new SaveCallback() {
+            @Override
+            public void done(ParseException e) {
+                BusHolder.get().post(new ChangedFavoriteState(ChangedFavoriteState.Action.ADD, e));
+            }
+        });
     }
 
     public static void delete(String memberObjectId) {
@@ -86,10 +100,16 @@ public class Favorite extends ParseObject {
         try {
             Favorite favorite = getQuery(memberObjectId).getFirst();
             if (favorite != null) {
-                favorite.unpin();
+                favorite.unpinInBackground(new DeleteCallback() {
+                    @Override
+                    public void done(ParseException e) {
+                        BusHolder.get().post(new ChangedFavoriteState(ChangedFavoriteState.Action.REMOVE, e));
+                    }
+                });
             }
         } catch (ParseException e) {
             Log.e(TAG, "cannot unpin", e);
+            BusHolder.get().post(new ChangedFavoriteState(ChangedFavoriteState.Action.REMOVE, e));
         }
     }
 

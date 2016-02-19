@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.os.Build;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -54,9 +53,9 @@ public class FavoriteFeedListAdapter extends RecyclableAdapter<Entry> {
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, Object object) {
+    public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, final Entry entry) {
         final ViewHolder holder = (ViewHolder) viewHolder;
-        final Entry entry = (Entry) object;
+//        final Entry entry = (Entry) object;
         holder.titleTextView.setText(entry.getTitle());
         holder.authorTextView.setText(entry.getAuthor());
         holder.updatedTextView.setText(DateUtils.dateToString(entry.getPublishedDate()));
@@ -97,7 +96,6 @@ public class FavoriteFeedListAdapter extends RecyclableAdapter<Entry> {
                 view.requestLayout();
             }
         }
-        ViewHolder holder = new ViewHolder(view);
-        return holder;
+        return new ViewHolder(view);
     }
 }

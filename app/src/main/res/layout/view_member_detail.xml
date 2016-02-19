@@ -17,10 +17,24 @@
         android:orientation="vertical"
         android:padding="24dp">
 
-        <ImageView
-            android:id="@+id/profile_image"
-            style="@style/ProfileImageViewStyle.Large"
-            android:layout_gravity="center_horizontal"/>
+        <RelativeLayout
+            android:gravity="center_horizontal"
+            android:layout_gravity="center_horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <ImageView
+                android:id="@+id/profile_image"
+                style="@style/ProfileImageViewStyle.Large"/>
+            <ImageView
+                android:id="@+id/favorite_icon"
+                android:visibility="gone"
+                android:layout_alignRight="@id/profile_image"
+                android:layout_alignBottom="@id/profile_image"
+                android:layout_marginRight="-18dp"
+                android:src="@drawable/ic_favorite_black_48dp"
+                android:layout_width="38dp"
+                android:layout_height="38dp" />
+        </RelativeLayout>
 
         <LinearLayout
             android:layout_gravity="center_horizontal"

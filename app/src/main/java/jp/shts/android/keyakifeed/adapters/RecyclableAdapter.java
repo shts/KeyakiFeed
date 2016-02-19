@@ -33,11 +33,10 @@ public abstract class RecyclableAdapter<T> extends RecyclerView.Adapter<Recycler
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
-        Object object = list.get(position);
-        onBindViewHolder(viewHolder, object);
+        T t = list.get(position);
+        onBindViewHolder(viewHolder, t);
     }
 
-    public abstract void onBindViewHolder(RecyclerView.ViewHolder viewHolder, Object object);
+    public abstract void onBindViewHolder(RecyclerView.ViewHolder viewHolder, T t);
     public abstract RecyclerView.ViewHolder onCreateViewHolder(LayoutInflater inflater, ViewGroup viewGroup);
-
 }
