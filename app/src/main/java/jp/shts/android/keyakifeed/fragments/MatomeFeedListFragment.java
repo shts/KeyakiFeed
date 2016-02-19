@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,6 +26,7 @@ public class MatomeFeedListFragment extends Fragment {
     private static final String TAG = MatomeFeedListFragment.class.getSimpleName();
 
     private ListView listView;
+    private SwipeRefreshLayout swipeRefreshLayout;
 
     @Override
     public void onPause() {
@@ -42,6 +44,14 @@ public class MatomeFeedListFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_matome_feed_list, null);
+        swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.refresh);
+        swipeRefreshLayout.setColorSchemeResources(R.color.primary, R.color.primary, R.color.primary, R.color.primary);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                MatomeFeedClient.get();
+            }
+        });
         listView = (ListView) view.findViewById(R.id.matome_feed_list);
         MatomeFeedClient.get();
         return view;
@@ -49,7 +59,11 @@ public class MatomeFeedListFragment extends Fragment {
 
     @Subscribe
     public void onGotMatomeFeedList(MatomeFeedClient.GetMatomeFeedCallback callback) {
-        Log.i(TAG, "onGotMatomeFeedList");
+        if (swipeRefreshLayout != null) {
+            if (swipeRefreshLayout.isRefreshing()) {
+                swipeRefreshLayout.setRefreshing(false);
+            }
+        }
         if (callback.hasError()) {
             Log.d(TAG, "has error!!!");
             return;
