@@ -9,7 +9,6 @@ import android.support.v7.app.AppCompatActivity;
 
 import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.fragments.MemberDetailFragment;
-import jp.shts.android.keyakifeed.fragments.MemberDetailFragment2;
 
 public class MemberDetailActivity extends AppCompatActivity {
 
@@ -27,10 +26,8 @@ public class MemberDetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         String memberObjectId = getIntent().getStringExtra("memberObjectId");
-//        MemberDetailFragment memberDetailFragment
-//                = MemberDetailFragment.newMemberDetailFragment(memberObjectId);
-        MemberDetailFragment2 memberDetailFragment
-                = MemberDetailFragment2.newInstance(memberObjectId);
+        MemberDetailFragment memberDetailFragment
+                = MemberDetailFragment.newInstance(memberObjectId);
 
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         ft.replace(R.id.container, memberDetailFragment, MemberDetailFragment.class.getSimpleName());
