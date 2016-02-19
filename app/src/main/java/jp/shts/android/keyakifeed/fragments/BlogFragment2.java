@@ -153,6 +153,7 @@ public class BlogFragment2 extends Fragment {
                     return;
                 }
                 toolbar.setTitle(entry.getTitle());
+                toolbar.setSubtitle(entry.getAuthor());
                 webView.loadUrl("file:///android_asset/template.html");
             }
         });
