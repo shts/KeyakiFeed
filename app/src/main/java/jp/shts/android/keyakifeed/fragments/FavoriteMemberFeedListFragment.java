@@ -34,11 +34,6 @@ public class FavoriteMemberFeedListFragment extends Fragment {
     private RecyclerView recyclerView;
     private View emptyView;
 
-    /**
-     * Cache for page change
-     */
-    private static List<Entry> cache;
-
     @Override
     public void onResume() {
         super.onResume();
@@ -72,23 +67,19 @@ public class FavoriteMemberFeedListFragment extends Fragment {
         multiSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                // clear cache
-                cache = null;
                 setupFavoriteMemberFeed();
             }
         });
         multiSwipeRefreshLayout.setSwipeableChildren(R.id.recyclerview, R.id.empty_view);
         multiSwipeRefreshLayout.setColorSchemeResources(
                 R.color.primary, R.color.primary, R.color.primary, R.color.primary);
-        setupFavoriteMemberFeed();
-
-        if (cache != null) {
-            recyclerView.setAdapter(new FavoriteFeedListAdapter(getActivity(), cache));
-            setVisibilityEmptyView(false);
-            if (multiSwipeRefreshLayout.isRefreshing()) {
-                multiSwipeRefreshLayout.setRefreshing(false);
+        multiSwipeRefreshLayout.post(new Runnable() {
+            @Override public void run() {
+                multiSwipeRefreshLayout.setRefreshing(true);
             }
-        }
+        });
+
+        setupFavoriteMemberFeed();
         return view;
     }
 
@@ -122,11 +113,10 @@ public class FavoriteMemberFeedListFragment extends Fragment {
         if (multiSwipeRefreshLayout.isRefreshing()) {
             multiSwipeRefreshLayout.setRefreshing(false);
         }
-        if (all.e != null || all.entries == null || all.entries.isEmpty()) {
+        if (all.hasError()) {
             setVisibilityEmptyView(true);
             return;
         }
-        cache = all.entries;
         recyclerView.setAdapter(new FavoriteFeedListAdapter(getActivity(), all.entries));
         setVisibilityEmptyView(false);
     }

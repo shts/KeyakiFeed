@@ -2,7 +2,6 @@ package jp.shts.android.keyakifeed.adapters;
 
 import android.content.Context;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,7 +45,6 @@ public class AllMemberGridListAdapter extends BindableAdapter<Member> {
     @Override
     public void bindView(Member member, int position, View view) {
         final ViewHolder holder = (ViewHolder) view.getTag();
-        Log.i(TAG, member.toString());
 
         holder.titleTextView.setText(member.getNameMain());
         holder.favoriteImageView.setVisibility(

@@ -94,6 +94,11 @@ public class AllMemberGridFragment extends Fragment {
             }
         });
         swipeRefreshLayout.setColorSchemeResources(R.color.primary, R.color.primary, R.color.primary, R.color.primary);
+        swipeRefreshLayout.post(new Runnable() {
+            @Override public void run() {
+                swipeRefreshLayout.setRefreshing(true);
+            }
+        });
         gridView = (GridView) view.findViewById(R.id.gridview);
         if (listenerType.equals(ListenerType.MEMBER_CHOOSER.name())) {
             toolbar.setVisibility(View.VISIBLE);

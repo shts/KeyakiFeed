@@ -62,6 +62,11 @@ public class MatomeFeedListFragment extends Fragment {
                 MatomeFeedClient.get();
             }
         });
+        swipeRefreshLayout.post(new Runnable() {
+            @Override public void run() {
+                swipeRefreshLayout.setRefreshing(true);
+            }
+        });
         listView = (ListView) view.findViewById(R.id.matome_feed_list);
         keyakiFeedAdView = (KeyakiFeedAdView) view.findViewById(R.id.ad_view);
         MatomeFeedClient.get();

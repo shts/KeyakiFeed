@@ -14,8 +14,6 @@ import android.widget.ListView;
 
 import com.squareup.otto.Subscribe;
 
-import java.util.List;
-
 import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.activities.BlogActivity;
 import jp.shts.android.keyakifeed.adapters.AllFeedListAdapter;
@@ -42,11 +40,6 @@ public class AllFeedListFragment extends Fragment {
         }
     };
 
-    /**
-     * Cache for page change
-     */
-    private static List<Entry> cache;
-
     @Override
     public void onPause() {
         super.onPause();
@@ -67,12 +60,16 @@ public class AllFeedListFragment extends Fragment {
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                // clear cache
-                cache = null;
                 getAllEntries();
             }
         });
         swipeRefreshLayout.setColorSchemeResources(R.color.primary, R.color.primary, R.color.primary, R.color.primary);
+        swipeRefreshLayout.post(new Runnable() {
+            @Override public void run() {
+                getAllEntries();
+                swipeRefreshLayout.setRefreshing(true);
+            }
+        });
         listView = (ListView) view.findViewById(R.id.all_feed_list);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -87,23 +84,6 @@ public class AllFeedListFragment extends Fragment {
         return view;
     }
 
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        if (cache == null) {
-            getAllEntries();
-        } else {
-            allFeedListAdapter = new AllFeedListAdapter(getActivity(), cache);
-            allFeedListAdapter.setPageMaxScrolledListener(scrolledListener);
-            listView.setAdapter(allFeedListAdapter);
-            if (swipeRefreshLayout != null) {
-                if (swipeRefreshLayout.isRefreshing()) {
-                    swipeRefreshLayout.setRefreshing(false);
-                }
-            }
-        }
-    }
-
     private void getAllEntries() {
         counter = 0;
         Entry.all(Entry.getQuery(PAGE_LIMIT, counter));
@@ -116,11 +96,10 @@ public class AllFeedListFragment extends Fragment {
                 swipeRefreshLayout.setRefreshing(false);
             }
         }
-        if (all.e != null || all.entries == null || all.entries.isEmpty()) {
+        if (all.hasError()) {
             Log.e(TAG, "cannot get entries", all.e);
             return;
         }
-        cache = all.entries;
         allFeedListAdapter = new AllFeedListAdapter(getActivity(), all.entries);
         allFeedListAdapter.setPageMaxScrolledListener(scrolledListener);
         listView.setAdapter(allFeedListAdapter);
@@ -139,7 +118,12 @@ public class AllFeedListFragment extends Fragment {
         if (footerView != null) {
             footerView.setVisibility(View.GONE);
         }
-        if (next.e != null || next.entries == null || next.entries.isEmpty()) {
+        if (swipeRefreshLayout != null) {
+            if (swipeRefreshLayout.isRefreshing()) {
+                swipeRefreshLayout.setRefreshing(false);
+            }
+        }
+        if (next.hasError()) {
             Log.e(TAG, "cannot get entries", next.e);
             return;
         }
