@@ -19,7 +19,7 @@ import com.squareup.otto.Subscribe;
 
 import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.activities.BlogActivity;
-import jp.shts.android.keyakifeed.adapters.MemberFeedListAdapter2;
+import jp.shts.android.keyakifeed.adapters.MemberFeedListAdapter;
 import jp.shts.android.keyakifeed.models.Entry;
 import jp.shts.android.keyakifeed.models.Favorite;
 import jp.shts.android.keyakifeed.models.Member;
@@ -48,7 +48,7 @@ public class MemberDetailFragment extends Fragment {
     private CollapsingToolbarLayout collapsingToolbarLayout;
     private CoordinatorLayout coordinatorLayout;
     private MemberDetailHeader viewMemberDetailHeader;
-    private MemberFeedListAdapter2 adapter;
+    private MemberFeedListAdapter adapter;
 
     @Override
     public void onResume() {
@@ -117,14 +117,14 @@ public class MemberDetailFragment extends Fragment {
             return;
         }
         // setup adapter
-        adapter = new MemberFeedListAdapter2(getContext(), callback.entries);
-        adapter.setClickCallback(new MemberFeedListAdapter2.OnItemClickCallback() {
+        adapter = new MemberFeedListAdapter(getContext(), callback.entries);
+        adapter.setClickCallback(new MemberFeedListAdapter.OnItemClickCallback() {
             @Override
             public void onClick(Entry entry) {
                 getActivity().startActivity(BlogActivity.getStartIntent(getContext(), entry.getObjectId()));
             }
         });
-        adapter.setOnMaxPageScrolled(new MemberFeedListAdapter2.OnMaxPageScrolledListener() {
+        adapter.setOnMaxPageScrolled(new MemberFeedListAdapter.OnMaxPageScrolledListener() {
             @Override
             public void onMaxPageScrolled() {
                 if (nowGettingNextEntry) return;

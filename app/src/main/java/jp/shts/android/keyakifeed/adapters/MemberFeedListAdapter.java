@@ -13,9 +13,9 @@ import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.models.Entry;
 import jp.shts.android.keyakifeed.utils.DateUtils;
 
-public class MemberFeedListAdapter2 extends FooterRecyclerViewAdapter<Entry> {
+public class MemberFeedListAdapter extends FooterRecyclerViewAdapter<Entry> {
 
-    private static final String TAG = MemberFeedListAdapter2.class.getSimpleName();
+    private static final String TAG = MemberFeedListAdapter.class.getSimpleName();
 
     class FooterHolder extends RecyclerView.ViewHolder {
         View root;
@@ -52,7 +52,7 @@ public class MemberFeedListAdapter2 extends FooterRecyclerViewAdapter<Entry> {
     private OnItemClickCallback clickCallback;
     private OnMaxPageScrolledListener listener;
 
-    public MemberFeedListAdapter2(Context context, List<Entry> list) {
+    public MemberFeedListAdapter(Context context, List<Entry> list) {
         super(context, list);
     }
 

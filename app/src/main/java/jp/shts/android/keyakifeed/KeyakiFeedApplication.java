@@ -6,7 +6,6 @@ import com.parse.Parse;
 import com.parse.ParseInstallation;
 import com.parse.ParseObject;
 
-import jp.shts.android.keyakifeed.adapters.MemberFeedListAdapter2;
 import jp.shts.android.keyakifeed.models.Entry;
 import jp.shts.android.keyakifeed.models.Favorite;
 import jp.shts.android.keyakifeed.models.Member;
