@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="feedItem"
+            type="jp.shts.android.keyakifeed.entities.FeedItem" />
+
+    </data>
+
+    <LinearLayout
     android:orientation="horizontal" android:layout_width="match_parent"
     android:layout_height="wrap_content" android:minHeight="72dp" android:padding="8dp">
 
@@ -11,6 +22,7 @@
 
         <TextView
             android:id="@+id/title"
+            android:text="@{feedItem.title}"
             android:layout_marginBottom="8dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
@@ -21,6 +33,7 @@
 
             <TextView
                 android:id="@+id/site"
+                android:text="@{feedItem.siteTitle}"
                 android:textColor="@color/half_black"
                 android:textSize="12dp"
                 android:layout_alignParentBottom="true"
@@ -30,6 +43,7 @@
 
             <TextView
                 android:id="@+id/date"
+                android:text="@{feedItem.getFormatedDateText()}"
                 android:textColor="@color/half_black"
                 android:paddingRight="8dp"
                 android:textSize="12dp"
@@ -44,8 +58,10 @@
     <ImageView
         android:background="@color/primary"
         android:id="@+id/thumbnail"
+        app:thumbnailUrl="@{feedItem.getThumbnailUrl()}"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1" />
 
 </LinearLayout>
+</layout>

@@ -65,6 +65,10 @@ public class Entry extends ParseObject {
         public boolean hasError() { return e != null || (entries == null || entries.isEmpty()); }
     }
 
+    public boolean isFavorite() {
+        return Favorite.exist(getAuthorId());
+    }
+
     public String getAuthor() {
         return getString("author");
     }

@@ -45,12 +45,10 @@
             <TextView
                 android:id="@+id/name_main"
                 style="@style/MemberDetailHeader.TextView.Name.Main"
-                android:text="小林 由衣"
                 />
             <TextView
                 android:id="@+id/name_sub"
                 style="@style/MemberDetailHeader.TextView.Name.Sub"
-                android:text="こばやし ゆい"
                 />
         </LinearLayout>
 

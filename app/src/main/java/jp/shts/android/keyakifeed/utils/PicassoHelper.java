@@ -6,6 +6,7 @@ import android.widget.RemoteViews;
 
 import com.squareup.picasso.Picasso;
 
+import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.views.transformations.CircleTransformation;
 
 public class PicassoHelper {
@@ -20,8 +21,25 @@ public class PicassoHelper {
                 .into(target);
     }
 
+    public static void load(ImageView target, String url) {
+        Picasso.with(target.getContext())
+                .load(url)
+                .fit()
+                .centerCrop()
+                .into(target);
+    }
+
     public static void loadAndCircleTransform(Context context, ImageView target, String url) {
         Picasso.with(context)
+                .load(url)
+                .fit()
+                .centerCrop()
+                .transform(CIRCLE_TRANSFORMATION)
+                .into(target);
+    }
+
+    public static void loadAndCircleTransform(ImageView target, String url) {
+        Picasso.with(target.getContext())
                 .load(url)
                 .fit()
                 .centerCrop()
