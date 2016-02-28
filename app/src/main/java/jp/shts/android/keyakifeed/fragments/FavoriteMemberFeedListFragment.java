@@ -117,7 +117,9 @@ public class FavoriteMemberFeedListFragment extends Fragment {
             setVisibilityEmptyView(true);
             return;
         }
-        recyclerView.setAdapter(new FavoriteFeedListAdapter(getActivity(), all.entries));
+        final FavoriteFeedListAdapter adapter = new FavoriteFeedListAdapter(getActivity());
+        adapter.addAll(all.entries);
+        recyclerView.setAdapter(adapter);
         setVisibilityEmptyView(false);
     }
 

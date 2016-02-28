@@ -5,6 +5,8 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 
+import java.util.List;
+
 public class DataBindingAttributeUtil {
 
     private static final String TAG = DataBindingAttributeUtil.class.getSimpleName();
@@ -21,6 +23,14 @@ public class DataBindingAttributeUtil {
         } else {
             imageView.setVisibility(View.VISIBLE);
             PicassoHelper.load(imageView, url);
+        }
+    }
+
+    @BindingAdapter("entryThumbnailUrl")
+    public static void loadEntryThumbnailImage(ImageView imageView, List<String> urlList) {
+        if (urlList != null && !urlList.isEmpty()) {
+            String thumbnailUrl = urlList.get(0);
+            PicassoHelper.load(imageView, thumbnailUrl);
         }
     }
 

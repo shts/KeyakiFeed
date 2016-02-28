@@ -1,95 +1,111 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/tools">
 
-    <!-- A CardView that contains a TextView -->
-    <android.support.v7.widget.CardView
-        xmlns:card_view="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/card_view"
-        android:layout_gravity="center"
+    <data>
+
+        <import type="jp.shts.android.keyakifeed.utils.DateUtils" />
+
+        <import type="jp.shts.android.keyakifeed.utils.PicassoHelper" />
+
+        <variable
+            name="entry"
+            type="jp.shts.android.keyakifeed.models.Entry" />
+
+    </data>
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        card_view:cardCornerRadius="2dp"
-        >
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <RelativeLayout
+        <!-- A CardView that contains a TextView -->
+        <android.support.v7.widget.CardView
+            xmlns:card_view="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/card_view"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-            <ImageView
-                android:scaleType="centerCrop"
-                android:id="@+id/card_background"
-                android:layout_width="match_parent"
-                android:layout_height="250dp"
-                />
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            card_view:cardCornerRadius="2dp">
 
-            <LinearLayout
-                android:layout_alignBottom="@id/card_background"
-                android:background="#5f000000"
-                android:id="@+id/card_rebel"
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="72dp"
-                android:paddingRight="16dp"
-                android:orientation="horizontal">
+                android:layout_height="match_parent">
 
                 <ImageView
-                    android:id="@+id/profile_image"
-                    android:layout_gravity="center_vertical"
-                    android:padding="16dp"
-                    android:layout_width="72dp"
-                    android:layout_height="72dp"
-                    android:src="@drawable/ic_account_circle_black_48dp"
-                    />
+                    android:id="@+id/card_background"
+                    android:layout_width="match_parent"
+                    android:layout_height="250dp"
+                    app:entryThumbnailUrl="@{entry.getImageUrlList()}"
+                    android:scaleType="centerCrop" />
 
                 <LinearLayout
-                    android:orientation="vertical"
+                    android:id="@+id/card_rebel"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent">
+                    android:layout_height="72dp"
+                    android:layout_alignBottom="@id/card_background"
+                    android:background="#5f000000"
+                    android:orientation="horizontal"
+                    android:paddingRight="16dp">
 
-                    <TextView
-                        android:id="@+id/card_title"
-                        android:textSize="12sp"
-                        android:textColor="#fff"
-                        android:gravity="center_vertical"
-                        android:layout_width="match_parent"
-                        android:layout_height="36dp"
-                        android:text="Title"
-                        android:textStyle="bold"
-                        android:maxLength="46"
-                        android:ellipsize="end"
-                        />
+                    <ImageView
+                        android:id="@+id/profile_image"
+                        android:layout_width="72dp"
+                        android:layout_height="72dp"
+                        android:layout_gravity="center_vertical"
+                        android:padding="16dp"
+                        android:src="@drawable/ic_account_circle_black_48dp"
+                        app:imageUrl="@{entry.getAuthorImageUrl()}" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="36dp"
-                        android:orientation="horizontal">
+                        android:layout_height="match_parent"
+                        android:orientation="vertical">
 
                         <TextView
-                            android:id="@+id/authorname"
-                            android:text="Author"
-                            android:textColor="#fff"
+                            android:id="@+id/card_title"
+                            android:layout_width="match_parent"
+                            android:layout_height="36dp"
+                            android:ellipsize="end"
                             android:gravity="center_vertical"
-                            android:textSize="12sp"
-                            android:layout_width="wrap_content"
-                            android:layout_height="match_parent" />
-
-                        <View
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"/>
-
-                        <TextView
-                            android:id="@+id/updated"
-                            android:textSize="12sp"
+                            android:maxLength="46"
+                            android:text="@{entry.title}"
                             android:textColor="#fff"
-                            android:gravity="center_vertical"
-                            android:paddingRight="16dp"
-                            android:text="update"
-                            android:layout_width="wrap_content"
-                            android:layout_height="match_parent" />
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="36dp"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/authorname"
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:gravity="center_vertical"
+                                android:text="@{entry.author}"
+                                android:textColor="#fff"
+                                android:textSize="12sp" />
+
+                            <View
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1" />
+
+                            <TextView
+                                android:id="@+id/updated"
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:gravity="center_vertical"
+                                android:paddingRight="16dp"
+                                android:text="@{DateUtils.dateToString(entry.getPublishedDate())}"
+                                android:textColor="#fff"
+                                android:textSize="12sp" />
+                        </LinearLayout>
                     </LinearLayout>
                 </LinearLayout>
-            </LinearLayout>
-        </RelativeLayout>
-    </android.support.v7.widget.CardView>
-</LinearLayout>
+            </RelativeLayout>
+        </android.support.v7.widget.CardView>
+    </LinearLayout>
+</layout>

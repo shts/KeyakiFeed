@@ -7,7 +7,7 @@ import android.view.ViewGroup;
 
 import java.util.List;
 
-public abstract class FooterRecyclerViewAdapter<T> extends HeaderFooterRecyclerViewAdapter {
+abstract class FooterRecyclerViewAdapter<T> extends HeaderFooterRecyclerViewAdapter {
 
     private static final String TAG = FooterRecyclerViewAdapter.class.getSimpleName();
 

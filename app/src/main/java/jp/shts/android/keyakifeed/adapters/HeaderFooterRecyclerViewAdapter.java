@@ -1,11 +1,9 @@
 package jp.shts.android.keyakifeed.adapters;
 
-
-
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
-public abstract class HeaderFooterRecyclerViewAdapter<
+abstract class HeaderFooterRecyclerViewAdapter<
         ContentViewHolder extends RecyclerView.ViewHolder,
         HeaderViewHolder extends RecyclerView.ViewHolder,
         FooterViewHolder extends RecyclerView.ViewHolder>
