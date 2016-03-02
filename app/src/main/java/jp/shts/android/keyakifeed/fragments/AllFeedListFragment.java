@@ -17,6 +17,7 @@ import com.squareup.otto.Subscribe;
 import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.activities.BlogActivity;
 import jp.shts.android.keyakifeed.adapters.AllFeedListAdapter;
+import jp.shts.android.keyakifeed.entities.Blog;
 import jp.shts.android.keyakifeed.models.Entry;
 import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
 
@@ -75,7 +76,7 @@ public class AllFeedListFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Entry entry = (Entry) parent.getItemAtPosition(position);
-                getActivity().startActivity(BlogActivity.getStartIntent(getActivity(), entry.getObjectId()));
+                getActivity().startActivity(BlogActivity.getStartIntent(getActivity(), new Blog(entry)));
             }
         });
         footerView = (LinearLayout) inflater.inflate(R.layout.list_item_more_load, null);

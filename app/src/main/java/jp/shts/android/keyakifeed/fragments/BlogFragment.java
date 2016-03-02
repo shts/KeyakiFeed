@@ -1,7 +1,6 @@
 package jp.shts.android.keyakifeed.fragments;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -19,22 +18,19 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
-import com.parse.GetCallback;
-import com.parse.ParseException;
 import com.squareup.otto.Subscribe;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.dialogs.DownloadConfirmDialog;
-import jp.shts.android.keyakifeed.models.Entry;
+import jp.shts.android.keyakifeed.entities.Blog;
 import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
-import jp.shts.android.keyakifeed.utils.DateUtils;
 import jp.shts.android.keyakifeed.utils.SdCardUtils;
 import jp.shts.android.keyakifeed.utils.ShareUtils;
 import jp.shts.android.keyakifeed.utils.SimpleImageDownloader;
@@ -44,44 +40,19 @@ public class BlogFragment extends Fragment {
 
     private static final String TAG = BlogFragment.class.getSimpleName();
 
-    public static BlogFragment newInstance(String entryObjectId) {
+    public static BlogFragment newInstance(Blog blog) {
         Bundle bundle = new Bundle();
-        bundle.putString("entryObjectId", entryObjectId);
+        bundle.putParcelable("blog", blog);
         BlogFragment blogFragment = new BlogFragment();
         blogFragment.setArguments(bundle);
         return blogFragment;
     }
 
-    private class JavaScriptInterface {
-        @JavascriptInterface
-        public String getYearMonth() { return entry.getYearMonth(); }
-        @JavascriptInterface
-        public String getDay() { return entry.getDay(); }
-        @JavascriptInterface
-        public String getWeek() { return entry.getWeek(); }
-        @JavascriptInterface
-        public String getTitle() { return entry.getTitle(); }
-        @JavascriptInterface
-        public String getAuthor() { return entry.getAuthor(); }
-        @JavascriptInterface
-        public String getBody() { return entry.getBody(); }
-        @JavascriptInterface
-        public String getPublishedDate() { return DateUtils.dateToString(entry.getPublishedDate()); }
-    }
-
-    private String entryObjectId;
-    private Entry entry;
     private CoordinatorLayout coordinatorLayout;
     private FloatingActionButton fabDownload;
     private FloatingActionsMenu floatingActionsMenu;
 
     private Uri recentDownloadedUri;
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        entryObjectId = getArguments().getString("entryObjectId");
-    }
 
     @Override
     public void onResume() {
@@ -95,11 +66,15 @@ public class BlogFragment extends Fragment {
         BusHolder.get().unregister(this);
     }
 
-    @SuppressLint("AddJavascriptInterface")
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+
         final View view = inflater.inflate(R.layout.fragment_blog, null);
+        final Blog blog = getArguments().getParcelable("blog");
+        if (blog == null) {
+            return view;
+        }
 
         final Toolbar toolbar = (Toolbar) view.findViewById(R.id.toolbar);
         toolbar.setNavigationIcon(R.drawable.ic_clear_white_24dp);
@@ -116,16 +91,22 @@ public class BlogFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 floatingActionsMenu.collapse();
-                getActivity().startActivity(ShareUtils.getShareBlogIntent(entry));
+                getActivity().startActivity(ShareUtils.getShareBlogIntent(blog));
             }
         });
         fabDownload = (FloatingActionButton) view.findViewById(R.id.fab_action_download);
         fabDownload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                fabDownload.setColorNormalResId(R.color.primary);
-                fabDownload.setTitle("ダウンロード中です ...");
-                download(entry.getImageUrlList());
+                final ArrayList<String> urlList = blog.getImageUrlList();
+                if (urlList == null || urlList.isEmpty()) {
+                    Snackbar.make(coordinatorLayout, "ダウンロードする画像がありません", Snackbar.LENGTH_LONG)
+                            .show();
+                } else {
+                    fabDownload.setColorNormalResId(R.color.primary);
+                    fabDownload.setTitle("ダウンロード中です ...");
+                    download(urlList);
+                }
             }
         });
 
@@ -139,24 +120,13 @@ public class BlogFragment extends Fragment {
             }
         });
         webView.getSettings().setJavaScriptEnabled(true);
-        JavaScriptInterface javaScriptInterface = new JavaScriptInterface();
-        webView.addJavascriptInterface(javaScriptInterface, "JavaScriptInterface");
 
         coordinatorLayout = (CoordinatorLayout) view.findViewById(R.id.coordinator);
 
-        entry = Entry.createWithoutData(Entry.class, entryObjectId);
-        entry.fetchIfNeededInBackground(new GetCallback<Entry>() {
-            @Override
-            public void done(Entry entry, ParseException e) {
-                if (e != null || entry == null) {
-                    Log.e(TAG, "cannot get entry");
-                    return;
-                }
-                toolbar.setTitle(entry.getTitle());
-                toolbar.setSubtitle(entry.getAuthor());
-                webView.loadUrl("file:///android_asset/template.html");
-            }
-        });
+        toolbar.setTitle(blog.getTitle());
+        toolbar.setSubtitle(blog.getMemberName());
+        webView.loadUrl(blog.getUrl());
+
         return view;
     }
 

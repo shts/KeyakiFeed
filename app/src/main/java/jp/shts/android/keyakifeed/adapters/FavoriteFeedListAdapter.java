@@ -9,6 +9,7 @@ import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.activities.BlogActivity;
 import jp.shts.android.keyakifeed.activities.MemberDetailActivity;
 import jp.shts.android.keyakifeed.databinding.ListItemCardBinding;
+import jp.shts.android.keyakifeed.entities.Blog;
 import jp.shts.android.keyakifeed.models.Entry;
 
 public class FavoriteFeedListAdapter extends ArrayRecyclerAdapter<Entry, BindingHolder<ListItemCardBinding>> {
@@ -34,7 +35,7 @@ public class FavoriteFeedListAdapter extends ArrayRecyclerAdapter<Entry, Binding
             @Override
             public void onClick(View v) {
                 context.startActivity(
-                        MemberDetailActivity.getStartIntent(context, entry.getAuthorId()));
+                        MemberDetailActivity.getStartIntent(context, entry.getMemberId()));
             }
         });
 
@@ -43,7 +44,7 @@ public class FavoriteFeedListAdapter extends ArrayRecyclerAdapter<Entry, Binding
             @Override
             public void onClick(View v) {
                 context.startActivity(
-                        BlogActivity.getStartIntent(context, entry.getObjectId()));
+                        BlogActivity.getStartIntent(context, new Blog(entry)));
             }
         });
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {

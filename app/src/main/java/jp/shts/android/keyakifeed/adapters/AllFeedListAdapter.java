@@ -53,7 +53,7 @@ public class AllFeedListAdapter extends ArrayAdapter<Entry> {
             public void onClick(View v) {
                 final Context context = getContext();
                 context.startActivity(
-                        MemberDetailActivity.getStartIntent(context, entry.getAuthorId()));
+                        MemberDetailActivity.getStartIntent(context, entry.getMemberId()));
             }
         });
 

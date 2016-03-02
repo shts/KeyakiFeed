@@ -9,6 +9,7 @@ import com.parse.ParseObject;
 import jp.shts.android.keyakifeed.models.Entry;
 import jp.shts.android.keyakifeed.models.Favorite;
 import jp.shts.android.keyakifeed.models.Member;
+import jp.shts.android.keyakifeed.models.Report;
 
 public class KeyakiFeedApplication extends Application {
 
@@ -21,6 +22,7 @@ public class KeyakiFeedApplication extends Application {
         ParseObject.registerSubclass(Entry.class);
         ParseObject.registerSubclass(Favorite.class);
         ParseObject.registerSubclass(Member.class);
+        ParseObject.registerSubclass(Report.class);
 
         // Enable Local Datastore.
         Parse.enableLocalDatastore(this);

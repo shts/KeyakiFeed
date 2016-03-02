@@ -8,15 +8,16 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 
 import jp.shts.android.keyakifeed.R;
+import jp.shts.android.keyakifeed.entities.Blog;
 import jp.shts.android.keyakifeed.fragments.BlogFragment;
 
 public class BlogActivity extends AppCompatActivity {
 
     private static final String TAG = BlogActivity.class.getSimpleName();
 
-    public static Intent getStartIntent(Context context, String entryObjectId) {
+    public static Intent getStartIntent(Context context, Blog blog) {
         Intent intent = new Intent(context, BlogActivity.class);
-        intent.putExtra("entryObjectId", entryObjectId);
+        intent.putExtra("blog", blog);
         return intent;
     }
 
@@ -25,8 +26,8 @@ public class BlogActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        BlogFragment blogFragment = BlogFragment.newInstance(
-                getIntent().getStringExtra("entryObjectId"));
+        final Blog blog = getIntent().getParcelableExtra("blog");
+        BlogFragment blogFragment = BlogFragment.newInstance(blog);
 
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         ft.replace(R.id.container, blogFragment, BlogFragment.class.getSimpleName());

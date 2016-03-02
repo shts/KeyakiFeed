@@ -83,6 +83,7 @@
             android:exported="false">
             <intent-filter>
                 <action android:name="jp.shts.android.keyakifeed.BLOG_UPDATED"/>
+                <action android:name="jp.shts.android.keyakifeed.REPORT_UPDATED"/>
             </intent-filter>
         </receiver>
     </application>

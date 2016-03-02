@@ -77,7 +77,7 @@ public class MemberFeedListAdapter extends FooterRecyclerViewAdapter<Entry> {
     public void onBindContentItemViewHolder(RecyclerView.ViewHolder viewHolder, final Entry entry) {
         final ViewHolder holder = (ViewHolder) viewHolder;
         holder.titleTextView.setText(entry.getTitle());
-        holder.authorNameTextView.setText(entry.getAuthor());
+        holder.authorNameTextView.setText(entry.getMemberName());
         holder.updatedTextView.setText(DateUtils.dateToString(entry.getPublishedDate()));
         holder.root.setOnClickListener(new View.OnClickListener() {
             @Override

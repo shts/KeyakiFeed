@@ -66,27 +66,23 @@ public class Entry extends ParseObject {
     }
 
     public boolean isFavorite() {
-        return Favorite.exist(getAuthorId());
+        return Favorite.exist(getMemberId());
     }
 
-    public String getAuthor() {
-        return getString("author");
+    public String getArticleUrl() {
+        return getString("article_url");
     }
 
-    public String getAuthorId() {
-        return getString("author_id");
+    public String getMemberName() {
+        return getString("member_name");
     }
 
-    public String getAuthorImageUrl() {
-        return getString("author_image_url");
+    public String getMemberId() {
+        return getString("member_id");
     }
 
-    public String getBody() {
-        return getString("body");
-    }
-
-    public String getDay() {
-        return getString("day");
+    public String getMemberImageUrl() {
+        return getString("member_image_url");
     }
 
     public List<String> getImageUrlList() {
@@ -101,11 +97,4 @@ public class Entry extends ParseObject {
         return getString("title");
     }
 
-    public String getWeek() {
-        return getString("week");
-    }
-
-    public String getYearMonth() {
-        return getString("yearmonth");
-    }
 }

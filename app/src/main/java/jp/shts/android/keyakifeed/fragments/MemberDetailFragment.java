@@ -20,6 +20,7 @@ import com.squareup.otto.Subscribe;
 import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.activities.BlogActivity;
 import jp.shts.android.keyakifeed.adapters.MemberFeedListAdapter;
+import jp.shts.android.keyakifeed.entities.Blog;
 import jp.shts.android.keyakifeed.models.Entry;
 import jp.shts.android.keyakifeed.models.Favorite;
 import jp.shts.android.keyakifeed.models.Member;
@@ -106,7 +107,7 @@ public class MemberDetailFragment extends Fragment {
         // setup Entry list
         counter = 0;
         ParseQuery<Entry> query = Entry.getQuery(PAGE_LIMIT, counter);
-        query.whereEqualTo("author_id", memberObjectId);
+        query.whereEqualTo("member_id", memberObjectId);
         Entry.all(query);
     }
 
@@ -121,7 +122,8 @@ public class MemberDetailFragment extends Fragment {
         adapter.setClickCallback(new MemberFeedListAdapter.OnItemClickCallback() {
             @Override
             public void onClick(Entry entry) {
-                getActivity().startActivity(BlogActivity.getStartIntent(getContext(), entry.getObjectId()));
+                getActivity().startActivity(
+                        BlogActivity.getStartIntent(getContext(), new Blog(entry)));
             }
         });
         adapter.setOnMaxPageScrolled(new MemberFeedListAdapter.OnMaxPageScrolledListener() {
@@ -132,7 +134,7 @@ public class MemberDetailFragment extends Fragment {
                 // get next feed
                 counter++;
                 ParseQuery<Entry> query = Entry.getQuery(PAGE_LIMIT, (PAGE_LIMIT * counter));
-                query.whereEqualTo("author_id", memberObjectId);
+                query.whereEqualTo("member_id", memberObjectId);
                 Entry.next(query);
             }
         });

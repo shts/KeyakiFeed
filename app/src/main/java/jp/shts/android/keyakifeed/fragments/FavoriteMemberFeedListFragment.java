@@ -104,7 +104,7 @@ public class FavoriteMemberFeedListFragment extends Fragment {
             ids.add(favorite.getMemberObjectId());
         }
         final ParseQuery<Entry> query = Entry.getQuery(30, 0);
-        query.whereContainedIn("author_id", ids);
+        query.whereContainedIn("member_id", ids);
         Entry.all(query);
     }
 

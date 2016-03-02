@@ -64,6 +64,10 @@ public class Member extends ParseObject {
         }
     }
 
+    public String getKey() {
+        return getString("key");
+    }
+
     public String getNameMain() {
         return getString("name_main");
     }
