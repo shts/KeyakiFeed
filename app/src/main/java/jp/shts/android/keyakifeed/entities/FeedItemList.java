@@ -9,7 +9,10 @@ public class FeedItemList extends ArrayList<FeedItem> {
     private static final String TAG = FeedItemList.class.getSimpleName();
 
     public void sort() {
-        Collections.sort(this, new DateComparator(DateComparator.DESC));
+        // java.lang.ArrayIndexOutOfBoundsException
+        synchronized (FeedItemList.class) {
+            Collections.sort(this, new DateComparator(DateComparator.DESC));
+        }
     }
 
     private static class DateComparator implements Comparator<FeedItem> {
