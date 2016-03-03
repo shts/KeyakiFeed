@@ -35,15 +35,30 @@ public class FavoriteMemberFeedListFragment extends Fragment {
     private View emptyView;
 
     @Override
-    public void onResume() {
-        super.onResume();
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         BusHolder.get().register(this);
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
+    public void onResume() {
+        super.onResume();
+        if (changeFavoriteState) setupFavoriteMemberFeed();
+        changeFavoriteState = false;
+    }
+
+    private boolean changeFavoriteState;
+
+    @Subscribe
+    public void onChangedFavoriteState(Favorite.ChangedFavoriteState favoriteState) {
+        // TODO: use data observe
+        changeFavoriteState = true;
+    }
+
+    @Override
+    public void onDestroy() {
         BusHolder.get().unregister(this);
+        super.onDestroy();
     }
 
     @Nullable
@@ -74,12 +89,13 @@ public class FavoriteMemberFeedListFragment extends Fragment {
         multiSwipeRefreshLayout.setColorSchemeResources(
                 R.color.primary, R.color.primary, R.color.primary, R.color.primary);
         multiSwipeRefreshLayout.post(new Runnable() {
-            @Override public void run() {
+            @Override
+            public void run() {
+                setupFavoriteMemberFeed();
                 multiSwipeRefreshLayout.setRefreshing(true);
             }
         });
 
-        setupFavoriteMemberFeed();
         return view;
     }
 

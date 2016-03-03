@@ -11,7 +11,6 @@ import com.parse.ParseQuery;
 import com.parse.SaveCallback;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
