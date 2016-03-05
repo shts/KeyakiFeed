@@ -41,7 +41,8 @@
                 android:layout_marginBottom="8dp"
                 android:layout_marginRight="8dp"
                 android:src="@drawable/ic_favorite_black_48dp"
-                android:visibility="@{entry.isFavorite() ? View.VISIBLE : View.GONE}" />
+                android:visibility="gone"
+                app:favorite="@{entry}"/>
         </FrameLayout>
 
         <LinearLayout

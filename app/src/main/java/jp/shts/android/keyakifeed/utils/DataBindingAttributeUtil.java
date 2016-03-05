@@ -7,6 +7,8 @@ import android.widget.ImageView;
 
 import java.util.List;
 
+import jp.shts.android.keyakifeed.models.Entry;
+
 public class DataBindingAttributeUtil {
 
     private static final String TAG = DataBindingAttributeUtil.class.getSimpleName();
@@ -31,6 +33,15 @@ public class DataBindingAttributeUtil {
         if (urlList != null && !urlList.isEmpty()) {
             String thumbnailUrl = urlList.get(0);
             PicassoHelper.load(imageView, thumbnailUrl);
+        }
+    }
+
+    @BindingAdapter("favorite")
+    public static void setFavoriteIcon(ImageView imageView, Entry entry) {
+        if (entry.isFavorite()) {
+            imageView.setVisibility(View.VISIBLE);
+        } else {
+            imageView.setVisibility(View.GONE);
         }
     }
 
