@@ -6,8 +6,6 @@
 
         <import type="jp.shts.android.keyakifeed.utils.DateUtils" />
 
-        <import type="jp.shts.android.keyakifeed.utils.PicassoHelper" />
-
         <variable
             name="entry"
             type="jp.shts.android.keyakifeed.models.Entry" />

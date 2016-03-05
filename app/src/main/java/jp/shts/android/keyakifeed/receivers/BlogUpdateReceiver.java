@@ -11,8 +11,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import jp.shts.android.keyakifeed.entities.Blog;
+import jp.shts.android.keyakifeed.models.Report;
 import jp.shts.android.keyakifeed.notifications.BlogUpdateNotification;
 
 public class BlogUpdateReceiver extends BroadcastReceiver {
@@ -34,14 +36,18 @@ public class BlogUpdateReceiver extends BroadcastReceiver {
                 BlogUpdateNotification.show(context, blog);
 
             } else if ("jp.shts.android.keyakifeed.REPORT_UPDATED".equals(action)) {
-                // 取り出したデータを変数へ
-                final String entryObjectId = json.getString("_entryObjectId");
-                final String title = json.getString("_title");
                 final String url = json.getString("_url");
-                final String thumbnailUrl = json.getString("_thumbnail_url");
+                final String title = json.getString("_title");
 
-//                BlogUpdateNotification.show(context, entryObjectId,
-//                        title, author, author_id, author_image_url);
+                final JSONArray jsonArray = json.getJSONArray("_image_url_list");
+                final ArrayList<String> imageUrlList = new ArrayList<>();
+                final int N = jsonArray.length();
+                for (int i = 0; i < N; i++) {
+                    imageUrlList.add(jsonArray.getString(i));
+                }
+
+                Blog blog = new Blog(url, title, imageUrlList);
+                BlogUpdateNotification.show(context, blog);
             }
 
         } catch (JSONException e) {

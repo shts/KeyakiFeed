@@ -6,6 +6,7 @@ import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 
+import java.util.Date;
 import java.util.List;
 
 import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
@@ -40,14 +41,17 @@ public class Report extends ParseObject {
             this.reports = reports;
             this.e = e;
         }
+        public boolean hasError() {
+            return e != null || reports == null || reports.isEmpty();
+        }
     }
 
     public String getUrl() {
         return getString("url");
     }
 
-    public String getPublished() {
-        return getString("published");
+    public Date getPublished() {
+        return getDate("published");
     }
 
     public List<String> getImageUrlList() {

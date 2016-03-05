@@ -79,10 +79,16 @@ public class BlogUpdateNotification {
                     .placeholder(R.drawable.ic_account_circle_black_48dp)
                     .transform(new CircleTransformation()).into(
                     views, R.id.icon, notificationId, notification);
+        } else {
+            views.setImageViewResource(R.id.icon, R.drawable.ic_account_circle_black_48dp);
         }
     }
 
     private static boolean isRestriction(Context context, String authorId) {
+        if (TextUtils.isEmpty(authorId)) {
+            return false;
+        }
+
         final boolean isRestriction = PreferencesUtils.getBoolean(
                 context, NOTIFICATION_RESTRICTION_ENABLE, false);
         if (!isRestriction) {

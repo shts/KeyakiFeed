@@ -36,6 +36,11 @@ public class DataBindingAttributeUtil {
         }
     }
 
+    @BindingAdapter("reportThumbnailUrl")
+    public static void loadReportThumbnailImage(ImageView imageView, String thumbnailUrl) {
+        PicassoHelper.load(imageView, thumbnailUrl);
+    }
+
     @BindingAdapter("favorite")
     public static void setFavoriteIcon(ImageView imageView, Entry entry) {
         if (entry.isFavorite()) {

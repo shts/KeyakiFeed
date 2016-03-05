@@ -5,12 +5,16 @@
         android:checkableBehavior="single">
         <item
             android:id="@+id/menu_all_feed"
-            android:icon="@drawable/ic_list_black_18dp"
+            android:icon="@drawable/ic_rss_feed_black_24dp"
             android:title="すべてのブログ" />
         <item
             android:id="@+id/menu_fav_member_feed"
             android:icon="@drawable/ic_favorite_black_48dp"
             android:title="推しメンのブログ" />
+        <item
+            android:id="@+id/menu_report"
+            android:icon="@drawable/ic_account_circle_black_48dp"
+            android:title="Officical Report" />
         <item
             android:id="@+id/menu_member"
             android:icon="@drawable/ic_group_black_18dp"

@@ -17,6 +17,7 @@ import jp.shts.android.keyakifeed.fragments.AllFeedListFragment;
 import jp.shts.android.keyakifeed.fragments.AllMemberGridFragment;
 import jp.shts.android.keyakifeed.fragments.FavoriteMemberFeedListFragment;
 import jp.shts.android.keyakifeed.fragments.MatomeFeedListFragment;
+import jp.shts.android.keyakifeed.fragments.OfficialReportListFragment;
 import jp.shts.android.keyakifeed.fragments.SettingsFragment;
 import jp.shts.android.keyakifeed.utils.PreferencesUtils;
 
@@ -78,6 +79,10 @@ public class TopActivity extends AppCompatActivity {
             case R.id.menu_fav_member_feed:
                 toolbar.setTitle("推しメンのブログ");
                 fragment = new FavoriteMemberFeedListFragment();
+                break;
+            case R.id.menu_report:
+                toolbar.setTitle("Official Report");
+                fragment = OfficialReportListFragment.newInstance();
                 break;
             case R.id.menu_member:
                 toolbar.setTitle("すべてのメンバー");
