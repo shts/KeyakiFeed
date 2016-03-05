@@ -9,6 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#fff"
+        android:elevation="4dp"
         android:visibility="gone"
         app:theme="@style/ThemeOverlay.AppCompat.Light"
         />
@@ -16,9 +17,11 @@
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/refresh"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:paddingBottom="16dp">
         <GridView
-            android:padding="16dp"
             android:id="@+id/gridview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
