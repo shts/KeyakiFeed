@@ -8,6 +8,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +21,7 @@ import java.util.List;
 
 import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.activities.AllMemberActivity;
+import jp.shts.android.keyakifeed.adapters.FooterRecyclerViewAdapter.OnMaxPageScrollListener;
 import jp.shts.android.keyakifeed.adapters.FavoriteFeedListAdapter;
 import jp.shts.android.keyakifeed.models.Entry;
 import jp.shts.android.keyakifeed.models.Favorite;
@@ -33,6 +35,13 @@ public class FavoriteMemberFeedListFragment extends Fragment {
     private MultiSwipeRefreshLayout multiSwipeRefreshLayout;
     private RecyclerView recyclerView;
     private View emptyView;
+    private FavoriteFeedListAdapter adapter;
+
+    private List<String> favoriteMemberIdList = new ArrayList<>();
+
+    private static final int PAGE_LIMIT = 30;
+    private int counter = 0;
+    private boolean nowGettingNextEntry;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -115,12 +124,13 @@ public class FavoriteMemberFeedListFragment extends Fragment {
             }
             return;
         }
-        List<String> ids = new ArrayList<>();
+        favoriteMemberIdList.clear();
         for (Favorite favorite : callback.favorites) {
-            ids.add(favorite.getMemberObjectId());
+            favoriteMemberIdList.add(favorite.getMemberObjectId());
         }
-        final ParseQuery<Entry> query = Entry.getQuery(30, 0);
-        query.whereContainedIn("member_id", ids);
+        counter = 0;
+        final ParseQuery<Entry> query = Entry.getQuery(PAGE_LIMIT, counter);
+        query.whereContainedIn("member_id", favoriteMemberIdList);
         Entry.all(query);
     }
 
@@ -133,10 +143,36 @@ public class FavoriteMemberFeedListFragment extends Fragment {
             setVisibilityEmptyView(true);
             return;
         }
-        final FavoriteFeedListAdapter adapter = new FavoriteFeedListAdapter(getActivity());
-        adapter.addAll(all.entries);
+        adapter = new FavoriteFeedListAdapter(getActivity(), all.entries);
+        adapter.setOnMaxPageScrollListener(new OnMaxPageScrollListener() {
+            @Override
+            public void onMaxPageScrolled() {
+                if (nowGettingNextEntry) return;
+                nowGettingNextEntry = true;
+                // get next feed
+                counter++;
+                ParseQuery<Entry> query = Entry.getQuery(PAGE_LIMIT, (PAGE_LIMIT * counter));
+                query.whereContainedIn("member_id", favoriteMemberIdList);
+                Entry.next(query);
+            }
+        });
         recyclerView.setAdapter(adapter);
         setVisibilityEmptyView(false);
+    }
+
+    @Subscribe
+    public void onGotNextEntries(Entry.GetEntriesCallback.Next next) {
+        nowGettingNextEntry = false;
+        if (next.hasError()) {
+            Log.e(TAG, "cannot get entries", next.e);
+            if (adapter != null) adapter.setFoooterVisibility(false);
+            return;
+        }
+        if (adapter != null) {
+            adapter.setFoooterVisibility(true);
+            adapter.add(next.entries);
+            adapter.notifyDataSetChanged();
+        }
     }
 
     private void setVisibilityEmptyView(boolean isVisible) {

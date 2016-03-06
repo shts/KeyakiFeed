@@ -1,21 +1,30 @@
 package jp.shts.android.keyakifeed.adapters;
 
 import android.content.Context;
-import android.support.v7.widget.RecyclerView;
+import android.databinding.ViewDataBinding;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.List;
 
-abstract class FooterRecyclerViewAdapter<T> extends HeaderFooterRecyclerViewAdapter {
+import jp.shts.android.keyakifeed.R;
+import jp.shts.android.keyakifeed.databinding.ListItemMoreLoadBinding;
+
+public abstract class FooterRecyclerViewAdapter<T, ContentViewBindingHolder extends ViewDataBinding>
+        extends HeaderFooterRecyclerViewAdapter<BindingHolder<ContentViewBindingHolder>,
+        BindingHolder<?>, BindingHolder<ListItemMoreLoadBinding>> {
 
     private static final String TAG = FooterRecyclerViewAdapter.class.getSimpleName();
 
     private LayoutInflater inflater;
-    private List<T> list;
+    private final List<T> list;
+    private final Context context;
+    private View footerView;
 
     public FooterRecyclerViewAdapter(Context context, List<T> list) {
         super();
+        this.context = context;
         this.list = list;
         setup(context);
     }
@@ -24,64 +33,83 @@ abstract class FooterRecyclerViewAdapter<T> extends HeaderFooterRecyclerViewAdap
         inflater = LayoutInflater.from(context);
     }
 
+    protected Context getContext() {
+        return this.context;
+    }
+
     @Override
-    protected int getHeaderItemCount() {
+    protected final int getHeaderItemCount() {
         return 0;
     }
 
     @Override
-    protected int getFooterItemCount() {
+    protected final int getFooterItemCount() {
         return 1;
     }
 
     @Override
-    protected int getContentItemCount() {
+    protected final int getContentItemCount() {
         return list.size();
     }
 
     @Override
-    protected RecyclerView.ViewHolder onCreateHeaderItemViewHolder(ViewGroup parent, int headerViewType) {
+    protected final BindingHolder onCreateHeaderItemViewHolder(ViewGroup parent, int headerViewType) {
         return null;
     }
 
     @Override
-    protected RecyclerView.ViewHolder onCreateFooterItemViewHolder(ViewGroup parent, int footerViewType) {
-        return onCreateFooterItemViewHolder(inflater, parent);
+    protected final BindingHolder<ListItemMoreLoadBinding> onCreateFooterItemViewHolder(ViewGroup parent, int footerViewType) {
+        return new BindingHolder<>(getContext(), parent, R.layout.list_item_more_load);
     }
 
     @Override
-    protected RecyclerView.ViewHolder onCreateContentItemViewHolder(ViewGroup parent, int contentViewType) {
+    protected final BindingHolder<ContentViewBindingHolder> onCreateContentItemViewHolder(ViewGroup parent, int contentViewType) {
         return onCreateContentItemViewHolder(inflater, parent);
     }
 
-    public abstract RecyclerView.ViewHolder onCreateFooterItemViewHolder(LayoutInflater inflater, ViewGroup viewGroup);
-    public abstract RecyclerView.ViewHolder onCreateContentItemViewHolder(LayoutInflater inflater, ViewGroup viewGroup);
+    public abstract BindingHolder<ContentViewBindingHolder> onCreateContentItemViewHolder(LayoutInflater inflater, ViewGroup parent);
 
     @Override
-    protected void onBindHeaderItemViewHolder(RecyclerView.ViewHolder viewHolder, int position) {}
+    protected final void onBindHeaderItemViewHolder(BindingHolder bindingHolder, int position) {}
 
     @Override
-    protected void onBindFooterItemViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
-        onBindFooterItemViewHolder(viewHolder);
-    }
-
-    @Override
-    protected void onBindContentItemViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
-        onBindContentItemViewHolder(viewHolder, list.get(position));
+    protected final void onBindContentItemViewHolder(BindingHolder<ContentViewBindingHolder> bindingHolder, int position) {
+        onBindContentItemViewHolder(bindingHolder, list.get(position));
         if (getContentItemCount() - 1 <= position) {
-            onMaxPageScrolled();
+            if (listener != null) listener.onMaxPageScrolled();
         }
     }
 
-    public abstract void onBindFooterItemViewHolder(RecyclerView.ViewHolder viewHolder);
-    public abstract void onBindContentItemViewHolder(RecyclerView.ViewHolder viewHolder, T t);
+    @Override
+    protected final void onBindFooterItemViewHolder(BindingHolder<ListItemMoreLoadBinding> bindingHolder, int position) {
+        footerView = bindingHolder.binding.getRoot();
+    }
 
-    /**
-     * Notify on max page scrolled.
-     */
-    protected abstract void onMaxPageScrolled();
+    public abstract void onBindContentItemViewHolder(BindingHolder<ContentViewBindingHolder> bindingHolder, T t);
+
+    private OnMaxPageScrollListener listener;
+
+    public interface OnMaxPageScrollListener {
+        public void onMaxPageScrolled();
+    }
+
+    public void setOnMaxPageScrollListener(OnMaxPageScrollListener listener) {
+        this.listener = listener;
+    }
 
     public void add(List<T> list) {
         this.list.addAll(list);
+    }
+
+    public View getFooterView() {
+        return footerView;
+    }
+
+    public void setFoooterVisibility(boolean visibility) {
+        if (visibility) {
+            getFooterView().setVisibility(View.VISIBLE);
+        } else {
+            getFooterView().setVisibility(View.GONE);
+        }
     }
 }

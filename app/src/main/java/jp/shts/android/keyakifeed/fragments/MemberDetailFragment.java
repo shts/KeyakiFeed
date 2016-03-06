@@ -7,6 +7,7 @@ import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -18,9 +19,8 @@ import com.parse.ParseQuery;
 import com.squareup.otto.Subscribe;
 
 import jp.shts.android.keyakifeed.R;
-import jp.shts.android.keyakifeed.activities.BlogActivity;
+import jp.shts.android.keyakifeed.adapters.FooterRecyclerViewAdapter.OnMaxPageScrollListener;
 import jp.shts.android.keyakifeed.adapters.MemberFeedListAdapter;
-import jp.shts.android.keyakifeed.entities.Blog;
 import jp.shts.android.keyakifeed.models.Entry;
 import jp.shts.android.keyakifeed.models.Favorite;
 import jp.shts.android.keyakifeed.models.Member;
@@ -82,8 +82,10 @@ public class MemberDetailFragment extends Fragment {
         coordinatorLayout = (CoordinatorLayout) view.findViewById(R.id.coordinator);
 
         collapsingToolbarLayout = (CollapsingToolbarLayout) view.findViewById(R.id.collapsing_toolbar);
-        collapsingToolbarLayout.setCollapsedTitleTextColor(getResources().getColor(android.R.color.white));
-        collapsingToolbarLayout.setExpandedTitleColor(getResources().getColor(android.R.color.transparent));
+        collapsingToolbarLayout.setCollapsedTitleTextColor(
+                ContextCompat.getColor(getContext(), android.R.color.white));
+        collapsingToolbarLayout.setExpandedTitleColor(
+                ContextCompat.getColor(getContext(), android.R.color.transparent));
 
         recyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
@@ -113,22 +115,19 @@ public class MemberDetailFragment extends Fragment {
 
     @Subscribe
     public void onGotAllEntries(Entry.GetEntriesCallback.All callback) {
-        if (callback.hasError()) {
-            Snackbar.make(coordinatorLayout, "failed to get entries", Snackbar.LENGTH_SHORT).show();
+        if (callback.e != null) {
+            Snackbar.make(coordinatorLayout, "ブログ記事の取得に失敗しました。通信状態を確認してください。", Snackbar.LENGTH_SHORT).show();
+            return;
+        } else if (callback.entries == null || callback.entries.isEmpty()) {
+            Log.v(TAG, "end of all entries !!!");
             return;
         }
         // setup adapter
         adapter = new MemberFeedListAdapter(getContext(), callback.entries);
-        adapter.setClickCallback(new MemberFeedListAdapter.OnItemClickCallback() {
-            @Override
-            public void onClick(Entry entry) {
-                getActivity().startActivity(
-                        BlogActivity.getStartIntent(getContext(), new Blog(entry)));
-            }
-        });
-        adapter.setOnMaxPageScrolled(new MemberFeedListAdapter.OnMaxPageScrolledListener() {
+        adapter.setOnMaxPageScrollListener(new OnMaxPageScrollListener() {
             @Override
             public void onMaxPageScrolled() {
+                Log.v(TAG, "onMaxPageScrolled() : nowGettingNextEntry(" + nowGettingNextEntry + ")");
                 if (nowGettingNextEntry) return;
                 nowGettingNextEntry = true;
                 // get next feed
@@ -142,16 +141,19 @@ public class MemberDetailFragment extends Fragment {
     }
 
     @Subscribe
-    public void onGotNextEntries(Entry.GetEntriesCallback.Next next) {
+    public void onGotNextEntries(Entry.GetEntriesCallback.Next callback) {
         nowGettingNextEntry = false;
-        if (next.hasError()) {
-            Log.e(TAG, "cannot get entries", next.e);
-            if (adapter != null) adapter.setVisibility(false);
+        if (callback.e != null) {
+            Snackbar.make(coordinatorLayout, "ブログ記事の取得に失敗しました。通信状態を確認してください。", Snackbar.LENGTH_SHORT).show();
+            return;
+        } else if (callback.entries == null || callback.entries.isEmpty()) {
+            Log.v(TAG, "end of all entries !!!");
+            if (adapter != null) adapter.setFoooterVisibility(false);
             return;
         }
         if (adapter != null) {
-            adapter.setVisibility(true);
-            adapter.add(next.entries);
+            adapter.setFoooterVisibility(true);
+            adapter.add(callback.entries);
             adapter.notifyDataSetChanged();
         }
     }
