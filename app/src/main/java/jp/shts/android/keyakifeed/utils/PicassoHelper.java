@@ -2,11 +2,9 @@ package jp.shts.android.keyakifeed.utils;
 
 import android.content.Context;
 import android.widget.ImageView;
-import android.widget.RemoteViews;
 
 import com.squareup.picasso.Picasso;
 
-import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.views.transformations.CircleTransformation;
 
 public class PicassoHelper {

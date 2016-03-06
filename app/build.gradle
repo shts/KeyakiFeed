@@ -1,17 +1,19 @@
 apply plugin: 'com.android.application'
-apply plugin: 'com.android.databinding'
 
 android {
     compileSdkVersion 23
     buildToolsVersion "23.0.2"
 
+    dataBinding {
+        enabled = true
+    }
     defaultConfig {
         applicationId "jp.shts.android.keyakifeed"
         minSdkVersion 14
         targetSdkVersion 23
         versionCode 11
         versionName "1.1.0"
-        multiDexEnabled true
+        //multiDexEnabled true
     }
     buildTypes {
         debug {

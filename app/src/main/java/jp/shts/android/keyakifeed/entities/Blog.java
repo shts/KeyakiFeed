@@ -89,7 +89,7 @@ public class Blog implements Parcelable {
         memberName = in.readString();
         memberImageUrl = in.readString();
         if (in.readByte() == 0x01) {
-            imageUrlList = new ArrayList<String>();
+            imageUrlList = new ArrayList<>();
             in.readList(imageUrlList, String.class.getClassLoader());
         } else {
             imageUrlList = null;

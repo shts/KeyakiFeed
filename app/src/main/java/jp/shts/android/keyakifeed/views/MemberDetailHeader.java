@@ -21,8 +21,6 @@ public class MemberDetailHeader extends RelativeLayout {
 
     private static final String TAG = MemberDetailHeader.class.getSimpleName();
 
-    private View rootView;
-
     private ImageView profileImageView;
     private ImageView favoriteIconImageView;
 
@@ -59,7 +57,7 @@ public class MemberDetailHeader extends RelativeLayout {
     }
 
     private void init() {
-        rootView = LayoutInflater.from(getContext()).inflate(R.layout.view_member_detail, this);
+        final View rootView = LayoutInflater.from(getContext()).inflate(R.layout.view_member_detail, this);
         profileImageView = (ImageView) rootView.findViewById(R.id.profile_image);
         favoriteIconImageView = (ImageView) rootView.findViewById(R.id.favorite_icon);
         nameMainTextView = (TextView) rootView.findViewById(R.id.name_main);
