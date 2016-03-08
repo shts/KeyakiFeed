@@ -46,7 +46,6 @@ public class OfficialReportListFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_official_report, null);
 
         recyclerView = (RecyclerView) view.findViewById(R.id.recyclerview);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.setHasFixedSize(true);
 
         swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.refresh);

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="favorite_member_grid_span">3</integer>
+    <integer name="report_grid_span">3</integer>
+    <integer name="all_member_grid_span">5</integer>
+</resources>

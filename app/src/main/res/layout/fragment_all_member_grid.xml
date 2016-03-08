@@ -18,19 +18,13 @@
         android:id="@+id/refresh"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingLeft="16dp"
-        android:paddingRight="16dp"
-        android:paddingBottom="16dp">
-        <GridView
-            android:id="@+id/gridview"
+        android:padding="16dp">
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/recyclerview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:columnWidth="40dp"
-            android:minHeight="40dp"
-            android:numColumns="3"
-            android:verticalSpacing="8dp"
-            android:horizontalSpacing="8dp"
-            android:stretchMode="columnWidth"
-            android:gravity="center"/>
+            app:layoutManager="android.support.v7.widget.GridLayoutManager"
+            app:spanCount="@integer/all_member_grid_span"
+            android:scrollbars="vertical"/>
     </android.support.v4.widget.SwipeRefreshLayout>
 </LinearLayout>

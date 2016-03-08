@@ -6,7 +6,6 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,8 +20,8 @@ import java.util.List;
 
 import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.activities.AllMemberActivity;
-import jp.shts.android.keyakifeed.adapters.FooterRecyclerViewAdapter.OnMaxPageScrollListener;
 import jp.shts.android.keyakifeed.adapters.FavoriteFeedListAdapter;
+import jp.shts.android.keyakifeed.adapters.FooterRecyclerViewAdapter.OnMaxPageScrollListener;
 import jp.shts.android.keyakifeed.models.Entry;
 import jp.shts.android.keyakifeed.models.Favorite;
 import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
@@ -84,7 +83,6 @@ public class FavoriteMemberFeedListFragment extends Fragment {
         });
         emptyView = view.findViewById(R.id.empty_view);
         recyclerView = (RecyclerView) view.findViewById(R.id.recyclerview);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.setHasFixedSize(true); // アイテムは固定サイズ
         // SwipeRefreshLayoutの設定
         multiSwipeRefreshLayout = (MultiSwipeRefreshLayout) view.findViewById(R.id.refresh);

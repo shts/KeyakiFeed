@@ -7,7 +7,10 @@ import android.widget.ImageView;
 
 import java.util.List;
 
+import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.models.Entry;
+import jp.shts.android.keyakifeed.models.Favorite;
+import jp.shts.android.keyakifeed.models.Member;
 
 public class DataBindingAttributeUtil {
 
@@ -33,6 +36,8 @@ public class DataBindingAttributeUtil {
         if (urlList != null && !urlList.isEmpty()) {
             String thumbnailUrl = urlList.get(0);
             PicassoHelper.load(imageView, thumbnailUrl);
+        } else {
+            imageView.setImageResource(R.drawable.no_image);
         }
     }
 
@@ -44,6 +49,15 @@ public class DataBindingAttributeUtil {
     @BindingAdapter("favorite")
     public static void setFavoriteIcon(ImageView imageView, Entry entry) {
         if (entry.isFavorite()) {
+            imageView.setVisibility(View.VISIBLE);
+        } else {
+            imageView.setVisibility(View.GONE);
+        }
+    }
+
+    @BindingAdapter("favoriteMember")
+    public static void setFavoriteIcon(ImageView imageView, Member member) {
+        if (Favorite.exist(member.getObjectId())) {
             imageView.setVisibility(View.VISIBLE);
         } else {
             imageView.setVisibility(View.GONE);

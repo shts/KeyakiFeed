@@ -1,39 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:layout_gravity="center"
-    android:gravity="center"
-    >
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="member"
+            type="jp.shts.android.keyakifeed.models.Member" />
+
+    </data>
 
     <RelativeLayout
-        android:layout_gravity="center"
-        android:gravity="center"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:gravity="center">
+
         <ImageView
-            android:padding="8dp"
-            android:layout_marginLeft="16dp"
-            android:src="@drawable/ic_account_circle_black_48dp"
             android:id="@+id/profile_image"
             android:layout_width="72dp"
-            android:layout_height="72dp" />
+            android:layout_height="72dp"
+            android:padding="8dp"
+            app:imageUrl="@{member.getProfileImageUrl()}"/>
+
         <ImageView
             android:id="@+id/favorite_icon"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
             android:layout_above="@id/profile_image"
             android:layout_alignBottom="@id/profile_image"
             android:layout_alignRight="@id/profile_image"
+            android:visibility="gone"
             android:src="@drawable/ic_favorite_black_48dp"
-            android:layout_marginLeft="56dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            app:favoriteMember="@{member}"/>
+
         <TextView
-            android:gravity="center"
-            android:layout_below="@id/profile_image"
             android:id="@+id/member_name"
-            android:textSize="14sp"
-            android:text="name"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/profile_image"
+            android:gravity="center"
+            android:text="@{member.getNameMain()}"
+            android:textSize="14sp" />
+
     </RelativeLayout>
-</LinearLayout>
+</layout>
