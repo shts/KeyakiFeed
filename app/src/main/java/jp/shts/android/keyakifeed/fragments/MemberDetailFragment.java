@@ -1,5 +1,6 @@
 package jp.shts.android.keyakifeed.fragments;
 
+import android.content.Context;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -15,10 +16,16 @@ import android.view.ViewGroup;
 import com.parse.ParseQuery;
 import com.squareup.otto.Subscribe;
 
+import java.util.List;
+
 import jp.shts.android.keyakifeed.R;
+import jp.shts.android.keyakifeed.activities.BlogActivity;
+import jp.shts.android.keyakifeed.adapters.BindingHolder;
+import jp.shts.android.keyakifeed.adapters.FooterRecyclerViewAdapter;
 import jp.shts.android.keyakifeed.adapters.FooterRecyclerViewAdapter.OnMaxPageScrollListener;
-import jp.shts.android.keyakifeed.adapters.MemberFeedListAdapter;
 import jp.shts.android.keyakifeed.databinding.FragmentDetailMemberBinding;
+import jp.shts.android.keyakifeed.databinding.ListItemMemberDetailEntryBinding;
+import jp.shts.android.keyakifeed.entities.Blog;
 import jp.shts.android.keyakifeed.models.Entry;
 import jp.shts.android.keyakifeed.models.Favorite;
 import jp.shts.android.keyakifeed.models.Member;
@@ -156,6 +163,36 @@ public class MemberDetailFragment extends Fragment {
                 Snackbar.make(binding.coordinator, "推しメン登録を解除しました", Snackbar.LENGTH_SHORT).show();
             }
         }
+    }
+
+    public static class MemberFeedListAdapter extends FooterRecyclerViewAdapter<Entry, ListItemMemberDetailEntryBinding> {
+
+        private static final String TAG = MemberFeedListAdapter.class.getSimpleName();
+
+        public MemberFeedListAdapter(Context context, List<Entry> list) {
+            super(context, list);
+        }
+
+        @Override
+        public BindingHolder<ListItemMemberDetailEntryBinding> onCreateContentItemViewHolder(LayoutInflater inflater, ViewGroup parent) {
+            return new BindingHolder<>(getContext(), parent, R.layout.list_item_member_detail_entry);
+        }
+
+        @Override
+        public void onBindContentItemViewHolder(BindingHolder<ListItemMemberDetailEntryBinding> bindingHolder, final Entry entry) {
+            ListItemMemberDetailEntryBinding detailEntryBinding = bindingHolder.binding;
+            detailEntryBinding.setEntry(entry);
+
+            final View root = detailEntryBinding.getRoot();
+            root.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    getContext().startActivity(
+                            BlogActivity.getStartIntent(getContext(), new Blog(entry)));
+                }
+            });
+        }
+
     }
 
 }

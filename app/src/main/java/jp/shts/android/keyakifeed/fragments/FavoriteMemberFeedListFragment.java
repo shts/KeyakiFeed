@@ -1,7 +1,9 @@
 package jp.shts.android.keyakifeed.fragments;
 
+import android.content.Context;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -19,9 +21,14 @@ import java.util.List;
 
 import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.activities.AllMemberActivity;
-import jp.shts.android.keyakifeed.adapters.FavoriteFeedListAdapter;
+import jp.shts.android.keyakifeed.activities.BlogActivity;
+import jp.shts.android.keyakifeed.activities.MemberDetailActivity;
+import jp.shts.android.keyakifeed.adapters.BindingHolder;
+import jp.shts.android.keyakifeed.adapters.FooterRecyclerViewAdapter;
 import jp.shts.android.keyakifeed.adapters.FooterRecyclerViewAdapter.OnMaxPageScrollListener;
 import jp.shts.android.keyakifeed.databinding.FragmentFavoriteFeedListBinding;
+import jp.shts.android.keyakifeed.databinding.ListItemCardBinding;
+import jp.shts.android.keyakifeed.entities.Blog;
 import jp.shts.android.keyakifeed.models.Entry;
 import jp.shts.android.keyakifeed.models.Favorite;
 import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
@@ -175,6 +182,53 @@ public class FavoriteMemberFeedListFragment extends Fragment {
             binding.emptyView.setVisibility(View.VISIBLE);
         } else {
             binding.emptyView.setVisibility(View.GONE);
+        }
+    }
+
+    public static class FavoriteFeedListAdapter extends FooterRecyclerViewAdapter<Entry, ListItemCardBinding> {
+
+        private static final String TAG = FavoriteFeedListAdapter.class.getSimpleName();
+
+        public FavoriteFeedListAdapter(Context context, List<Entry> list) {
+            super(context, list);
+        }
+
+        @Override
+        public BindingHolder<ListItemCardBinding> onCreateContentItemViewHolder(
+                LayoutInflater inflater, ViewGroup parent) {
+            return new BindingHolder<>(getContext(), parent, R.layout.list_item_card);
+        }
+
+        @Override
+        public void onBindContentItemViewHolder(
+                BindingHolder<ListItemCardBinding> bindingHolder, final Entry entry) {
+            ListItemCardBinding cardBinding = bindingHolder.binding;
+            cardBinding.setEntry(entry);
+
+            cardBinding.profileImage.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    getContext().startActivity(
+                            MemberDetailActivity.getStartIntent(getContext(), entry.getMemberId()));
+                }
+            });
+
+            final View root = cardBinding.getRoot();
+            root.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    getContext().startActivity(
+                            BlogActivity.getStartIntent(getContext(), new Blog(entry)));
+                }
+            });
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                if (root.getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
+                    ViewGroup.MarginLayoutParams p = (ViewGroup.MarginLayoutParams) root.getLayoutParams();
+                    p.setMargins(8, 8, 8, 8);
+                    root.requestLayout();
+                }
+            }
         }
     }
 

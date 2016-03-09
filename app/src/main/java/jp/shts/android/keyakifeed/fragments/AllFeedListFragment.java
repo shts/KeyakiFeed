@@ -1,5 +1,6 @@
 package jp.shts.android.keyakifeed.fragments;
 
+import android.content.Context;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -10,14 +11,18 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 
 import com.squareup.otto.Subscribe;
 
+import java.util.List;
+
 import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.activities.BlogActivity;
-import jp.shts.android.keyakifeed.adapters.AllFeedListAdapter;
+import jp.shts.android.keyakifeed.activities.MemberDetailActivity;
 import jp.shts.android.keyakifeed.databinding.FragmentAllFeedListBinding;
+import jp.shts.android.keyakifeed.databinding.ListItemEntryBinding;
 import jp.shts.android.keyakifeed.entities.Blog;
 import jp.shts.android.keyakifeed.models.Entry;
 import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
@@ -130,4 +135,55 @@ public class AllFeedListFragment extends Fragment {
         }
     }
 
+    public static class AllFeedListAdapter extends ArrayAdapter<Entry> {
+
+        private static final String TAG = AllFeedListAdapter.class.getSimpleName();
+
+        private OnPageMaxScrolledListener pageMaxScrolledListener;
+        private LayoutInflater inflater;
+
+        public AllFeedListAdapter(Context context, List<Entry> list) {
+            super(context, -1, list);
+            inflater = LayoutInflater.from(context);
+        }
+
+        public interface OnPageMaxScrolledListener {
+            void onScrolledMaxPage();
+        }
+
+        public void setPageMaxScrolledListener(OnPageMaxScrolledListener listener) {
+            pageMaxScrolledListener = listener;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            ListItemEntryBinding binding;
+
+            if (convertView == null) {
+                binding = DataBindingUtil.inflate(inflater, R.layout.list_item_entry, parent, false);
+                convertView = binding.getRoot();
+                convertView.setTag(binding);
+            } else {
+                binding = (ListItemEntryBinding) convertView.getTag();
+            }
+
+            final Entry entry = getItem(position);
+            binding.setEntry(entry);
+            binding.profileImage.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    final Context context = getContext();
+                    context.startActivity(
+                            MemberDetailActivity.getStartIntent(context, entry.getMemberId()));
+                }
+            });
+
+            if (getCount() - 1 <= position) {
+                if (pageMaxScrolledListener != null) {
+                    pageMaxScrolledListener.onScrolledMaxPage();
+                }
+            }
+            return convertView;
+        }
+    }
 }

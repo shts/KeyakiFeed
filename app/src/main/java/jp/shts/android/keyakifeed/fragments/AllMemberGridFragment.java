@@ -1,5 +1,6 @@
 package jp.shts.android.keyakifeed.fragments;
 
+import android.content.Context;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
@@ -16,8 +17,10 @@ import com.squareup.otto.Subscribe;
 
 import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.activities.MemberDetailActivity;
-import jp.shts.android.keyakifeed.adapters.AllMemberGridListAdapter;
+import jp.shts.android.keyakifeed.adapters.ArrayRecyclerAdapter;
+import jp.shts.android.keyakifeed.adapters.BindingHolder;
 import jp.shts.android.keyakifeed.databinding.FragmentAllMemberGridBinding;
+import jp.shts.android.keyakifeed.databinding.ListItemMemberBinding;
 import jp.shts.android.keyakifeed.models.Favorite;
 import jp.shts.android.keyakifeed.models.Member;
 import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
@@ -122,6 +125,43 @@ public class AllMemberGridFragment extends Fragment {
             Log.e(TAG, "cannot get members", callback.e);
         } else {
             adapter.reset(callback.members);
+        }
+    }
+
+    public static class AllMemberGridListAdapter extends ArrayRecyclerAdapter<Member, BindingHolder<ListItemMemberBinding>> {
+
+        private static final String TAG = AllMemberGridListAdapter.class.getSimpleName();
+
+        public AllMemberGridListAdapter(Context context) {
+            super(context);
+        }
+
+        private OnMemberClickListener listener;
+
+        public interface OnMemberClickListener {
+            void onClick(Member member);
+        }
+
+        public void setOnMemberClickListener(OnMemberClickListener listener) {
+            this.listener = listener;
+        }
+
+        @Override
+        public BindingHolder<ListItemMemberBinding> onCreateViewHolder(ViewGroup parent, int viewType) {
+            return new BindingHolder<>(getContext(), parent, R.layout.list_item_member);
+        }
+
+        @Override
+        public void onBindViewHolder(BindingHolder<ListItemMemberBinding> holder, int position) {
+            ListItemMemberBinding binding = holder.binding;
+            final Member member = getItem(position);
+            binding.setMember(member);
+            binding.profileImage.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (listener != null) listener.onClick(member);
+                }
+            });
         }
     }
 }
