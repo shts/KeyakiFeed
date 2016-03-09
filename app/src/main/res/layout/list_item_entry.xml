@@ -56,7 +56,7 @@
                 android:layout_height="36dp"
                 android:ellipsize="end"
                 android:gravity="center_vertical"
-                android:maxLength="46"
+                android:maxLines="2"
                 android:text="@{entry.getTitle()}"
                 android:textSize="12sp"
                 android:textStyle="bold" />
@@ -85,6 +85,7 @@
                     android:layout_height="match_parent"
                     android:gravity="center_vertical"
                     android:text="@{DateUtils.dateToString(entry.getPublishedDate())}"
+                    android:textColor="#999999"
                     android:textSize="12sp" />
             </LinearLayout>
         </LinearLayout>
