@@ -1,13 +1,12 @@
 package jp.shts.android.keyakifeed.fragments;
 
 import android.content.Intent;
+import android.databinding.DataBindingUtil;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,7 +17,7 @@ import com.squareup.otto.Subscribe;
 import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.activities.MemberDetailActivity;
 import jp.shts.android.keyakifeed.adapters.AllMemberGridListAdapter;
-import jp.shts.android.keyakifeed.adapters.ArrayRecyclerAdapter;
+import jp.shts.android.keyakifeed.databinding.FragmentAllMemberGridBinding;
 import jp.shts.android.keyakifeed.models.Favorite;
 import jp.shts.android.keyakifeed.models.Member;
 import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
@@ -28,7 +27,7 @@ public class AllMemberGridFragment extends Fragment {
     private static final String TAG = AllMemberGridFragment.class.getSimpleName();
 
     public enum ListenerType {
-        MEMBER_CHOOSER, START_DETAIL;
+        MEMBER_CHOOSER, START_DETAIL
     }
 
     public static AllMemberGridFragment newInstance(ListenerType listenerType) {
@@ -40,8 +39,8 @@ public class AllMemberGridFragment extends Fragment {
     }
 
     private AllMemberGridListAdapter adapter;
-    private SwipeRefreshLayout swipeRefreshLayout;
     private String listenerType;
+    private FragmentAllMemberGridBinding binding;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -59,24 +58,22 @@ public class AllMemberGridFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_all_member_grid, null);
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_all_member_grid, container, false);
 
-        swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.refresh);
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+        binding.refresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 Member.all(Member.getQuery());
             }
         });
-        swipeRefreshLayout.setColorSchemeResources(R.color.primary, R.color.primary, R.color.primary, R.color.primary);
-        swipeRefreshLayout.post(new Runnable() {
+        binding.refresh.setColorSchemeResources(R.color.primary, R.color.primary, R.color.primary, R.color.primary);
+        binding.refresh.post(new Runnable() {
             @Override
             public void run() {
-                swipeRefreshLayout.setRefreshing(true);
+                binding.refresh.setRefreshing(true);
             }
         });
 
-        RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.recyclerview);
         adapter = new AllMemberGridListAdapter(getContext());
         adapter.setOnMemberClickListener(new AllMemberGridListAdapter.OnMemberClickListener() {
             @Override
@@ -92,33 +89,33 @@ public class AllMemberGridFragment extends Fragment {
                 }
             }
         });
-        recyclerView.setAdapter(adapter);
+        binding.recyclerview.setAdapter(adapter);
 
-        Toolbar toolbar = (Toolbar) view.findViewById(R.id.toolbar);
         if (listenerType.equals(ListenerType.MEMBER_CHOOSER.name())) {
-            toolbar.setVisibility(View.VISIBLE);
-            toolbar.setTitleTextColor(getResources().getColor(R.color.primary));
-            toolbar.setTitle("推しメンを選択してください");
-            toolbar.setNavigationIcon(R.drawable.ic_clear_green_500_18dp);
-            toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            binding.toolbar.setVisibility(View.VISIBLE);
+            binding.toolbar.setTitleTextColor(ContextCompat.getColor(getContext(), R.color.primary));
+            binding.toolbar.setTitle("推しメンを選択してください");
+            binding.toolbar.setNavigationIcon(R.drawable.ic_clear_green_500_18dp);
+            binding.toolbar.setNavigationOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     getActivity().finish();
                 }
             });
         } else if (listenerType.equals(ListenerType.START_DETAIL.name())) {
-            toolbar.setVisibility(View.GONE);
+            binding.toolbar.setVisibility(View.GONE);
         }
 
         Member.all(Member.getQuery());
-        return view;
+
+        return binding.getRoot();
     }
 
     @Subscribe
     public void onGotMembers(Member.GetMembersCallback callback) {
-        if (swipeRefreshLayout != null) {
-            if (swipeRefreshLayout.isRefreshing()) {
-                swipeRefreshLayout.setRefreshing(false);
+        if (binding.refresh != null) {
+            if (binding.refresh.isRefreshing()) {
+                binding.refresh.setRefreshing(false);
             }
         }
         if (callback.e != null || callback.members == null || callback.members.isEmpty()) {

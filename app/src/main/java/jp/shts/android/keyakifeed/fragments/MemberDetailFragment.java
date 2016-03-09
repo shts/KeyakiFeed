@@ -1,15 +1,12 @@
 package jp.shts.android.keyakifeed.fragments;
 
+import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.design.widget.CollapsingToolbarLayout;
-import android.support.design.widget.CoordinatorLayout;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,12 +18,12 @@ import com.squareup.otto.Subscribe;
 import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.adapters.FooterRecyclerViewAdapter.OnMaxPageScrollListener;
 import jp.shts.android.keyakifeed.adapters.MemberFeedListAdapter;
+import jp.shts.android.keyakifeed.databinding.FragmentDetailMemberBinding;
 import jp.shts.android.keyakifeed.models.Entry;
 import jp.shts.android.keyakifeed.models.Favorite;
 import jp.shts.android.keyakifeed.models.Member;
 import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
 import jp.shts.android.keyakifeed.views.DividerItemDecoration;
-import jp.shts.android.keyakifeed.views.MemberDetailHeader;
 
 public class MemberDetailFragment extends Fragment {
 
@@ -44,11 +41,9 @@ public class MemberDetailFragment extends Fragment {
     private int counter = 0;
     private boolean nowGettingNextEntry;
 
+    private FragmentDetailMemberBinding binding;
     private String memberObjectId;
-    private RecyclerView recyclerView;
-    private CollapsingToolbarLayout collapsingToolbarLayout;
-    private CoordinatorLayout coordinatorLayout;
-    private MemberDetailHeader viewMemberDetailHeader;
+
     private MemberFeedListAdapter adapter;
 
     @Override
@@ -66,45 +61,39 @@ public class MemberDetailFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_detail_member, null);
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_detail_member, container, false);
 
         memberObjectId = getArguments().getString("memberObjectId");
-        viewMemberDetailHeader = (MemberDetailHeader) view.findViewById(R.id.view_member_detail_header);
 
-        final FloatingActionButton fab = (FloatingActionButton) view.findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        binding.fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Favorite.toggle(memberObjectId);
             }
         });
 
-        coordinatorLayout = (CoordinatorLayout) view.findViewById(R.id.coordinator);
-
-        collapsingToolbarLayout = (CollapsingToolbarLayout) view.findViewById(R.id.collapsing_toolbar);
-        collapsingToolbarLayout.setCollapsedTitleTextColor(
+        binding.collapsingToolbar.setCollapsedTitleTextColor(
                 ContextCompat.getColor(getContext(), android.R.color.white));
-        collapsingToolbarLayout.setExpandedTitleColor(
+        binding.collapsingToolbar.setExpandedTitleColor(
                 ContextCompat.getColor(getContext(), android.R.color.transparent));
 
-        recyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        recyclerView.setHasFixedSize(false);
-        recyclerView.addItemDecoration(new DividerItemDecoration(getActivity()));
+        binding.recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        binding.recyclerView.setHasFixedSize(false);
+        binding.recyclerView.addItemDecoration(new DividerItemDecoration(getActivity()));
 
         Member.fetch(memberObjectId);
-        return view;
+
+        return binding.getRoot();
     }
 
     @Subscribe
     public void onFetchedMember(Member.FetchMemberCallback callback) {
-        Log.v(TAG, "onFetchedMember");
         if (callback.e != null) {
             Log.e(TAG, "failed to get member : id(" + memberObjectId + ")", callback.e);
             return;
         }
-        viewMemberDetailHeader.setup(callback.member);
-        collapsingToolbarLayout.setTitle(callback.member.getNameMain());
+        binding.viewMemberDetailHeader.setup(callback.member);
+        binding.collapsingToolbar.setTitle(callback.member.getNameMain());
 
         // setup Entry list
         counter = 0;
@@ -116,7 +105,7 @@ public class MemberDetailFragment extends Fragment {
     @Subscribe
     public void onGotAllEntries(Entry.GetEntriesCallback.All callback) {
         if (callback.e != null) {
-            Snackbar.make(coordinatorLayout, "ブログ記事の取得に失敗しました。通信状態を確認してください。", Snackbar.LENGTH_SHORT).show();
+            Snackbar.make(binding.coordinator, "ブログ記事の取得に失敗しました。通信状態を確認してください。", Snackbar.LENGTH_SHORT).show();
             return;
         } else if (callback.entries == null || callback.entries.isEmpty()) {
             Log.v(TAG, "end of all entries !!!");
@@ -137,14 +126,14 @@ public class MemberDetailFragment extends Fragment {
                 Entry.next(query);
             }
         });
-        recyclerView.setAdapter(adapter);
+        binding.recyclerView.setAdapter(adapter);
     }
 
     @Subscribe
     public void onGotNextEntries(Entry.GetEntriesCallback.Next callback) {
         nowGettingNextEntry = false;
         if (callback.e != null) {
-            Snackbar.make(coordinatorLayout, "ブログ記事の取得に失敗しました。通信状態を確認してください。", Snackbar.LENGTH_SHORT).show();
+            Snackbar.make(binding.coordinator, "ブログ記事の取得に失敗しました。通信状態を確認してください。", Snackbar.LENGTH_SHORT).show();
             return;
         } else if (callback.entries == null || callback.entries.isEmpty()) {
             Log.v(TAG, "end of all entries !!!");
@@ -162,9 +151,9 @@ public class MemberDetailFragment extends Fragment {
     public void onChangedFavoriteState(Favorite.ChangedFavoriteState state) {
         if (state.e == null) {
             if (state.action == Favorite.ChangedFavoriteState.Action.ADD) {
-                Snackbar.make(coordinatorLayout, "推しメン登録しました", Snackbar.LENGTH_SHORT).show();
+                Snackbar.make(binding.coordinator, "推しメン登録しました", Snackbar.LENGTH_SHORT).show();
             } else {
-                Snackbar.make(coordinatorLayout, "推しメン登録を解除しました", Snackbar.LENGTH_SHORT).show();
+                Snackbar.make(binding.coordinator, "推しメン登録を解除しました", Snackbar.LENGTH_SHORT).show();
             }
         }
     }

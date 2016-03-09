@@ -1,12 +1,11 @@
 package jp.shts.android.keyakifeed.fragments;
 
 import android.content.Intent;
+import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,18 +21,17 @@ import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.activities.AllMemberActivity;
 import jp.shts.android.keyakifeed.adapters.FavoriteFeedListAdapter;
 import jp.shts.android.keyakifeed.adapters.FooterRecyclerViewAdapter.OnMaxPageScrollListener;
+import jp.shts.android.keyakifeed.databinding.FragmentFavoriteFeedListBinding;
 import jp.shts.android.keyakifeed.models.Entry;
 import jp.shts.android.keyakifeed.models.Favorite;
 import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
-import jp.shts.android.keyakifeed.views.MultiSwipeRefreshLayout;
 
 public class FavoriteMemberFeedListFragment extends Fragment {
 
     private static final String TAG = FavoriteMemberFeedListFragment.class.getSimpleName();
 
-    private MultiSwipeRefreshLayout multiSwipeRefreshLayout;
-    private RecyclerView recyclerView;
-    private View emptyView;
+    private FragmentFavoriteFeedListBinding binding;
+
     private FavoriteFeedListAdapter adapter;
 
     private List<String> favoriteMemberIdList = new ArrayList<>();
@@ -72,38 +70,34 @@ public class FavoriteMemberFeedListFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_favorite_feed_list, null);
-        final FloatingActionButton fab = (FloatingActionButton) view.findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_favorite_feed_list, container, false);
+
+        binding.fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = AllMemberActivity.getChooserIntent(getContext());
                 getContext().startActivity(intent);
             }
         });
-        emptyView = view.findViewById(R.id.empty_view);
-        recyclerView = (RecyclerView) view.findViewById(R.id.recyclerview);
-        recyclerView.setHasFixedSize(true); // アイテムは固定サイズ
-        // SwipeRefreshLayoutの設定
-        multiSwipeRefreshLayout = (MultiSwipeRefreshLayout) view.findViewById(R.id.refresh);
-        multiSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+        binding.recyclerview.setHasFixedSize(true); // アイテムは固定サイズ
+        binding.refresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 setupFavoriteMemberFeed();
             }
         });
-        multiSwipeRefreshLayout.setSwipeableChildren(R.id.recyclerview, R.id.empty_view);
-        multiSwipeRefreshLayout.setColorSchemeResources(
+        binding.refresh.setSwipeableChildren(R.id.recyclerview, R.id.empty_view);
+        binding.refresh.setColorSchemeResources(
                 R.color.primary, R.color.primary, R.color.primary, R.color.primary);
-        multiSwipeRefreshLayout.post(new Runnable() {
+        binding.refresh.post(new Runnable() {
             @Override
             public void run() {
                 setupFavoriteMemberFeed();
-                multiSwipeRefreshLayout.setRefreshing(true);
+                binding.refresh.setRefreshing(true);
             }
         });
 
-        return view;
+        return binding.getRoot();
     }
 
     private void setupFavoriteMemberFeed() {
@@ -117,8 +111,8 @@ public class FavoriteMemberFeedListFragment extends Fragment {
     public void GotAllFavorites(Favorite.GetFavoritesCallback callback) {
         if (callback.e != null || callback.favorites == null || callback.favorites.isEmpty()) {
             setVisibilityEmptyView(true);
-            if (multiSwipeRefreshLayout.isRefreshing()) {
-                multiSwipeRefreshLayout.setRefreshing(false);
+            if (binding.refresh.isRefreshing()) {
+                binding.refresh.setRefreshing(false);
             }
             return;
         }
@@ -134,8 +128,8 @@ public class FavoriteMemberFeedListFragment extends Fragment {
 
     @Subscribe
     public void onGotAllEntries(Entry.GetEntriesCallback.All all) {
-        if (multiSwipeRefreshLayout.isRefreshing()) {
-            multiSwipeRefreshLayout.setRefreshing(false);
+        if (binding.refresh.isRefreshing()) {
+            binding.refresh.setRefreshing(false);
         }
         if (all.hasError()) {
             setVisibilityEmptyView(true);
@@ -154,7 +148,7 @@ public class FavoriteMemberFeedListFragment extends Fragment {
                 Entry.next(query);
             }
         });
-        recyclerView.setAdapter(adapter);
+        binding.recyclerview.setAdapter(adapter);
         setVisibilityEmptyView(false);
     }
 
@@ -177,10 +171,10 @@ public class FavoriteMemberFeedListFragment extends Fragment {
         if (isVisible) {
             // recyclerView を setVisiblity(View.GONE) で表示にするとプログレスが表示されない
             //mEntries.clear();
-            recyclerView.setAdapter(null);
-            emptyView.setVisibility(View.VISIBLE);
+            binding.recyclerview.setAdapter(null);
+            binding.emptyView.setVisibility(View.VISIBLE);
         } else {
-            emptyView.setVisibility(View.GONE);
+            binding.emptyView.setVisibility(View.GONE);
         }
     }
 

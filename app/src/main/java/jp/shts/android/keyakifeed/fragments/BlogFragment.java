@@ -4,30 +4,28 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.databinding.DataBindingUtil;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 
-import com.getbase.floatingactionbutton.FloatingActionButton;
-import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.squareup.otto.Subscribe;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import jp.shts.android.keyakifeed.R;
+import jp.shts.android.keyakifeed.databinding.FragmentBlogBinding;
 import jp.shts.android.keyakifeed.dialogs.DownloadConfirmDialog;
 import jp.shts.android.keyakifeed.entities.Blog;
 import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
@@ -48,10 +46,7 @@ public class BlogFragment extends Fragment {
         return blogFragment;
     }
 
-    private CoordinatorLayout coordinatorLayout;
-    private FloatingActionButton fabDownload;
-    private FloatingActionsMenu floatingActionsMenu;
-
+    private FragmentBlogBinding binding;
     private Uri recentDownloadedUri;
 
     @Override
@@ -70,48 +65,44 @@ public class BlogFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
-        final View view = inflater.inflate(R.layout.fragment_blog, null);
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_blog, container, false);
+
         final Blog blog = getArguments().getParcelable("blog");
         if (blog == null) {
-            return view;
+            return binding.getRoot();
         }
 
-        final Toolbar toolbar = (Toolbar) view.findViewById(R.id.toolbar);
-        toolbar.setNavigationIcon(R.drawable.ic_clear_white_24dp);
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+        binding.toolbar.setNavigationIcon(R.drawable.ic_clear_white_24dp);
+        binding.toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 getActivity().finish();
             }
         });
 
-        floatingActionsMenu = (FloatingActionsMenu) view.findViewById(R.id.multiple_actions);
-        FloatingActionButton fabShare = (FloatingActionButton) view.findViewById(R.id.fab_action_share);
-        fabShare.setOnClickListener(new View.OnClickListener() {
+        binding.fabActionShare.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                floatingActionsMenu.collapse();
+                binding.multipleActions.collapse();
                 getActivity().startActivity(ShareUtils.getShareBlogIntent(blog));
             }
         });
-        fabDownload = (FloatingActionButton) view.findViewById(R.id.fab_action_download);
-        fabDownload.setOnClickListener(new View.OnClickListener() {
+        binding.fabActionDownload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 final ArrayList<String> urlList = blog.getImageUrlList();
                 if (urlList == null || urlList.isEmpty()) {
-                    Snackbar.make(coordinatorLayout, "ダウンロードする画像がありません", Snackbar.LENGTH_LONG)
+                    Snackbar.make(binding.coordinator, "ダウンロードする画像がありません", Snackbar.LENGTH_LONG)
                             .show();
                 } else {
-                    fabDownload.setColorNormalResId(R.color.primary);
-                    fabDownload.setTitle("ダウンロード中です ...");
+                    binding.fabActionDownload.setColorNormalResId(R.color.primary);
+                    binding.fabActionDownload.setTitle("ダウンロード中です ...");
                     download(urlList);
                 }
             }
         });
 
-        final WebView webView = (WebView) view.findViewById(R.id.browser);
-        webView.setOnLongClickListener(new View.OnLongClickListener() {
+        binding.browser.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
                 WebView webView = (WebView) v;
@@ -119,15 +110,14 @@ public class BlogFragment extends Fragment {
                 return false;
             }
         });
-        webView.getSettings().setJavaScriptEnabled(true);
+        binding.browser.getSettings().setJavaScriptEnabled(true);
 
-        coordinatorLayout = (CoordinatorLayout) view.findViewById(R.id.coordinator);
+        binding.toolbar.setTitle(blog.getTitle());
+        binding.toolbar.setSubtitle(blog.getMemberName());
 
-        toolbar.setTitle(blog.getTitle());
-        toolbar.setSubtitle(blog.getMemberName());
-        webView.loadUrl(blog.getUrl());
+        binding.browser.loadUrl(blog.getUrl());
 
-        return view;
+        return binding.getRoot();
     }
 
     private void showDownloadConfirmDialog(WebView webView) {
@@ -189,18 +179,18 @@ public class BlogFragment extends Fragment {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 download(downloadTarget);
             } else {
-                fabDownload.setColorNormalResId(R.color.accent);
-                fabDownload.setTitle("画像をダウンロードする");
-                Snackbar.make(coordinatorLayout, "アプリに書き込み権限がないためダウンロードできません。", Snackbar.LENGTH_LONG)
+                binding.fabActionDownload.setColorNormalResId(R.color.accent);
+                binding.fabActionDownload.setTitle("画像をダウンロードする");
+                Snackbar.make(binding.coordinator, "アプリに書き込み権限がないためダウンロードできません。", Snackbar.LENGTH_LONG)
                         .show();
             }
         } else if (REQUEST_DOWNLOAD_ALL == requestCode) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 download(downloadTargetList);
             } else {
-                fabDownload.setColorNormalResId(R.color.accent);
-                fabDownload.setTitle("画像をダウンロードする");
-                Snackbar.make(coordinatorLayout, "アプリに書き込み権限がないためダウンロードできません。", Snackbar.LENGTH_LONG)
+                binding.fabActionDownload.setColorNormalResId(R.color.accent);
+                binding.fabActionDownload.setTitle("画像をダウンロードする");
+                Snackbar.make(binding.coordinator, "アプリに書き込み権限がないためダウンロードできません。", Snackbar.LENGTH_LONG)
                         .show();
             }
         }
@@ -265,10 +255,10 @@ public class BlogFragment extends Fragment {
     }
 
     private void showSnackbar(final boolean isSucceed) {
-        fabDownload.setColorNormalResId(R.color.accent);
-        fabDownload.setTitle("画像をダウンロードする");
+        binding.fabActionDownload.setColorNormalResId(R.color.accent);
+        binding.fabActionDownload.setTitle("画像をダウンロードする");
         if (isSucceed) {
-            Snackbar.make(coordinatorLayout, "ダウンロード完了しました", Snackbar.LENGTH_LONG)
+            Snackbar.make(binding.coordinator, "ダウンロード完了しました", Snackbar.LENGTH_LONG)
                     .setAction("確認する", new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -281,7 +271,7 @@ public class BlogFragment extends Fragment {
                     .setActionTextColor(getResources().getColor(R.color.accent))
                     .show();
         } else {
-            Snackbar.make(coordinatorLayout, "ダウンロードに失敗しました。通信環境をご確認下さい", Snackbar.LENGTH_LONG)
+            Snackbar.make(binding.coordinator, "ダウンロードに失敗しました。通信環境をご確認下さい", Snackbar.LENGTH_LONG)
                     .show();
         }
     }

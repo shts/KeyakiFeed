@@ -1,47 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:id="@+id/coordinator">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <RelativeLayout
+    <android.support.design.widget.CoordinatorLayout
+        android:id="@+id/coordinator"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_alignParentTop="true"
+
+        <RelativeLayout
             android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <android.support.v7.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:background="@color/primary"
+                app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+            <WebView
+                android:id="@+id/browser"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@id/toolbar" />
+
+            <jp.shts.android.keyakifeed.views.KeyakiFeedAdView
+                android:id="@+id/ad_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true" />
+        </RelativeLayout>
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/fab"
+            style="@style/FabMargin"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@color/primary"
-            app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-            />
-        <WebView
-            android:id="@+id/browser"
-            android:layout_below="@id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            />
-        <jp.shts.android.keyakifeed.views.KeyakiFeedAdView
-            android:id="@+id/ad_view"
             android:layout_alignParentBottom="true"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            />
-    </RelativeLayout>
+            android:layout_alignParentRight="true"
+            android:layout_marginBottom="20dp"
+            android:src="@drawable/ic_share_white_18dp"
+            app:borderWidth="0dp"
+            app:layout_anchor="@id/coordinator"
+            app:layout_anchorGravity="bottom|right|end" />
 
-    <android.support.design.widget.FloatingActionButton
-        style="@style/FabMargin"
-        android:id="@+id/fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="20dp"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        app:layout_anchor="@id/coordinator"
-        app:layout_anchorGravity="bottom|right|end"
-        android:src="@drawable/ic_share_white_18dp"
-        app:borderWidth="0dp" />
-
-</android.support.design.widget.CoordinatorLayout>
+    </android.support.design.widget.CoordinatorLayout>
+</layout>
