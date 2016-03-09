@@ -4,6 +4,7 @@ import android.content.Context;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
@@ -25,6 +26,7 @@ import jp.shts.android.keyakifeed.databinding.FragmentAllFeedListBinding;
 import jp.shts.android.keyakifeed.databinding.ListItemEntryBinding;
 import jp.shts.android.keyakifeed.entities.Blog;
 import jp.shts.android.keyakifeed.models.Entry;
+import jp.shts.android.keyakifeed.models.Favorite;
 import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
 
 public class AllFeedListFragment extends Fragment {
@@ -39,15 +41,15 @@ public class AllFeedListFragment extends Fragment {
     private AllFeedListAdapter allFeedListAdapter;
 
     @Override
-    public void onPause() {
-        super.onPause();
-        BusHolder.get().unregister(this);
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        BusHolder.get().register(this);
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        BusHolder.get().register(this);
+    public void onDestroy() {
+        BusHolder.get().unregister(this);
+        super.onDestroy();
     }
 
     @Nullable
@@ -131,6 +133,13 @@ public class AllFeedListFragment extends Fragment {
         }
         if (allFeedListAdapter != null) {
             allFeedListAdapter.addAll(next.entries);
+            allFeedListAdapter.notifyDataSetChanged();
+        }
+    }
+
+    @Subscribe
+    public void onChangedFavoriteState(Favorite.ChangedFavoriteState state) {
+        if (state.e == null) {
             allFeedListAdapter.notifyDataSetChanged();
         }
     }

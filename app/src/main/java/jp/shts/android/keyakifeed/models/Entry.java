@@ -42,6 +42,26 @@ public class Entry extends ParseObject {
         });
     }
 
+    public static void findByIdAll(ParseQuery<Entry> query, String memberObjecctId) {
+        query.whereEqualTo("member_id", memberObjecctId);
+        query.findInBackground(new FindCallback<Entry>() {
+            @Override
+            public void done(List<Entry> entries, ParseException e) {
+                BusHolder.get().post(new GetEntriesCallback.FindById.All(entries, e));
+            }
+        });
+    }
+
+    public static void findByIdNext(ParseQuery<Entry> query, String memberObjecctId) {
+        query.whereEqualTo("member_id", memberObjecctId);
+        query.findInBackground(new FindCallback<Entry>() {
+            @Override
+            public void done(List<Entry> entries, ParseException e) {
+                BusHolder.get().post(new GetEntriesCallback.FindById.Next(entries, e));
+            }
+        });
+    }
+
     /**
      * For event bus callbacks
      */
@@ -60,6 +80,21 @@ public class Entry extends ParseObject {
         public static class Next extends GetEntriesCallback {
             Next(List<Entry> entries, ParseException e) {
                 super(entries, e);
+            }
+        }
+        public static class FindById extends GetEntriesCallback {
+            FindById(List<Entry> entries, ParseException e) {
+                super(entries, e);
+            }
+            public static class All extends FindById {
+                All(List<Entry> entries, ParseException e) {
+                    super(entries, e);
+                }
+            }
+            public static class Next extends FindById {
+                Next(List<Entry> entries, ParseException e) {
+                    super(entries, e);
+                }
             }
         }
         public boolean hasError() { return e != null || (entries == null || entries.isEmpty()); }

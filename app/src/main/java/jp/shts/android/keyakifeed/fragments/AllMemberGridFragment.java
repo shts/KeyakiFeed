@@ -128,6 +128,13 @@ public class AllMemberGridFragment extends Fragment {
         }
     }
 
+    @Subscribe
+    public void onChangedFavoriteState(Favorite.ChangedFavoriteState state) {
+        if (state.e == null) {
+            adapter.notifyDataSetChanged();
+        }
+    }
+
     public static class AllMemberGridListAdapter extends ArrayRecyclerAdapter<Member, BindingHolder<ListItemMemberBinding>> {
 
         private static final String TAG = AllMemberGridListAdapter.class.getSimpleName();

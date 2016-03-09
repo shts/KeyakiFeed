@@ -105,12 +105,11 @@ public class MemberDetailFragment extends Fragment {
         // setup Entry list
         counter = 0;
         ParseQuery<Entry> query = Entry.getQuery(PAGE_LIMIT, counter);
-        query.whereEqualTo("member_id", memberObjectId);
-        Entry.all(query);
+        Entry.findByIdAll(query, callback.member.getObjectId());
     }
 
     @Subscribe
-    public void onGotAllEntries(Entry.GetEntriesCallback.All callback) {
+    public void onGotAllEntries(Entry.GetEntriesCallback.FindById.All callback) {
         if (callback.e != null) {
             Snackbar.make(binding.coordinator, "ブログ記事の取得に失敗しました。通信状態を確認してください。", Snackbar.LENGTH_SHORT).show();
             return;
@@ -129,15 +128,14 @@ public class MemberDetailFragment extends Fragment {
                 // get next feed
                 counter++;
                 ParseQuery<Entry> query = Entry.getQuery(PAGE_LIMIT, (PAGE_LIMIT * counter));
-                query.whereEqualTo("member_id", memberObjectId);
-                Entry.next(query);
+                Entry.findByIdNext(query, memberObjectId);
             }
         });
         binding.recyclerView.setAdapter(adapter);
     }
 
     @Subscribe
-    public void onGotNextEntries(Entry.GetEntriesCallback.Next callback) {
+    public void onGotNextEntries(Entry.GetEntriesCallback.FindById.Next callback) {
         nowGettingNextEntry = false;
         if (callback.e != null) {
             Snackbar.make(binding.coordinator, "ブログ記事の取得に失敗しました。通信状態を確認してください。", Snackbar.LENGTH_SHORT).show();
