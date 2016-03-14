@@ -24,6 +24,7 @@ import jp.shts.android.keyakifeed.databinding.ListItemImageGridBinding;
 import jp.shts.android.keyakifeed.dialogs.DownloadConfirmDialog;
 import jp.shts.android.keyakifeed.models.Entry;
 import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
+import jp.shts.android.keyakifeed.services.DownloadImageService;
 
 public class MemberImageGridFragment extends Fragment {
 
@@ -63,16 +64,19 @@ public class MemberImageGridFragment extends Fragment {
         binding.fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                DownloadConfirmDialog downloadConfirmDialog = new DownloadConfirmDialog();
+                final DownloadConfirmDialog downloadConfirmDialog = new DownloadConfirmDialog();
+                downloadConfirmDialog.setDialogTitle("画像ダウンロード");
+                downloadConfirmDialog.setDialogMessage("このメンバーのすべての画像をダウンロードしますか");
                 downloadConfirmDialog.setCallbacks(new DownloadConfirmDialog.Callbacks() {
                     @Override
                     public void onClickPositiveButton() {
-
+                        Log.v(TAG, "onClickPositiveButton");
+                        DownloadImageService.download(
+                                getActivity().getApplicationContext()
+                                , getArguments().getString("memberObjectId"));
                     }
                     @Override
-                    public void onClickNegativeButton() {
-
-                    }
+                    public void onClickNegativeButton() {}
                 });
                 downloadConfirmDialog.show(getFragmentManager(), TAG);
             }
@@ -142,11 +146,18 @@ public class MemberImageGridFragment extends Fragment {
                 BindingHolder<ListItemImageGridBinding> bindingHolder, String url) {
             final ListItemImageGridBinding binding = bindingHolder.binding;
             binding.setUrl(url);
-
-            binding.getRoot().setOnClickListener(new View.OnClickListener() {
+            final View root = binding.getRoot();
+            root.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-
+                    // todo
+                }
+            });
+            root.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    // todo
+                    return false;
                 }
             });
         }

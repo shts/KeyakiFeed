@@ -75,13 +75,13 @@ class ImageDownloader {
     }
 
     public static final class Response {
-        enum Result { SUCCESS, FAILED}
-        final Result result;
-        final String url;
-        final int statusCode;
-        final Header[] headers;
-        final Throwable throwable;
-        final File file;
+        public enum Result { SUCCESS, FAILED}
+        public final Result result;
+        public final String url;
+        public final int statusCode;
+        public final Header[] headers;
+        public final Throwable throwable;
+        public final File file;
         Response(Result result, String url, int statusCode,
                  Header[] headers, Throwable throwable, File file) {
             this.result = result;

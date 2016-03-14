@@ -26,6 +26,7 @@ public class DownloadNotification {
     private int mCounter = 0;
     private int mMaxCounter = 0;
     private final int mNotificationId;
+    private Uri lastDownloadedFileUri;
 
     public DownloadNotification(Context context, int targetSize) {
         this(context);
@@ -59,23 +60,24 @@ public class DownloadNotification {
      * update notification progress.
      */
     public void updateProgress(Uri uri) {
+        if (uri != null) lastDownloadedFileUri = uri;
         mNotification.setProgress(mMaxCounter, mCounter++, false);
         mNotification.setOngoing(true);
         mNotificationManager.notify(mNotificationId, mNotification.build());
 
         if (mMaxCounter <= mCounter) {
-            finishProgress(uri);
+            finishProgress();
         }
     }
 
-    private void finishProgress(Uri uri) {
+    private void finishProgress() {
         mCounter = 0;
         mNotification.setSmallIcon(R.drawable.ic_notification);
         Resources res = mContext.getResources();
         mNotification.setTicker(res.getString(R.string.notify_finish_download_ticker));
         mNotification.setContentTitle(res.getString(R.string.notify_finish_download_title));
         mNotification.setContentText(res.getString(R.string.notify_finish_download_text));
-        mNotification.setContentIntent(getPendingIntentFrom(uri));
+        mNotification.setContentIntent(getPendingIntentFrom(lastDownloadedFileUri));
         mNotification.setProgress(0, 0, false);
         mNotification.setOngoing(false);
         mNotification.setAutoCancel(true);
