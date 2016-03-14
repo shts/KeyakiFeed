@@ -1,11 +1,14 @@
 package jp.shts.android.keyakifeed.models;
 
+import android.util.Log;
+
 import com.parse.FindCallback;
 import com.parse.ParseClassName;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -52,12 +55,23 @@ public class Entry extends ParseObject {
         });
     }
 
-    public static void findByIdNext(ParseQuery<Entry> query, String memberObjecctId) {
-        query.whereEqualTo("member_id", memberObjecctId);
+    public static void findByIdNext(ParseQuery<Entry> query, String memberObjectId) {
+        query.whereEqualTo("member_id", memberObjectId);
         query.findInBackground(new FindCallback<Entry>() {
             @Override
             public void done(List<Entry> entries, ParseException e) {
                 BusHolder.get().post(new GetEntriesCallback.FindById.Next(entries, e));
+            }
+        });
+    }
+
+    public static void memberAllImages(String memberObjectId) {
+        ParseQuery<Entry> query = ParseQuery.getQuery(Entry.class);
+        query.orderByDescending("published");
+        query.findInBackground(new FindCallback<Entry>() {
+            @Override
+            public void done(List<Entry> entries, ParseException e) {
+                BusHolder.get().post(new GetEntriesCallback.AllImage(entries, e));
             }
         });
     }
@@ -97,7 +111,22 @@ public class Entry extends ParseObject {
                 }
             }
         }
+        public static class AllImage extends GetEntriesCallback {
+            AllImage(List<Entry> entries, ParseException e) {
+                super(entries, e);
+            }
+        }
         public boolean hasError() { return e != null || (entries == null || entries.isEmpty()); }
+
+        public List<String> getAllThumbnailUrlList() {
+            List<String> list = new ArrayList<>();
+            if (hasError()) return list;
+
+            for (Entry entry : entries) {
+                list.addAll(entry.getImageUrlList());
+            }
+            return list;
+        }
     }
 
     public boolean isFavorite() {
