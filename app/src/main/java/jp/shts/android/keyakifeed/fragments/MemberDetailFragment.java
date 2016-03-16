@@ -3,6 +3,7 @@ package jp.shts.android.keyakifeed.fragments;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -38,6 +39,8 @@ public class MemberDetailFragment extends Fragment {
 
     private FragmentDetailMemberBinding binding;
     private String memberObjectId;
+    private int maxScrollSize;
+    private boolean isAvatarShown;
 
     @Override
     public void onResume() {
@@ -74,6 +77,31 @@ public class MemberDetailFragment extends Fragment {
                 getActivity().getSupportFragmentManager(), memberObjectId);
         binding.viewpager.setAdapter(adapter);
         binding.tabs.setupWithViewPager(binding.viewpager);
+
+        binding.appBar.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
+            @Override
+            public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
+                if (maxScrollSize == 0)
+                    maxScrollSize = appBarLayout.getTotalScrollRange();
+
+                int percentage = (Math.abs(verticalOffset)) * 100 / maxScrollSize;
+
+                if (percentage >= 20 && isAvatarShown) {
+                    isAvatarShown = false;
+                    binding.viewMemberDetailHeader.hideAnimation();
+//                    mProfileImage.animate().scaleY(0).scaleX(0).setDuration(200).start();
+                }
+
+                if (percentage <= 20 && !isAvatarShown) {
+                    isAvatarShown = true;
+                    binding.viewMemberDetailHeader.showAnimation();
+//                    mProfileImage.animate()
+//                            .scaleY(1).scaleX(1)
+//                            .start();
+                }
+            }
+        });
+        maxScrollSize = binding.appBar.getTotalScrollRange();
 
         Member.fetch(memberObjectId);
 

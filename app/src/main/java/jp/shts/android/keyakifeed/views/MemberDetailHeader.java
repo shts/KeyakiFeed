@@ -106,6 +106,20 @@ public class MemberDetailHeader extends RelativeLayout {
         }
     }
 
+    public void showAnimation() {
+        profileImageView.animate()
+                .scaleY(1).scaleX(1)
+                .start();
+        favoriteIconImageView.animate()
+                .scaleY(1).scaleX(1)
+                .start();
+    }
+
+    public void hideAnimation() {
+        profileImageView.animate().scaleY(0).scaleX(0).setDuration(200).start();
+        favoriteIconImageView.animate().scaleY(0).scaleX(0).setDuration(200).start();
+    }
+
     @Subscribe
     public void onChangedFavoriteState(Favorite.ChangedFavoriteState state) {
         if (state.e == null) {
