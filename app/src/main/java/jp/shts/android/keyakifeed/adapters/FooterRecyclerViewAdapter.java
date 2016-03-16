@@ -97,8 +97,22 @@ public abstract class FooterRecyclerViewAdapter<T, ContentViewBindingHolder exte
         this.listener = listener;
     }
 
+    public List<T> getList() {
+        return this.list;
+    }
+
     public void add(List<T> list) {
         this.list.addAll(list);
+    }
+
+    public int getPosition(T t) {
+        final int N = list.size();
+        for (int i = 0; 0 < N; i++) {
+            if (t == list.get(i)) {
+                return i;
+            }
+        }
+        return 0;
     }
 
     public View getFooterView() {

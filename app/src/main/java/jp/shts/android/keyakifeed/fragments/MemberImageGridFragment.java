@@ -14,9 +14,11 @@ import android.view.ViewGroup;
 import com.parse.ParseQuery;
 import com.squareup.otto.Subscribe;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import jp.shts.android.keyakifeed.R;
+import jp.shts.android.keyakifeed.activities.GalleryActivity;
 import jp.shts.android.keyakifeed.adapters.BindingHolder;
 import jp.shts.android.keyakifeed.adapters.FooterRecyclerViewAdapter;
 import jp.shts.android.keyakifeed.databinding.FragmentMemberImageGridBinding;
@@ -143,21 +145,16 @@ public class MemberImageGridFragment extends Fragment {
 
         @Override
         public void onBindContentItemViewHolder(
-                BindingHolder<ListItemImageGridBinding> bindingHolder, String url) {
+                BindingHolder<ListItemImageGridBinding> bindingHolder, final String url) {
             final ListItemImageGridBinding binding = bindingHolder.binding;
             binding.setUrl(url);
             final View root = binding.getRoot();
             root.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    // todo
-                }
-            });
-            root.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    // todo
-                    return false;
+                    getContext().startActivity(
+                            GalleryActivity.getStartIntent(
+                                    getContext(), (ArrayList<String>) getList(), getPosition(url)));
                 }
             });
         }
