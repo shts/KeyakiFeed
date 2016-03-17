@@ -89,15 +89,11 @@ public class MemberDetailFragment extends Fragment {
                 if (percentage >= 20 && isAvatarShown) {
                     isAvatarShown = false;
                     binding.viewMemberDetailHeader.hideAnimation();
-//                    mProfileImage.animate().scaleY(0).scaleX(0).setDuration(200).start();
                 }
 
                 if (percentage <= 20 && !isAvatarShown) {
                     isAvatarShown = true;
                     binding.viewMemberDetailHeader.showAnimation();
-//                    mProfileImage.animate()
-//                            .scaleY(1).scaleX(1)
-//                            .start();
                 }
             }
         });
