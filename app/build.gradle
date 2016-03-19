@@ -49,4 +49,5 @@ dependencies {
     compile 'com.getbase:floatingactionbutton:1.10.1'
     compile 'org.jsoup:jsoup:1.7.2'
     compile 'com.google.android.gms:play-services-ads:7.5.0'
+    compile 'com.github.shts:TriangleLabelView:1.0.0'
 }
