@@ -2,10 +2,12 @@ package jp.shts.android.keyakifeed;
 
 import android.app.Application;
 
+import com.crashlytics.android.Crashlytics;
 import com.parse.Parse;
 import com.parse.ParseInstallation;
 import com.parse.ParseObject;
 
+import io.fabric.sdk.android.Fabric;
 import jp.shts.android.keyakifeed.models.Entry;
 import jp.shts.android.keyakifeed.models.Favorite;
 import jp.shts.android.keyakifeed.models.Member;
@@ -18,6 +20,7 @@ public class KeyakiFeedApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        Fabric.with(this, new Crashlytics());
 
         ParseObject.registerSubclass(Entry.class);
         ParseObject.registerSubclass(Favorite.class);

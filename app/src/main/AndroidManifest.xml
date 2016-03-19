@@ -88,6 +88,9 @@
                 <action android:name="jp.shts.android.keyakifeed.REPORT_UPDATED"/>
             </intent-filter>
         </receiver>
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="${fabricApiKey}" />
     </application>
 
 </manifest>
