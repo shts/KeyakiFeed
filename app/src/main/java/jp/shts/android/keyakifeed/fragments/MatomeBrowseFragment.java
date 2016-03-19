@@ -7,6 +7,8 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.databinding.FragmentMatomeBrowseBinding;
@@ -52,6 +54,13 @@ public class MatomeBrowseFragment extends Fragment {
             }
         });
 
+        binding.browser.getSettings().setJavaScriptEnabled(true);
+        binding.browser.setWebViewClient(new WebViewClient() {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                return false;
+            }
+        });
         binding.browser.loadUrl(feedItem.url);
 
         return binding.getRoot();
