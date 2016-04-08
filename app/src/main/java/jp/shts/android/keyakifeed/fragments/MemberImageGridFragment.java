@@ -11,9 +11,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.parse.ParseQuery;
-import com.squareup.otto.Subscribe;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,21 +18,28 @@ import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.activities.GalleryActivity;
 import jp.shts.android.keyakifeed.adapters.BindingHolder;
 import jp.shts.android.keyakifeed.adapters.FooterRecyclerViewAdapter;
+import jp.shts.android.keyakifeed.api.KeyakiFeedApiClient;
 import jp.shts.android.keyakifeed.databinding.FragmentMemberImageGridBinding;
 import jp.shts.android.keyakifeed.databinding.ListItemImageGridBinding;
 import jp.shts.android.keyakifeed.dialogs.DownloadConfirmDialog;
-import jp.shts.android.keyakifeed.models.Entry;
-import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
+import jp.shts.android.keyakifeed.models2.Entries;
+import jp.shts.android.keyakifeed.models2.Entry;
+import jp.shts.android.keyakifeed.models2.Member;
 import jp.shts.android.keyakifeed.services.DownloadImageService;
+import rx.Observer;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Func1;
+import rx.schedulers.Schedulers;
+import rx.subscriptions.CompositeSubscription;
 
 public class MemberImageGridFragment extends Fragment {
 
     private static final String TAG = MemberImageGridFragment.class.getSimpleName();
 
-    public static MemberImageGridFragment newInstance(String memberObjectId) {
+    public static MemberImageGridFragment newInstance(Member member) {
         MemberImageGridFragment memberImageGridFragment = new MemberImageGridFragment();
         Bundle bundle = new Bundle();
-        bundle.putString("memberObjectId", memberObjectId);
+        bundle.putParcelable("member", member);
         memberImageGridFragment.setArguments(bundle);
         return memberImageGridFragment;
     }
@@ -46,17 +50,12 @@ public class MemberImageGridFragment extends Fragment {
 
     private FragmentMemberImageGridBinding binding;
     private MemberImageGridAdapter adapter;
+    private CompositeSubscription subscriptions = new CompositeSubscription();
 
     @Override
-    public void onResume() {
-        super.onResume();
-        BusHolder.get().register(this);
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        BusHolder.get().unregister(this);
+    public void onDestroy() {
+        subscriptions.unsubscribe();
+        super.onDestroy();
     }
 
     @Nullable
@@ -77,57 +76,116 @@ public class MemberImageGridFragment extends Fragment {
                                 getActivity().getApplicationContext()
                                 , getArguments().getString("memberObjectId"));
                     }
+
                     @Override
-                    public void onClickNegativeButton() {}
+                    public void onClickNegativeButton() {
+                    }
                 });
                 downloadConfirmDialog.show(getFragmentManager(), TAG);
             }
         });
+
+        getMemberEntries();
         return binding.getRoot();
     }
 
-    @Subscribe
-    public void onGotAllEntries(Entry.GetEntriesCallback.FindById.All callback) {
-        if (callback.e != null) {
-            Snackbar.make(binding.coordinator, "ブログ記事の取得に失敗しました。通信状態を確認してください。", Snackbar.LENGTH_SHORT).show();
-            return;
-        } else if (callback.entries == null || callback.entries.isEmpty()) {
-            Log.v(TAG, "end of all entries !!!");
-            return;
-        }
-        // setup adapter
-        adapter = new MemberImageGridAdapter(getContext(), callback.getAllThumbnailUrlList());
-        adapter.setOnMaxPageScrollListener(new FooterRecyclerViewAdapter.OnMaxPageScrollListener() {
-            @Override
-            public void onMaxPageScrolled() {
-                Log.v(TAG, "onMaxPageScrolled() : nowGettingNextEntry(" + nowGettingNextEntry + ")");
-                if (nowGettingNextEntry) return;
-                nowGettingNextEntry = true;
-                // get next feed
-                counter++;
-                ParseQuery<Entry> query = Entry.getQuery(PAGE_LIMIT, (PAGE_LIMIT * counter));
-                Entry.findByIdNext(query, getArguments().getString("memberObjectId"));
-            }
-        });
-        binding.recyclerView.setAdapter(adapter);
+    private void getMemberEntries() {
+        final Member member = getArguments().getParcelable("member");
+        if (member == null) return;
+        counter = 0;
+        subscriptions.add(KeyakiFeedApiClient.getMemberEntries(
+                member.getId(), counter, PAGE_LIMIT)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .map(new Func1<Entries, ArrayList<String>>() {
+                    @Override
+                    public ArrayList<String> call(Entries entries) {
+                        ArrayList<String> list = new ArrayList<>();
+                        for (Entry e : entries) {
+                            list.addAll(e.getImageUrlList());
+                        }
+                        return list;
+                    }
+                })
+                .subscribe(new Observer<ArrayList<String>>() {
+                    @Override
+                    public void onCompleted() {
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        e.printStackTrace();
+                    }
+
+                    @Override
+                    public void onNext(ArrayList<String> list) {
+                        Log.v(TAG, "onNext");
+                        if (list == null || list.isEmpty()) {
+                            Log.e(TAG, "cannot get entries");
+                        } else {
+                            // setup adapter
+                            adapter = new MemberImageGridAdapter(getContext(), list);
+                            adapter.setOnMaxPageScrollListener(new FooterRecyclerViewAdapter.OnMaxPageScrollListener() {
+                                @Override
+                                public void onMaxPageScrolled() {
+                                    Log.v(TAG, "onMaxPageScrolled() : nowGettingNextEntry(" + nowGettingNextEntry + ")");
+                                    if (nowGettingNextEntry) return;
+                                    nowGettingNextEntry = true;
+                                    // get next feed
+                                    getMemberNextEntries();
+                                }
+                            });
+                            binding.recyclerView.setAdapter(adapter);
+                        }
+                    }
+                }));
     }
 
-    @Subscribe
-    public void onGotNextEntries(Entry.GetEntriesCallback.FindById.Next callback) {
-        nowGettingNextEntry = false;
-        if (callback.e != null) {
-            Snackbar.make(binding.coordinator, "ブログ記事の取得に失敗しました。通信状態を確認してください。", Snackbar.LENGTH_SHORT).show();
-            return;
-        } else if (callback.entries == null || callback.entries.isEmpty()) {
-            Log.v(TAG, "end of all entries !!!");
-            if (adapter != null) adapter.setFoooterVisibility(false);
-            return;
-        }
-        if (adapter != null) {
-            adapter.setFoooterVisibility(true);
-            adapter.add(callback.getAllThumbnailUrlList());
-            adapter.notifyDataSetChanged();
-        }
+    public void getMemberNextEntries() {
+        final Member member = getArguments().getParcelable("member");
+        if (member == null) return;
+        counter++;
+        subscriptions.add(KeyakiFeedApiClient.getMemberEntries(
+                member.getId(), (PAGE_LIMIT * counter), PAGE_LIMIT)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .map(new Func1<Entries, ArrayList<String>>() {
+                    @Override
+                    public ArrayList<String> call(Entries entries) {
+                        ArrayList<String> list = new ArrayList<>();
+                        for (Entry e : entries) {
+                            list.addAll(e.getImageUrlList());
+                        }
+                        return list;
+                    }
+                })
+                .subscribe(new Observer<ArrayList<String>>() {
+                    @Override
+                    public void onCompleted() {
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Snackbar.make(binding.coordinator, "ブログ記事の取得に失敗しました。通信状態を確認してください。", Snackbar.LENGTH_SHORT).show();
+                        e.printStackTrace();
+                    }
+
+                    @Override
+                    public void onNext(ArrayList<String> list) {
+                        Log.v(TAG, "onNext");
+                        nowGettingNextEntry = false;
+                        if (list == null || list.isEmpty()) {
+                            Log.e(TAG, "cannot get entries");
+                            if (adapter != null) adapter.setFoooterVisibility(false);
+                        } else {
+                            if (adapter != null) {
+                                adapter.setFoooterVisibility(true);
+                                adapter.add(list);
+                                adapter.notifyDataSetChanged();
+                            }
+                        }
+                    }
+                }));
     }
 
     private static class MemberImageGridAdapter

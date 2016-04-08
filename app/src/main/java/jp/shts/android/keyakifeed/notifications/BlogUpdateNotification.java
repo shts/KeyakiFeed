@@ -96,10 +96,12 @@ public class BlogUpdateNotification {
             Log.d(TAG, "restriction is not setting");
             return false;
         }
-        final boolean exist = Favorite.exist(authorId);
+        // TODO:
+//        final boolean exist = Favorite.exist(authorId);
         // お気に入りメンバー登録済みの場合false, お気に入りメンバー登録済みでない場合trueを返却する
-        Log.d(TAG, "restriction exist(" + exist + ")");
-        return !exist;
+//        Log.d(TAG, "restriction exist(" + exist + ")");
+//        return !exist;
+        return false;
     }
 
     private static int getNotificationId(Context context) {

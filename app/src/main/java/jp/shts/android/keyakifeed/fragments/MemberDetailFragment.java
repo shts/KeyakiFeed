@@ -22,36 +22,39 @@ import java.util.List;
 import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.databinding.FragmentDetailMemberBinding;
 import jp.shts.android.keyakifeed.models.Favorite;
-import jp.shts.android.keyakifeed.models.Member;
+import jp.shts.android.keyakifeed.models2.Member;
 import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
+import rx.subscriptions.CompositeSubscription;
 
 public class MemberDetailFragment extends Fragment {
 
     private static final String TAG = MemberDetailFragment.class.getSimpleName();
 
-    public static MemberDetailFragment newInstance(String memberObjectId) {
+//    public static MemberDetailFragment newInstance(String memberObjectId) {
+//        MemberDetailFragment memberDetailFragment = new MemberDetailFragment();
+//        Bundle bundle = new Bundle();
+//        bundle.putString("memberObjectId", memberObjectId);
+//        memberDetailFragment.setArguments(bundle);
+//        return memberDetailFragment;
+//    }
+
+    public static MemberDetailFragment newInstance(Member member) {
         MemberDetailFragment memberDetailFragment = new MemberDetailFragment();
         Bundle bundle = new Bundle();
-        bundle.putString("memberObjectId", memberObjectId);
+        bundle.putParcelable("member", member);
         memberDetailFragment.setArguments(bundle);
         return memberDetailFragment;
     }
 
     private FragmentDetailMemberBinding binding;
-    private String memberObjectId;
     private int maxScrollSize;
     private boolean isAvatarShown;
+    private CompositeSubscription subscriptions = new CompositeSubscription();
 
     @Override
-    public void onResume() {
-        super.onResume();
-        BusHolder.get().register(this);
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        BusHolder.get().unregister(this);
+    public void onDestroy() {
+        subscriptions.unsubscribe();
+        super.onDestroy();
     }
 
     @Nullable
@@ -59,12 +62,14 @@ public class MemberDetailFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_detail_member, container, false);
 
-        memberObjectId = getArguments().getString("memberObjectId");
+        final Member member = getArguments().getParcelable("member");
+        if (member == null) return binding.getRoot();
+
 
         binding.fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Favorite.toggle(memberObjectId);
+                Favorite.toggle(member);
             }
         });
 
@@ -74,7 +79,7 @@ public class MemberDetailFragment extends Fragment {
                 ContextCompat.getColor(getContext(), android.R.color.transparent));
 
         ViewPageAdapter adapter = new ViewPageAdapter(
-                getActivity().getSupportFragmentManager(), memberObjectId);
+                getActivity().getSupportFragmentManager(), member);
         binding.viewpager.setAdapter(adapter);
         binding.tabs.setupWithViewPager(binding.viewpager);
 
@@ -99,19 +104,11 @@ public class MemberDetailFragment extends Fragment {
         });
         maxScrollSize = binding.appBar.getTotalScrollRange();
 
-        Member.fetch(memberObjectId);
+        //Member.fetch(memberObjectId);
+        binding.viewMemberDetailHeader.setup(member);
+        binding.collapsingToolbar.setTitle(member.getNameMain());
 
         return binding.getRoot();
-    }
-
-    @Subscribe
-    public void onFetchedMember(Member.FetchMemberCallback callback) {
-        if (callback.e != null) {
-            Log.e(TAG, "failed to get member : id(" + memberObjectId + ")", callback.e);
-            return;
-        }
-        binding.viewMemberDetailHeader.setup(callback.member);
-        binding.collapsingToolbar.setTitle(callback.member.getNameMain());
     }
 
     @Subscribe
@@ -129,12 +126,12 @@ public class MemberDetailFragment extends Fragment {
 
         private List<Fragment> fragments = new ArrayList<>();
 
-        public ViewPageAdapter(FragmentManager fm, String memberObjectId) {
+        public ViewPageAdapter(FragmentManager fm, Member member) {
             super(fm);
             MemberEntriesFragment memberEntriesFragment
-                    = MemberEntriesFragment.newInstance(memberObjectId);
+                    = MemberEntriesFragment.newInstance(member);
             MemberImageGridFragment memberImageGridFragment
-                    = MemberImageGridFragment.newInstance(memberObjectId);
+                    = MemberImageGridFragment.newInstance(member);
             fragments.add(memberEntriesFragment);
             fragments.add(memberImageGridFragment);
         }

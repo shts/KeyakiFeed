@@ -14,15 +14,16 @@ import java.util.List;
 import java.util.UUID;
 
 import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
+import jp.shts.android.keyakifeed.models2.Member;
 
 @ParseClassName("Favorite")
 public class Favorite extends ParseObject {
 
     private static final String TAG = Favorite.class.getSimpleName();
 
-    private static ParseQuery<Favorite> getQuery(String memberObjectId) {
+    private static ParseQuery<Favorite> getQuery(Member member) {
         ParseQuery<Favorite> query = ParseQuery.getQuery(Favorite.class);
-        query.whereEqualTo("memberObjectId", memberObjectId);
+        query.whereEqualTo("memberId", member.getId());
         query.fromLocalDatastore();
         return query;
     }
@@ -61,9 +62,9 @@ public class Favorite extends ParseObject {
         }
     }
 
-    public static boolean exist(String memberObjectId) {
+    public static boolean exist(Member member) {
         try {
-            List<Favorite> favoriteList = getQuery(memberObjectId).find();
+            List<Favorite> favoriteList = getQuery(member).find();
             return (favoriteList != null && !favoriteList.isEmpty());
         } catch (ParseException e) {
             Log.e(TAG, "cannot exit", e);
@@ -71,21 +72,19 @@ public class Favorite extends ParseObject {
         return false;
     }
 
-    public static void toggle(String memberObjectId) {
-        Log.v(TAG, "exist(" + exist(memberObjectId) + ")");
-        if (!exist(memberObjectId)) {
-            add(memberObjectId);
+    public static void toggle(Member member) {
+        if (!exist(member)) {
+            add(member);
         } else {
-            delete(memberObjectId);
+            delete(member);
         }
     }
 
-    public static void add(String memberObjectId) {
-        Log.v(TAG, "add member(" + memberObjectId + ")");
+    public static void add(Member member) {
         Favorite favorite = new Favorite();
         UUID uuid = UUID.randomUUID();
         favorite.setUuid(uuid.toString());
-        favorite.setMemberObjectId(memberObjectId);
+        favorite.setMemberObjectId(member.getId());
         favorite.pinInBackground(new SaveCallback() {
             @Override
             public void done(ParseException e) {
@@ -94,10 +93,9 @@ public class Favorite extends ParseObject {
         });
     }
 
-    public static void delete(String memberObjectId) {
-        Log.v(TAG, "delete member(" + memberObjectId + ")");
+    public static void delete(Member member) {
         try {
-            Favorite favorite = getQuery(memberObjectId).getFirst();
+            Favorite favorite = getQuery(member).getFirst();
             if (favorite != null) {
                 favorite.unpinInBackground(new DeleteCallback() {
                     @Override
@@ -116,11 +114,11 @@ public class Favorite extends ParseObject {
         put("uuid", uuid);
     }
 
-    public void setMemberObjectId(String memberObjectId) {
-        put("memberObjectId", memberObjectId);
+    public void setMemberObjectId(int memberId) {
+        put("memberId", memberId);
     }
 
-    public String getMemberObjectId() {
-        return getString("memberObjectId");
+    public int getMemberObjectId() {
+        return getInt("memberId");
     }
 }

@@ -4,7 +4,6 @@ import android.content.Context;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
@@ -15,19 +14,19 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 
-import com.squareup.otto.Subscribe;
-
 import java.util.List;
 
 import jp.shts.android.keyakifeed.R;
-import jp.shts.android.keyakifeed.activities.BlogActivity;
-import jp.shts.android.keyakifeed.activities.MemberDetailActivity;
+import jp.shts.android.keyakifeed.api.KeyakiFeedApiClient;
 import jp.shts.android.keyakifeed.databinding.FragmentAllFeedListBinding;
 import jp.shts.android.keyakifeed.databinding.ListItemEntryBinding;
-import jp.shts.android.keyakifeed.entities.Blog;
-import jp.shts.android.keyakifeed.models.Entry;
-import jp.shts.android.keyakifeed.models.Favorite;
-import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
+import jp.shts.android.keyakifeed.models2.Entries;
+import jp.shts.android.keyakifeed.models2.Entry;
+import jp.shts.android.keyakifeed.utils.NetworkUtils;
+import rx.Observer;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
+import rx.subscriptions.CompositeSubscription;
 
 public class AllFeedListFragment extends Fragment {
 
@@ -39,16 +38,11 @@ public class AllFeedListFragment extends Fragment {
     private FragmentAllFeedListBinding binding;
     private LinearLayout footerView;
     private AllFeedListAdapter allFeedListAdapter;
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        BusHolder.get().register(this);
-    }
+    private CompositeSubscription subscriptions = new CompositeSubscription();
 
     @Override
     public void onDestroy() {
-        BusHolder.get().unregister(this);
+        subscriptions.unsubscribe();
         super.onDestroy();
     }
 
@@ -64,7 +58,8 @@ public class AllFeedListFragment extends Fragment {
         });
         binding.refresh.setColorSchemeResources(R.color.primary, R.color.primary, R.color.primary, R.color.primary);
         binding.refresh.post(new Runnable() {
-            @Override public void run() {
+            @Override
+            public void run() {
                 getAllEntries();
                 binding.refresh.setRefreshing(true);
             }
@@ -72,77 +67,134 @@ public class AllFeedListFragment extends Fragment {
         binding.allFeedList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Entry entry = (Entry) parent.getItemAtPosition(position);
-                getActivity().startActivity(BlogActivity.getStartIntent(getActivity(), new Blog(entry)));
+//                Entry entry = (Entry) parent.getItemAtPosition(position);
+//                getActivity().startActivity(BlogActivity.getStartIntent(getActivity(), new Blog(entry)));
             }
         });
         footerView = (LinearLayout) inflater.inflate(R.layout.list_item_more_load, null);
         footerView.setVisibility(View.GONE);
 
         binding.allFeedList.addFooterView(footerView);
+
         return binding.getRoot();
     }
 
     private void getAllEntries() {
-        counter = 0;
-        Entry.all(Entry.getQuery(PAGE_LIMIT, counter));
-    }
-
-    @Subscribe
-    public void onGotAllEntries(Entry.GetEntriesCallback.All all) {
-        if (binding.refresh != null) {
-            if (binding.refresh.isRefreshing()) {
-                binding.refresh.setRefreshing(false);
+        if (!NetworkUtils.enableNetwork(getActivity())) {
+            if (binding.refresh != null) {
+                if (binding.refresh.isRefreshing()) {
+                    binding.refresh.setRefreshing(false);
+                }
             }
-        }
-        if (all.hasError()) {
-            Log.e(TAG, "cannot get entries", all.e);
             return;
         }
-        allFeedListAdapter = new AllFeedListAdapter(getActivity(), all.entries);
-        allFeedListAdapter.setPageMaxScrolledListener(new AllFeedListAdapter.OnPageMaxScrolledListener() {
-            @Override
-            public void onScrolledMaxPage() {
-                getNextFeed();
-            }
-        });
-        binding.allFeedList.setAdapter(allFeedListAdapter);
+        counter = 0;
+        subscriptions.add(KeyakiFeedApiClient.getAllEntries(counter, PAGE_LIMIT)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<Entries>() {
+                    @Override
+                    public void onCompleted() {
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        if (binding.refresh != null) {
+                            if (binding.refresh.isRefreshing()) {
+                                binding.refresh.setRefreshing(false);
+                            }
+                        }
+                        e.printStackTrace();
+                    }
+
+                    @Override
+                    public void onNext(Entries entries) {
+                        Log.v(TAG, "onNext");
+                        if (binding.refresh != null) {
+                            if (binding.refresh.isRefreshing()) {
+                                binding.refresh.setRefreshing(false);
+                            }
+                        }
+                        if (entries == null || entries.isEmpty()) {
+                            Log.e(TAG, "cannot get entries");
+                        } else {
+                            allFeedListAdapter = new AllFeedListAdapter(getActivity(), entries);
+                            allFeedListAdapter.setPageMaxScrolledListener(new AllFeedListAdapter.OnPageMaxScrolledListener() {
+                                @Override
+                                public void onScrolledMaxPage() {
+                                    getNextFeed();
+                                }
+                            });
+                            binding.allFeedList.setAdapter(allFeedListAdapter);
+                        }
+                    }
+                }));
     }
 
     private void getNextFeed() {
+        if (!NetworkUtils.enableNetwork(getActivity())) {
+            if (footerView != null) {
+                footerView.setVisibility(View.VISIBLE);
+            }
+            if (binding.refresh != null) {
+                if (binding.refresh.isRefreshing()) {
+                    binding.refresh.setRefreshing(false);
+                }
+            }
+            return;
+        }
         if (footerView != null) {
             footerView.setVisibility(View.VISIBLE);
         }
         counter++;
-        Entry.next(Entry.getQuery(PAGE_LIMIT, (counter * PAGE_LIMIT)));
+        subscriptions.add(KeyakiFeedApiClient.getAllEntries((counter * PAGE_LIMIT), PAGE_LIMIT)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<Entries>() {
+                    @Override
+                    public void onCompleted() {}
+
+                    @Override
+                    public void onError(Throwable e) {
+                        if (footerView != null) {
+                            footerView.setVisibility(View.VISIBLE);
+                        }
+                        if (binding.refresh != null) {
+                            if (binding.refresh.isRefreshing()) {
+                                binding.refresh.setRefreshing(false);
+                            }
+                        }
+                        e.printStackTrace();
+                    }
+                    @Override
+                    public void onNext(Entries entries) {
+                        Log.v(TAG, "onNext");
+                        if (footerView != null) {
+                            footerView.setVisibility(View.VISIBLE);
+                        }
+                        if (binding.refresh != null) {
+                            if (binding.refresh.isRefreshing()) {
+                                binding.refresh.setRefreshing(false);
+                            }
+                        }
+                        if (entries == null || entries.isEmpty()) {
+                            Log.e(TAG, "cannot get entries");
+                        } else {
+                            if (allFeedListAdapter != null) {
+                                allFeedListAdapter.addAll(entries);
+                                allFeedListAdapter.notifyDataSetChanged();
+                            }
+                        }
+                    }
+                }));
     }
 
-    @Subscribe
-    public void onGotNextEntries(Entry.GetEntriesCallback.Next next) {
-        if (footerView != null) {
-            footerView.setVisibility(View.GONE);
-        }
-        if (binding.refresh != null) {
-            if (binding.refresh.isRefreshing()) {
-                binding.refresh.setRefreshing(false);
-            }
-        }
-        if (next.hasError()) {
-            Log.e(TAG, "cannot get entries", next.e);
-            return;
-        }
-        if (allFeedListAdapter != null) {
-            allFeedListAdapter.addAll(next.entries);
-            allFeedListAdapter.notifyDataSetChanged();
-        }
-    }
-
-    @Subscribe
-    public void onChangedFavoriteState(Favorite.ChangedFavoriteState state) {
-        if (state.e == null) {
-            allFeedListAdapter.notifyDataSetChanged();
-        }
-    }
+//    @Subscribe
+//    public void onChangedFavoriteState(Favorite.ChangedFavoriteState state) {
+//        if (state.e == null) {
+//            allFeedListAdapter.notifyDataSetChanged();
+//        }
+//    }
 
     public static class AllFeedListAdapter extends ArrayAdapter<Entry> {
 
@@ -182,8 +234,8 @@ public class AllFeedListFragment extends Fragment {
                 @Override
                 public void onClick(View v) {
                     final Context context = getContext();
-                    context.startActivity(
-                            MemberDetailActivity.getStartIntent(context, entry.getMemberId()));
+//                    context.startActivity(
+//                            MemberDetailActivity.getStartIntent(context, entry.getMemberId()));
                 }
             });
 

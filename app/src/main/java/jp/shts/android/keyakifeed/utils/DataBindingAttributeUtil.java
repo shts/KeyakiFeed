@@ -8,9 +8,9 @@ import android.widget.ImageView;
 import java.util.List;
 
 import jp.shts.android.keyakifeed.R;
-import jp.shts.android.keyakifeed.models.Entry;
+import jp.shts.android.keyakifeed.models2.Entry;
 import jp.shts.android.keyakifeed.models.Favorite;
-import jp.shts.android.keyakifeed.models.Member;
+import jp.shts.android.keyakifeed.models2.Member;
 
 public class DataBindingAttributeUtil {
 
@@ -61,8 +61,8 @@ public class DataBindingAttributeUtil {
     }
 
     @BindingAdapter("favoriteMember")
-    public static void setFavoriteIcon(ImageView imageView, Member member) {
-        if (Favorite.exist(member.getObjectId())) {
+    public static void setFavoriteIcon(ImageView imageView, jp.shts.android.keyakifeed.models2.Member member) {
+        if (Favorite.exist(member)) {
             imageView.setVisibility(View.VISIBLE);
         } else {
             imageView.setVisibility(View.GONE);

@@ -9,8 +9,8 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-import jp.shts.android.keyakifeed.models.Entry;
 import jp.shts.android.keyakifeed.models.Report;
+import jp.shts.android.keyakifeed.models2.Entry;
 
 /**
  * Blog情報を扱うデータクラス
@@ -48,10 +48,10 @@ public class Blog implements Parcelable {
     }
 
     public Blog(Entry entry) {
-        entryObjectId = entry.getObjectId();
-        url = entry.getArticleUrl();
+        //entryObjectId = entry.getId();
+        url = entry.getUrl();
         title = entry.getTitle();
-        memberId = entry.getMemberId();
+        //memberId = entry.getMemberId();
         memberName = entry.getMemberName();
         memberImageUrl = entry.getMemberImageUrl();
         imageUrlList = (ArrayList<String>) entry.getImageUrlList();

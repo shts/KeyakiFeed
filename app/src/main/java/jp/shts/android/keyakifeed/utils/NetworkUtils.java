@@ -16,16 +16,6 @@ public class NetworkUtils {
      * @return if true network enabled.
      */
     public static boolean enableNetwork(Context context) {
-        return NetworkUtils.isConnected(context);
-    }
-
-    /**
-     * Whether be able to network.
-     *
-     * @param context
-     * @return Return true if network is enable.
-     */
-    public static boolean isConnected(Context context){
         ConnectivityManager cm = (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo ni = cm.getActiveNetworkInfo();
         if( ni != null ){

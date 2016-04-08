@@ -13,7 +13,7 @@ import com.squareup.otto.Subscribe;
 
 import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.models.Favorite;
-import jp.shts.android.keyakifeed.models.Member;
+import jp.shts.android.keyakifeed.models2.Member;
 import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
 import jp.shts.android.keyakifeed.utils.PicassoHelper;
 
@@ -70,36 +70,22 @@ public class MemberDetailHeader extends RelativeLayout {
     }
 
     public void setup(Member member) {
-        if ("6QoBeRdiA9".equals(member.getObjectId())) {
-            // 運営ブログの場合
-            profileImageView.setBackgroundResource(R.drawable.ic_account_circle_black_48dp);
-            nameMainTextView.setText(member.getNameMain());
+        // そのほかメンバーのブログの場合
+        final Context context = getContext();
+        PicassoHelper.loadAndCircleTransform(
+                context, profileImageView, member.getImageUrl());
 
-            nameSubTextView.setVisibility(View.GONE);
-            birthdayTextView.setVisibility(View.GONE);
-            birthplaceTextView.setVisibility(View.GONE);
-            bloodTypeTextView.setVisibility(View.GONE);
-            constellationTextView.setVisibility(View.GONE);
-            heightTextView.setVisibility(View.GONE);
+        nameMainTextView.setText(member.getNameMain());
+        nameSubTextView.setText(member.getNameSub());
 
-        } else {
-            // そのほかメンバーのブログの場合
-            final Context context = getContext();
-            PicassoHelper.loadAndCircleTransform(
-                    context, profileImageView, member.getProfileImageUrl());
+        final Resources res = context.getResources();
+        birthdayTextView.setText(res.getString(R.string.property_name_birthday, member.getBirthday()));
+        birthplaceTextView.setText(res.getString(R.string.property_name_birthplace, member.getBirthplace()));
+        bloodTypeTextView.setText(res.getString(R.string.property_name_blood_type, member.getBloodType()));
+        constellationTextView.setText(res.getString(R.string.property_name_constellation, member.getConstellation()));
+        heightTextView.setText(res.getString(R.string.property_name_height, member.getHeight()));
 
-            nameMainTextView.setText(member.getNameMain());
-            nameSubTextView.setText(member.getNameSub());
-
-            final Resources res = context.getResources();
-            birthdayTextView.setText(res.getString(R.string.property_name_birthday, member.getBirthday()));
-            birthplaceTextView.setText(res.getString(R.string.property_name_birthplace, member.getBirthPlace()));
-            bloodTypeTextView.setText(res.getString(R.string.property_name_blood_type, member.getBloodType()));
-            constellationTextView.setText(res.getString(R.string.property_name_constellation, member.getConstellation()));
-            heightTextView.setText(res.getString(R.string.property_name_height, member.getHeight()));
-        }
-
-        if (Favorite.exist(member.getObjectId())) {
+        if (Favorite.exist(member)) {
             favoriteIconImageView.setVisibility(View.VISIBLE);
         } else {
             favoriteIconImageView.setVisibility(View.GONE);

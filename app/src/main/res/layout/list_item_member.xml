@@ -6,7 +6,7 @@
 
         <variable
             name="member"
-            type="jp.shts.android.keyakifeed.models.Member" />
+            type="jp.shts.android.keyakifeed.models2.Member" />
 
     </data>
 
@@ -20,7 +20,7 @@
             android:layout_width="72dp"
             android:layout_height="72dp"
             android:padding="8dp"
-            app:imageUrl="@{member.getProfileImageUrl()}"/>
+            app:imageUrl="@{member.getImageUrl()}"/>
 
         <ImageView
             android:id="@+id/favorite_icon"

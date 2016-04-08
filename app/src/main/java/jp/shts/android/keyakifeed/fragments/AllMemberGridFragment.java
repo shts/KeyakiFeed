@@ -13,17 +13,20 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.squareup.otto.Subscribe;
-
 import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.activities.MemberDetailActivity;
 import jp.shts.android.keyakifeed.adapters.ArrayRecyclerAdapter;
 import jp.shts.android.keyakifeed.adapters.BindingHolder;
+import jp.shts.android.keyakifeed.api.KeyakiFeedApiClient;
 import jp.shts.android.keyakifeed.databinding.FragmentAllMemberGridBinding;
 import jp.shts.android.keyakifeed.databinding.ListItemMemberBinding;
 import jp.shts.android.keyakifeed.models.Favorite;
-import jp.shts.android.keyakifeed.models.Member;
-import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
+import jp.shts.android.keyakifeed.models2.Member;
+import jp.shts.android.keyakifeed.models2.Members;
+import rx.Observer;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
+import rx.subscriptions.CompositeSubscription;
 
 public class AllMemberGridFragment extends Fragment {
 
@@ -44,35 +47,40 @@ public class AllMemberGridFragment extends Fragment {
     private AllMemberGridListAdapter adapter;
     private String listenerType;
     private FragmentAllMemberGridBinding binding;
+    private CompositeSubscription subscriptions = new CompositeSubscription();
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.v(TAG, "onCreate()");
         listenerType = getArguments().getString("listenerType");
-        BusHolder.get().register(this);
     }
 
     @Override
     public void onDestroy() {
-        BusHolder.get().unregister(this);
+        Log.v(TAG, "onDestroy()");
+        subscriptions.unsubscribe();
         super.onDestroy();
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        Log.v(TAG, "onCreateView()");
+
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_all_member_grid, container, false);
 
         binding.refresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                Member.all(Member.getQuery());
+                getMembers();
             }
         });
         binding.refresh.setColorSchemeResources(R.color.primary, R.color.primary, R.color.primary, R.color.primary);
         binding.refresh.post(new Runnable() {
             @Override
             public void run() {
+                getMembers();
                 binding.refresh.setRefreshing(true);
             }
         });
@@ -82,12 +90,12 @@ public class AllMemberGridFragment extends Fragment {
             @Override
             public void onClick(Member member) {
                 if (listenerType.equals(ListenerType.MEMBER_CHOOSER.name())) {
-                    Favorite.toggle(member.getObjectId());
+                    Favorite.toggle(member);
                     adapter.notifyDataSetChanged();
 
                 } else {
                     Intent intent = MemberDetailActivity.getStartIntent(
-                            getContext(), member.getObjectId());
+                            getContext(), member);
                     getContext().startActivity(intent);
                 }
             }
@@ -109,31 +117,48 @@ public class AllMemberGridFragment extends Fragment {
             binding.toolbar.setVisibility(View.GONE);
         }
 
-        Member.all(Member.getQuery());
-
         return binding.getRoot();
     }
 
-    @Subscribe
-    public void onGotMembers(Member.GetMembersCallback callback) {
-        if (binding.refresh != null) {
-            if (binding.refresh.isRefreshing()) {
-                binding.refresh.setRefreshing(false);
-            }
-        }
-        if (callback.e != null || callback.members == null || callback.members.isEmpty()) {
-            Log.e(TAG, "cannot get members", callback.e);
-        } else {
-            adapter.reset(callback.members);
-        }
+    private void getMembers() {
+        Log.v(TAG, "getMembers() start !");
+        subscriptions.add(KeyakiFeedApiClient.getAllMembers()
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<Members>() {
+                    @Override
+                    public void onCompleted() {
+                        Log.v(TAG, "getMembers() : onCompleted() ");
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        e.printStackTrace();
+                    }
+
+                    @Override
+                    public void onNext(Members members) {
+                        Log.v(TAG, "getMembers() : onNext() ");
+                        if (binding.refresh != null) {
+                            if (binding.refresh.isRefreshing()) {
+                                binding.refresh.setRefreshing(false);
+                            }
+                        }
+                        if (members == null || members.isEmpty()) {
+                            Log.e(TAG, "cannot get members");
+                        } else {
+                            adapter.reset(members);
+                        }
+                    }
+                }));
     }
 
-    @Subscribe
-    public void onChangedFavoriteState(Favorite.ChangedFavoriteState state) {
-        if (state.e == null) {
-            adapter.notifyDataSetChanged();
-        }
-    }
+//    @Subscribe
+//    public void onChangedFavoriteState(Favorite.ChangedFavoriteState state) {
+//        if (state.e == null) {
+//            adapter.notifyDataSetChanged();
+//        }
+//    }
 
     public static class AllMemberGridListAdapter extends ArrayRecyclerAdapter<Member, BindingHolder<ListItemMemberBinding>> {
 

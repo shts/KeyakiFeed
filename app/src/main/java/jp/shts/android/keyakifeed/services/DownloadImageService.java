@@ -10,13 +10,12 @@ import android.util.Log;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseQuery;
-import com.squareup.otto.Subscribe;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import jp.shts.android.keyakifeed.models.Entry;
 import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
+import jp.shts.android.keyakifeed.models2.Entry;
 import jp.shts.android.keyakifeed.notifications.DownloadNotification;
 import jp.shts.android.keyakifeed.utils.SdCardUtils;
 import jp.shts.android.keyakifeed.utils.SimpleImageDownloader;
@@ -56,21 +55,21 @@ public class DownloadImageService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         Log.v(TAG, "onHandleIntent(Intent) in : memberObjectId("
                 + intent.getStringExtra("memberObjectId") + ")");
-
-        ParseQuery<Entry> query = ParseQuery.getQuery(Entry.class);
-        query.orderByDescending("published");
-        query.whereEqualTo("member_id", intent.getStringExtra("memberObjectId"));
-        query.findInBackground(new FindCallback<Entry>() {
-            @Override
-            public void done(List<Entry> entries, ParseException e) {
-                Log.v(TAG, "onGotAllImage");
-                ArrayList<String> targets = new ArrayList<>();
-                for (Entry entry : entries) {
-                    targets.addAll(entry.getImageUrlList());
-                }
-                download(targets);
-            }
-        });
+        // TODO:
+//        ParseQuery<Entry> query = ParseQuery.getQuery(Entry.class);
+//        query.orderByDescending("published");
+//        query.whereEqualTo("member_id", intent.getStringExtra("memberObjectId"));
+//        query.findInBackground(new FindCallback<Entry>() {
+//            @Override
+//            public void done(List<Entry> entries, ParseException e) {
+//                Log.v(TAG, "onGotAllImage");
+//                ArrayList<String> targets = new ArrayList<>();
+//                for (Entry entry : entries) {
+//                    targets.addAll(entry.getImageUrlList());
+//                }
+//                download(targets);
+//            }
+//        });
     }
 
     public void download(List<String> urlList) {

@@ -12,7 +12,7 @@
 
         <variable
             name="entry"
-            type="jp.shts.android.keyakifeed.models.Entry" />
+            type="jp.shts.android.keyakifeed.models2.Entry" />
     </data>
 
     <LinearLayout
@@ -84,7 +84,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:gravity="center_vertical"
-                    android:text="@{DateUtils.dateToString(entry.getPublishedDate())}"
+                    android:text="@{entry.getPublished()}"
                     android:textColor="#999999"
                     android:textSize="12sp" />
             </LinearLayout>

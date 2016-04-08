@@ -9,14 +9,21 @@ import android.support.v7.app.AppCompatActivity;
 
 import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.fragments.MemberDetailFragment;
+import jp.shts.android.keyakifeed.models2.Member;
 
 public class MemberDetailActivity extends AppCompatActivity {
 
     private static final String TAG = MemberDetailActivity.class.getSimpleName();
 
-    public static Intent getStartIntent(Context context, String memberObjectId) {
+//    public static Intent getStartIntent(Context context, String memberObjectId) {
+//        Intent intent = new Intent(context, MemberDetailActivity.class);
+//        intent.putExtra("memberObjectId", memberObjectId);
+//        return intent;
+//    }
+//
+    public static Intent getStartIntent(Context context, Member member) {
         Intent intent = new Intent(context, MemberDetailActivity.class);
-        intent.putExtra("memberObjectId", memberObjectId);
+        intent.putExtra("member", member);
         return intent;
     }
 
@@ -25,9 +32,9 @@ public class MemberDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        String memberObjectId = getIntent().getStringExtra("memberObjectId");
+        Member member = getIntent().getParcelableExtra("member");
         MemberDetailFragment memberDetailFragment
-                = MemberDetailFragment.newInstance(memberObjectId);
+                = MemberDetailFragment.newInstance(member);
 
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         ft.replace(R.id.container, memberDetailFragment, MemberDetailFragment.class.getSimpleName());
