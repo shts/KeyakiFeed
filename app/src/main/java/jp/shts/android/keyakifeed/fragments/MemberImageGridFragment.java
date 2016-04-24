@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import jp.shts.android.keyakifeed.R;
@@ -28,6 +29,7 @@ import jp.shts.android.keyakifeed.models2.Member;
 import jp.shts.android.keyakifeed.services.DownloadImageService;
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 import rx.subscriptions.CompositeSubscription;
@@ -107,19 +109,15 @@ public class MemberImageGridFragment extends Fragment {
                         return list;
                     }
                 })
-                .subscribe(new Observer<ArrayList<String>>() {
+                .onErrorReturn(new Func1<Throwable, ArrayList<String>>() {
                     @Override
-                    public void onCompleted() {
+                    public ArrayList<String> call(Throwable throwable) {
+                        return null;
                     }
-
+                })
+                .subscribe(new Action1<ArrayList<String>>() {
                     @Override
-                    public void onError(Throwable e) {
-                        e.printStackTrace();
-                    }
-
-                    @Override
-                    public void onNext(ArrayList<String> list) {
-                        Log.v(TAG, "onNext");
+                    public void call(ArrayList<String> list) {
                         if (list == null || list.isEmpty()) {
                             Log.e(TAG, "cannot get entries");
                         } else {
@@ -159,20 +157,17 @@ public class MemberImageGridFragment extends Fragment {
                         return list;
                     }
                 })
-                .subscribe(new Observer<ArrayList<String>>() {
+                .onErrorReturn(new Func1<Throwable, ArrayList<String>>() {
                     @Override
-                    public void onCompleted() {
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
+                    public ArrayList<String> call(Throwable throwable) {
                         Snackbar.make(binding.coordinator, "ブログ記事の取得に失敗しました。通信状態を確認してください。", Snackbar.LENGTH_SHORT).show();
-                        e.printStackTrace();
+                        throwable.printStackTrace();
+                        return new ArrayList<>();
                     }
-
+                })
+                .subscribe(new Action1<ArrayList<String>>() {
                     @Override
-                    public void onNext(ArrayList<String> list) {
-                        Log.v(TAG, "onNext");
+                    public void call(ArrayList<String> list) {
                         nowGettingNextEntry = false;
                         if (list == null || list.isEmpty()) {
                             Log.e(TAG, "cannot get entries");

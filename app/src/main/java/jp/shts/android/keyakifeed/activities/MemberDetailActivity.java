@@ -15,15 +15,14 @@ public class MemberDetailActivity extends AppCompatActivity {
 
     private static final String TAG = MemberDetailActivity.class.getSimpleName();
 
-//    public static Intent getStartIntent(Context context, String memberObjectId) {
-//        Intent intent = new Intent(context, MemberDetailActivity.class);
-//        intent.putExtra("memberObjectId", memberObjectId);
-//        return intent;
-//    }
-//
     public static Intent getStartIntent(Context context, Member member) {
         Intent intent = new Intent(context, MemberDetailActivity.class);
         intent.putExtra("member", member);
+        return intent;
+    }
+    public static Intent getStartIntent(Context context, int memberId) {
+        Intent intent = new Intent(context, MemberDetailActivity.class);
+        intent.putExtra("memberId", memberId);
         return intent;
     }
 
@@ -33,8 +32,14 @@ public class MemberDetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         Member member = getIntent().getParcelableExtra("member");
-        MemberDetailFragment memberDetailFragment
-                = MemberDetailFragment.newInstance(member);
+        MemberDetailFragment memberDetailFragment;
+        if (member != null) {
+            memberDetailFragment
+                    = MemberDetailFragment.newInstance(member);
+        } else {
+            memberDetailFragment
+                    = MemberDetailFragment.newInstance(getIntent().getIntExtra("memberId", 0));
+        }
 
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         ft.replace(R.id.container, memberDetailFragment, MemberDetailFragment.class.getSimpleName());

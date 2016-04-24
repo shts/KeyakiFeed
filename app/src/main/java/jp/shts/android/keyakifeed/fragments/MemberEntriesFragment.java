@@ -27,6 +27,8 @@ import jp.shts.android.keyakifeed.models2.Member;
 import jp.shts.android.keyakifeed.views.DividerItemDecoration;
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
+import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 import rx.subscriptions.CompositeSubscription;
 
@@ -89,19 +91,15 @@ public class MemberEntriesFragment extends Fragment {
                 member.getId(), counter, PAGE_LIMIT)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<Entries>() {
+                .onErrorReturn(new Func1<Throwable, Entries>() {
                     @Override
-                    public void onCompleted() {
+                    public Entries call(Throwable throwable) {
+                        return new Entries();
                     }
-
+                })
+                .subscribe(new Action1<Entries>() {
                     @Override
-                    public void onError(Throwable e) {
-                        e.printStackTrace();
-                    }
-
-                    @Override
-                    public void onNext(Entries entries) {
-                        Log.v(TAG, "onNext");
+                    public void call(Entries entries) {
                         if (entries == null || entries.isEmpty()) {
                             Log.e(TAG, "cannot get entries");
                         } else {
@@ -130,18 +128,15 @@ public class MemberEntriesFragment extends Fragment {
                 member.getId(), (PAGE_LIMIT * counter), PAGE_LIMIT)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<Entries>() {
+                .onErrorReturn(new Func1<Throwable, Entries>() {
                     @Override
-                    public void onCompleted() {
+                    public Entries call(Throwable throwable) {
+                        return new Entries();
                     }
-
+                })
+                .subscribe(new Action1<Entries>() {
                     @Override
-                    public void onError(Throwable e) {
-                        e.printStackTrace();
-                    }
-
-                    @Override
-                    public void onNext(Entries entries) {
+                    public void call(Entries entries) {
                         Log.v(TAG, "onNext");
                         nowGettingNextEntry = false;
                         if (entries == null || entries.isEmpty()) {

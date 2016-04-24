@@ -25,6 +25,8 @@ import jp.shts.android.keyakifeed.models2.Member;
 import jp.shts.android.keyakifeed.models2.Members;
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
+import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 import rx.subscriptions.CompositeSubscription;
 
@@ -125,19 +127,15 @@ public class AllMemberGridFragment extends Fragment {
         subscriptions.add(KeyakiFeedApiClient.getAllMembers()
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<Members>() {
+                .onErrorReturn(new Func1<Throwable, Members>() {
                     @Override
-                    public void onCompleted() {
-                        Log.v(TAG, "getMembers() : onCompleted() ");
+                    public Members call(Throwable throwable) {
+                        return new Members();
                     }
-
+                })
+                .subscribe(new Action1<Members>() {
                     @Override
-                    public void onError(Throwable e) {
-                        e.printStackTrace();
-                    }
-
-                    @Override
-                    public void onNext(Members members) {
+                    public void call(Members members) {
                         Log.v(TAG, "getMembers() : onNext() ");
                         if (binding.refresh != null) {
                             if (binding.refresh.isRefreshing()) {

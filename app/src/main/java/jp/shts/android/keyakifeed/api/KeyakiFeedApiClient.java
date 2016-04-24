@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import jp.shts.android.keyakifeed.models2.Entries;
+import jp.shts.android.keyakifeed.models2.Member;
 import jp.shts.android.keyakifeed.models2.Members;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
@@ -16,8 +17,10 @@ import retrofit2.RxJavaCallAdapterFactory;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.Path;
 import retrofit2.http.Query;
 import rx.Observable;
+import rx.Single;
 
 public class KeyakiFeedApiClient {
 
@@ -25,21 +28,23 @@ public class KeyakiFeedApiClient {
 
     private static KeyakiFeedApiService apiService;
 
-    public static Observable<Members> getAllMembers() {
+    public static Single<Members> getAllMembers() {
         return getApiService().getAllMembers();
     }
+
+    public static Single<Member> getMember(int id) { return getApiService().getMember(id); }
 
     public static Observable<Entries> getAllEntries(int skip, int limit) {
         return getApiService().getAllEntries(skip, limit);
     }
 
-    public static Observable<Entries> getMemberEntries(int memberId, int skip, int limit) {
+    public static Single<Entries> getMemberEntries(int memberId, int skip, int limit) {
         List<Integer> ids = new ArrayList<>();
         ids.add(memberId);
         return getApiService().getMemberEntries(ids, skip, limit);
     }
 
-    public static Observable<Entries> getMemberEntries(List<Integer> memberIds, int skip, int limit) {
+    public static Single<Entries> getMemberEntries(List<Integer> memberIds, int skip, int limit) {
         return getApiService().getMemberEntries(memberIds, skip, limit);
     }
 
@@ -84,14 +89,17 @@ public class KeyakiFeedApiClient {
     // http://tk2-262-40775.vs.sakura.ne.jp/members
     private interface KeyakiFeedApiService {
         @GET("/members")
-        Observable<Members> getAllMembers();
+        Single<Members> getAllMembers();
 
         @GET("/entries")
         Observable<Entries> getAllEntries(@Query("skip") int skip, @Query("limit") int limit);
 
+        @GET("/members/{id}")
+        Single<Member> getMember(@Path("id") int id);
+
         @GET("/member/entries")
-        Observable<Entries> getMemberEntries(
-                @Query("id[]") List<Integer> ids, @Query("skip") int skip, @Query("limit") int limit);
+        Single<Entries> getMemberEntries(
+                @Query("ids[]") List<Integer> ids, @Query("skip") int skip, @Query("limit") int limit);
 
         @POST("/favorite")
         Observable<Void> changeFavoriteState(@Body String json);

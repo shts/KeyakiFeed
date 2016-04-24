@@ -9,7 +9,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.content.ContextCompat;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,28 +19,32 @@ import java.util.ArrayList;
 import java.util.List;
 
 import jp.shts.android.keyakifeed.R;
+import jp.shts.android.keyakifeed.api.KeyakiFeedApiClient;
 import jp.shts.android.keyakifeed.databinding.FragmentDetailMemberBinding;
 import jp.shts.android.keyakifeed.models.Favorite;
 import jp.shts.android.keyakifeed.models2.Member;
-import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
+import rx.functions.Func1;
+import rx.schedulers.Schedulers;
 import rx.subscriptions.CompositeSubscription;
 
 public class MemberDetailFragment extends Fragment {
 
     private static final String TAG = MemberDetailFragment.class.getSimpleName();
 
-//    public static MemberDetailFragment newInstance(String memberObjectId) {
-//        MemberDetailFragment memberDetailFragment = new MemberDetailFragment();
-//        Bundle bundle = new Bundle();
-//        bundle.putString("memberObjectId", memberObjectId);
-//        memberDetailFragment.setArguments(bundle);
-//        return memberDetailFragment;
-//    }
-
     public static MemberDetailFragment newInstance(Member member) {
         MemberDetailFragment memberDetailFragment = new MemberDetailFragment();
         Bundle bundle = new Bundle();
         bundle.putParcelable("member", member);
+        memberDetailFragment.setArguments(bundle);
+        return memberDetailFragment;
+    }
+
+    public static MemberDetailFragment newInstance(int memberId) {
+        MemberDetailFragment memberDetailFragment = new MemberDetailFragment();
+        Bundle bundle = new Bundle();
+        bundle.putInt("memberId", memberId);
         memberDetailFragment.setArguments(bundle);
         return memberDetailFragment;
     }
@@ -61,10 +64,33 @@ public class MemberDetailFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_detail_member, container, false);
-
         final Member member = getArguments().getParcelable("member");
-        if (member == null) return binding.getRoot();
+        if (member == null) {
+            subscriptions.add(KeyakiFeedApiClient.getMember(getArguments().getInt("memberId"))
+                    .subscribeOn(Schedulers.newThread())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .onErrorReturn(new Func1<Throwable, Member>() {
+                        @Override
+                        public Member call(Throwable e) {
+                            e.printStackTrace();
+                            return null;
+                        }
+                    })
+                    .subscribe(new Action1<Member>() {
+                        @Override
+                        public void call(Member member) {
+                            if (member == null) return;
+                            setupComponents(member);
+                        }
+                    })
+            );
+            return binding.getRoot();
+        }
+        setupComponents(member);
+        return binding.getRoot();
+    }
 
+    private void setupComponents(final Member member) {
 
         binding.fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -104,11 +130,8 @@ public class MemberDetailFragment extends Fragment {
         });
         maxScrollSize = binding.appBar.getTotalScrollRange();
 
-        //Member.fetch(memberObjectId);
         binding.viewMemberDetailHeader.setup(member);
         binding.collapsingToolbar.setTitle(member.getNameMain());
-
-        return binding.getRoot();
     }
 
     @Subscribe

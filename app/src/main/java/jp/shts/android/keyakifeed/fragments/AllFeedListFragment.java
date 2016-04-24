@@ -49,6 +49,7 @@ public class AllFeedListFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        Log.w(TAG, "onCreateView() : ThreadId(" + Thread.currentThread().getId() + ")");
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_all_feed_list, container, false);
         binding.refresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -109,7 +110,7 @@ public class AllFeedListFragment extends Fragment {
 
                     @Override
                     public void onNext(Entries entries) {
-                        Log.v(TAG, "onNext");
+                        Log.w(TAG, "onNext() : ThreadId(" + Thread.currentThread().getId() + ")");
                         if (binding.refresh != null) {
                             if (binding.refresh.isRefreshing()) {
                                 binding.refresh.setRefreshing(false);
