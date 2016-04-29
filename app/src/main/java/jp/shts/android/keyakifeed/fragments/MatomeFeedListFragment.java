@@ -77,6 +77,7 @@ public class MatomeFeedListFragment extends Fragment {
 
     @Subscribe
     public void onGotMatomeFeedList(MatomeFeedClient.GetMatomeFeedCallback callback) {
+        Log.d(TAG, "onGotMatomeFeedList: Thread(" + Thread.currentThread().getName() + ")");
         if (binding.refresh != null) {
             if (binding.refresh.isRefreshing()) {
                 binding.refresh.setRefreshing(false);

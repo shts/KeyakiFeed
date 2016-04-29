@@ -11,7 +11,7 @@ public class FeedItemList extends ArrayList<FeedItem> {
     private static final String TAG = FeedItemList.class.getSimpleName();
     private final DateComparator comparator = new DateComparator(DateComparator.DESC);
 
-    public void sort() {
+    public synchronized void sort() {
         // java.lang.ArrayIndexOutOfBoundsException
         try {
             Collections.sort(this, comparator);
