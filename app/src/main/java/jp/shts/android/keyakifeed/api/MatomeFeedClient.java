@@ -1,5 +1,7 @@
 package jp.shts.android.keyakifeed.api;
 
+import android.util.Log;
+
 import com.loopj.android.http.AsyncHttpClient;
 
 import jp.shts.android.keyakifeed.entities.FeedItemList;
@@ -25,10 +27,9 @@ public class MatomeFeedClient {
         public FeedItemList feedItemList;
         public Exception e;
         public GetMatomeFeedCallback(FeedItemList feedItemList, Exception e) {
+            Log.v(TAG, "GetMatomeFeedCallback: create instance.");
             this.feedItemList = feedItemList;
             this.e = e;
-            // 読み込み完了時にソートしておく
-            if (!hasError()) { feedItemList.sort(); }
         }
         public boolean hasError() { return e != null || feedItemList == null || feedItemList.isEmpty(); }
     }
@@ -41,6 +42,7 @@ public class MatomeFeedClient {
         final MatomeFeedClientResponseHandler responseHandler
                 = new MatomeFeedClientResponseHandler(urls.length);
         for (String url : urls) {
+            Log.v(TAG, "MatomeFeedClient: get url(" + url + ")");
             client.get(url, responseHandler);
         }
     }

@@ -13,6 +13,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:foreground="?android:attr/selectableItemBackground"
         android:gravity="center">
 
         <ImageView
@@ -29,9 +30,9 @@
             android:layout_above="@id/profile_image"
             android:layout_alignBottom="@id/profile_image"
             android:layout_alignRight="@id/profile_image"
-            android:visibility="gone"
             android:src="@drawable/ic_favorite_black_48dp"
-            app:favoriteMember="@{member}"/>
+            android:visibility="gone"
+            app:favoriteMember="@{member}" />
 
         <TextView
             android:id="@+id/member_name"

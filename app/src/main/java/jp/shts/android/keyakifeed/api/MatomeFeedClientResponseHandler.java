@@ -27,11 +27,11 @@ public class MatomeFeedClientResponseHandler extends AsyncHttpResponseHandler {
 
     private FeedItemList feedItemList = new FeedItemList();
     private int counter = 0;
-    private final int size;
+    private final int limit;
 
-    public MatomeFeedClientResponseHandler(int size) {
+    public MatomeFeedClientResponseHandler(int limit) {
         super(HANDLER.getLooper());
-        this.size = size;
+        this.limit = limit;
     }
 
     @Override
@@ -41,6 +41,7 @@ public class MatomeFeedClientResponseHandler extends AsyncHttpResponseHandler {
         FeedItemList feedItemList = MatomeXmlParser.parse(new ByteArrayInputStream(responseBody));
         this.feedItemList.addAll(feedItemList);
     }
+
     @Override
     public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
         Log.v(TAG, "onFailure! statusCode " + statusCode);
@@ -49,7 +50,7 @@ public class MatomeFeedClientResponseHandler extends AsyncHttpResponseHandler {
 
     private void countup() {
         counter++;
-        if (size <= counter) {
+        if (limit <= counter) {
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
