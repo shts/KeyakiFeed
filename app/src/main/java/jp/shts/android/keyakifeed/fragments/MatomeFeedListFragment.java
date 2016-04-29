@@ -86,6 +86,7 @@ public class MatomeFeedListFragment extends Fragment {
             Log.d(TAG, "has error!!!");
             return;
         }
+        callback.feedItemList.sort();
         binding.matomeFeedList.setAdapter(new MatomeFeedListAdapter(getActivity(), callback.feedItemList));
         binding.matomeFeedList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override

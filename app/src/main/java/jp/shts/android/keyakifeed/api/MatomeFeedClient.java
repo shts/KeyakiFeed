@@ -27,8 +27,6 @@ public class MatomeFeedClient {
         public GetMatomeFeedCallback(FeedItemList feedItemList, Exception e) {
             this.feedItemList = feedItemList;
             this.e = e;
-            // 読み込み完了時にソートしておく
-            if (!hasError()) { feedItemList.sort(); }
         }
         public boolean hasError() { return e != null || feedItemList == null || feedItemList.isEmpty(); }
     }

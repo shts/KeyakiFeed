@@ -18,12 +18,12 @@ public class MatomeXmlParser {
     private static final String TAG = MatomeXmlParser.class.getSimpleName();
 
     public static FeedItemList parse(InputStream data) {
-        FeedItemList feedItemList = new FeedItemList();
-        FeedItem feedItem = null;
+        final FeedItemList feedItemList = new FeedItemList();
+        FeedItem feedItem = new FeedItem();
         boolean channelFlag = false;
 
         String tag;
-        XmlPullParser parser = Xml.newPullParser();
+        final XmlPullParser parser = Xml.newPullParser();
         try {
             parser.setInput(data, "UTF-8");
             int eventType = parser.getEventType();
