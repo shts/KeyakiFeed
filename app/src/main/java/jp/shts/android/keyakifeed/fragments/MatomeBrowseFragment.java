@@ -1,5 +1,6 @@
 package jp.shts.android.keyakifeed.fragments;
 
+import android.annotation.SuppressLint;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -29,6 +30,7 @@ public class MatomeBrowseFragment extends Fragment {
 
     private FragmentMatomeBrowseBinding binding;
 
+    @SuppressLint("SetJavaScriptEnabled")
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {

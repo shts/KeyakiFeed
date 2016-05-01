@@ -25,7 +25,6 @@ import jp.shts.android.keyakifeed.models2.Entries;
 import jp.shts.android.keyakifeed.models2.Entry;
 import jp.shts.android.keyakifeed.models2.Member;
 import jp.shts.android.keyakifeed.views.DividerItemDecoration;
-import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.functions.Func1;
@@ -126,7 +125,7 @@ public class MemberEntriesFragment extends Fragment {
         counter++;
         subscriptions.add(KeyakiFeedApiClient.getMemberEntries(
                 member.getId(), (PAGE_LIMIT * counter), PAGE_LIMIT)
-                .subscribeOn(Schedulers.io())
+                .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .onErrorReturn(new Func1<Throwable, Entries>() {
                     @Override

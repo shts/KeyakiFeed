@@ -57,7 +57,7 @@ public class MatomeFeedListFragment extends Fragment {
 
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_matome_feed_list, container, false);
 
-        binding.refresh.setColorSchemeResources(R.color.primary, R.color.primary, R.color.primary, R.color.primary);
+        binding.refresh.setColorSchemeResources(R.color.primary);
         binding.refresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {

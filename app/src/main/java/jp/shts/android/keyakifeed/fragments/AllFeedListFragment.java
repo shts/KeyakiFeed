@@ -17,9 +17,12 @@ import android.widget.LinearLayout;
 import java.util.List;
 
 import jp.shts.android.keyakifeed.R;
+import jp.shts.android.keyakifeed.activities.BlogActivity;
+import jp.shts.android.keyakifeed.activities.MemberDetailActivity;
 import jp.shts.android.keyakifeed.api.KeyakiFeedApiClient;
 import jp.shts.android.keyakifeed.databinding.FragmentAllFeedListBinding;
 import jp.shts.android.keyakifeed.databinding.ListItemEntryBinding;
+import jp.shts.android.keyakifeed.entities.Blog;
 import jp.shts.android.keyakifeed.models2.Entries;
 import jp.shts.android.keyakifeed.models2.Entry;
 import jp.shts.android.keyakifeed.utils.NetworkUtils;
@@ -68,8 +71,9 @@ public class AllFeedListFragment extends Fragment {
         binding.allFeedList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                Entry entry = (Entry) parent.getItemAtPosition(position);
-//                getActivity().startActivity(BlogActivity.getStartIntent(getActivity(), new Blog(entry)));
+                Entry entry = (Entry) parent.getItemAtPosition(position);
+                getActivity().startActivity(
+                        BlogActivity.getStartIntent(getContext(), new Blog(entry)));
             }
         });
         footerView = (LinearLayout) inflater.inflate(R.layout.list_item_more_load, null);
@@ -91,7 +95,7 @@ public class AllFeedListFragment extends Fragment {
         }
         counter = 0;
         subscriptions.add(KeyakiFeedApiClient.getAllEntries(counter, PAGE_LIMIT)
-                .subscribeOn(Schedulers.io())
+                .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<Entries>() {
                     @Override
@@ -149,7 +153,7 @@ public class AllFeedListFragment extends Fragment {
         }
         counter++;
         subscriptions.add(KeyakiFeedApiClient.getAllEntries((counter * PAGE_LIMIT), PAGE_LIMIT)
-                .subscribeOn(Schedulers.io())
+                .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<Entries>() {
                     @Override
@@ -235,8 +239,8 @@ public class AllFeedListFragment extends Fragment {
                 @Override
                 public void onClick(View v) {
                     final Context context = getContext();
-//                    context.startActivity(
-//                            MemberDetailActivity.getStartIntent(context, entry.getMemberId()));
+                    context.startActivity(
+                            MemberDetailActivity.getStartIntent(context, entry.getMemberId()));
                 }
             });
 

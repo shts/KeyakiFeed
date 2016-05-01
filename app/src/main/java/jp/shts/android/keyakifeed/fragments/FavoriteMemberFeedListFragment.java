@@ -33,7 +33,7 @@ import jp.shts.android.keyakifeed.models.Favorite;
 import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
 import jp.shts.android.keyakifeed.models2.Entries;
 import jp.shts.android.keyakifeed.models2.Entry;
-import rx.Single;
+import rx.Observable;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
@@ -109,8 +109,7 @@ public class FavoriteMemberFeedListFragment extends Fragment {
             }
         });
         binding.refresh.setSwipeableChildren(R.id.recyclerview, R.id.empty_view);
-        binding.refresh.setColorSchemeResources(
-                R.color.primary, R.color.primary, R.color.primary, R.color.primary);
+        binding.refresh.setColorSchemeResources(R.color.primary);
         binding.refresh.post(new Runnable() {
             @Override
             public void run() {
@@ -185,7 +184,7 @@ public class FavoriteMemberFeedListFragment extends Fragment {
         subscriptions.add(subscription);
     }
 
-    private Single<Entries> getEntries() {
+    private Observable<Entries> getEntries() {
         counter = 0;
         return KeyakiFeedApiClient.getMemberEntries(
                 favoriteMemberIdList, (PAGE_LIMIT * counter), PAGE_LIMIT)

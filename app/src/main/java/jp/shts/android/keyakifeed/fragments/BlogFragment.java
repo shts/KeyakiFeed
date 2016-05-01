@@ -1,6 +1,7 @@
 package jp.shts.android.keyakifeed.fragments;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -38,7 +39,8 @@ public class BlogFragment extends Fragment {
 
     private static final String TAG = BlogFragment.class.getSimpleName();
 
-    public static BlogFragment newInstance(Blog blog) {
+    @NonNull
+    public static BlogFragment newInstance(@NonNull Blog blog) {
         Bundle bundle = new Bundle();
         bundle.putParcelable("blog", blog);
         BlogFragment blogFragment = new BlogFragment();
@@ -61,6 +63,7 @@ public class BlogFragment extends Fragment {
         BusHolder.get().unregister(this);
     }
 
+    @SuppressLint("SetJavaScriptEnabled")
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {

@@ -3,6 +3,7 @@ package jp.shts.android.keyakifeed.activities;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
@@ -15,12 +16,15 @@ public class MemberDetailActivity extends AppCompatActivity {
 
     private static final String TAG = MemberDetailActivity.class.getSimpleName();
 
-    public static Intent getStartIntent(Context context, Member member) {
+    @NonNull
+    public static Intent getStartIntent(@NonNull Context context, Member member) {
         Intent intent = new Intent(context, MemberDetailActivity.class);
         intent.putExtra("member", member);
         return intent;
     }
-    public static Intent getStartIntent(Context context, int memberId) {
+
+    @NonNull
+    public static Intent getStartIntent(@NonNull Context context, int memberId) {
         Intent intent = new Intent(context, MemberDetailActivity.class);
         intent.putExtra("memberId", memberId);
         return intent;

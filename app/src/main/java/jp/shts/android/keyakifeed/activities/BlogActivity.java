@@ -3,6 +3,7 @@ package jp.shts.android.keyakifeed.activities;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
@@ -15,7 +16,8 @@ public class BlogActivity extends AppCompatActivity {
 
     private static final String TAG = BlogActivity.class.getSimpleName();
 
-    public static Intent getStartIntent(Context context, Blog blog) {
+    @NonNull
+    public static Intent getStartIntent(@NonNull Context context, Blog blog) {
         Intent intent = new Intent(context, BlogActivity.class);
         intent.putExtra("blog", blog);
         return intent;

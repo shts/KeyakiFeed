@@ -59,8 +59,7 @@ public class OfficialReportListFragment extends Fragment {
                 Report.all(Report.getQuery());
             }
         });
-        binding.refresh.setColorSchemeResources(
-                R.color.primary, R.color.primary, R.color.primary, R.color.primary);
+        binding.refresh.setColorSchemeResources(R.color.primary);
         binding.refresh.post(new Runnable() {
             @Override
             public void run() {
