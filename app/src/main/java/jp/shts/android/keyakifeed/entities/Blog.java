@@ -14,6 +14,7 @@ import jp.shts.android.keyakifeed.models2.Entry;
 
 /**
  * Blog情報を扱うデータクラス
+ * TODO: 削除予定
  */
 public class Blog implements Parcelable {
 
