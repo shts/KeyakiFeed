@@ -39,38 +39,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             />
-        <!--
-        <ImageView
-            android:src="@drawable/cover_image_0"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="centerCrop"/>
-        <ImageView
-            android:src="@drawable/cover_image_1"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="centerCrop"/>
-        <ImageView
-            android:src="@drawable/cover_image_2"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="centerCrop"/>
-        <ImageView
-            android:src="@drawable/cover_image_3"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="centerCrop"/>
-        <ImageView
-            android:src="@drawable/cover_image_4"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="centerCrop"/>
-        <ImageView
-            android:src="@drawable/cover_image_5"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="centerCrop"/>
-            -->
     </ViewAnimator>
 
     <!-- for color blur -->

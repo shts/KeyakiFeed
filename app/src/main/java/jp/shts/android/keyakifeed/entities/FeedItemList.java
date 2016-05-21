@@ -1,5 +1,7 @@
 package jp.shts.android.keyakifeed.entities;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -7,11 +9,14 @@ import java.util.Comparator;
 public class FeedItemList extends ArrayList<FeedItem> {
 
     private static final String TAG = FeedItemList.class.getSimpleName();
+    private final DateComparator comparator = new DateComparator(DateComparator.DESC);
 
-    public void sort() {
+    public synchronized void sort() {
         // java.lang.ArrayIndexOutOfBoundsException
-        synchronized (FeedItemList.class) {
-            Collections.sort(this, new DateComparator(DateComparator.DESC));
+        try {
+            Collections.sort(this, comparator);
+        } catch (ArrayIndexOutOfBoundsException e) {
+            Log.e(TAG, "failed to sort", e);
         }
     }
 

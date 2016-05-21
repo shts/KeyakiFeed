@@ -20,9 +20,6 @@ import java.util.List;
 import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.fragments.AllFeedListFragment;
 import jp.shts.android.keyakifeed.fragments.FavoriteMemberFeedListFragment;
-import jp.shts.android.keyakifeed.fragments.MemberEntriesFragment;
-import jp.shts.android.keyakifeed.fragments.MemberImageGridFragment;
-import jp.shts.android.keyakifeed.utils.PicassoHelper;
 
 public class TopActivity2 extends AppCompatActivity {
 
