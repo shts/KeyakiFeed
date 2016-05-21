@@ -12,4 +12,6 @@
     <color name="white">#fafafa</color>
     <color name="white_pressed">#f1f1f1</color>
 
+    <color name="trans_status_bar">#D04CAF50</color>
+
 </resources>
