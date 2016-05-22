@@ -13,16 +13,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.squareup.otto.Subscribe;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.api.KeyakiFeedApiClient;
 import jp.shts.android.keyakifeed.databinding.FragmentDetailMemberBinding;
-import jp.shts.android.keyakifeed.models.Favorite;
 import jp.shts.android.keyakifeed.models2.Member;
+import jp.shts.android.keyakifeed.providers.FavoriteContentObserver;
+import jp.shts.android.keyakifeed.providers.dao.Favorites;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.functions.Func1;
@@ -54,8 +53,29 @@ public class MemberDetailFragment extends Fragment {
     private boolean isAvatarShown;
     private CompositeSubscription subscriptions = new CompositeSubscription();
 
+    private final FavoriteContentObserver favoriteContentObserver = new FavoriteContentObserver() {
+        @Override
+        public void onChangeState(@State int state) {
+            switch (state) {
+                case State.ADD:
+                    Snackbar.make(binding.coordinator, "推しメン登録しました", Snackbar.LENGTH_SHORT).show();
+                    break;
+                case State.REMOVE:
+                    Snackbar.make(binding.coordinator, "推しメン登録を解除しました", Snackbar.LENGTH_SHORT).show();
+                    break;
+            }
+        }
+    };
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        favoriteContentObserver.register(getContext());
+    }
+
     @Override
     public void onDestroy() {
+        favoriteContentObserver.unregister(getContext());
         subscriptions.unsubscribe();
         super.onDestroy();
     }
@@ -95,7 +115,7 @@ public class MemberDetailFragment extends Fragment {
         binding.fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Favorite.toggle(member);
+                Favorites.toggle(getContext(), member);
             }
         });
 
@@ -132,17 +152,6 @@ public class MemberDetailFragment extends Fragment {
 
         binding.viewMemberDetailHeader.setup(member);
         binding.collapsingToolbar.setTitle(member.getNameMain());
-    }
-
-    @Subscribe
-    public void onChangedFavoriteState(Favorite.ChangedFavoriteState state) {
-        if (state.e == null) {
-            if (state.action == Favorite.ChangedFavoriteState.Action.ADD) {
-                Snackbar.make(binding.coordinator, "推しメン登録しました", Snackbar.LENGTH_SHORT).show();
-            } else {
-                Snackbar.make(binding.coordinator, "推しメン登録を解除しました", Snackbar.LENGTH_SHORT).show();
-            }
-        }
     }
 
     private static class ViewPageAdapter extends FragmentPagerAdapter {

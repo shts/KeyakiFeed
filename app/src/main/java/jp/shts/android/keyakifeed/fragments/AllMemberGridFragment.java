@@ -1,5 +1,6 @@
 package jp.shts.android.keyakifeed.fragments;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
@@ -8,7 +9,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,11 +20,11 @@ import jp.shts.android.keyakifeed.adapters.BindingHolder;
 import jp.shts.android.keyakifeed.api.KeyakiFeedApiClient;
 import jp.shts.android.keyakifeed.databinding.FragmentAllMemberGridBinding;
 import jp.shts.android.keyakifeed.databinding.ListItemMemberBinding;
-import jp.shts.android.keyakifeed.models.Favorite;
 import jp.shts.android.keyakifeed.models2.Member;
 import jp.shts.android.keyakifeed.models2.Members;
-import rx.Observer;
+import jp.shts.android.keyakifeed.providers.dao.Favorites;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action0;
 import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
@@ -54,13 +54,11 @@ public class AllMemberGridFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.v(TAG, "onCreate()");
         listenerType = getArguments().getString("listenerType");
     }
 
     @Override
     public void onDestroy() {
-        Log.v(TAG, "onDestroy()");
         subscriptions.unsubscribe();
         super.onDestroy();
     }
@@ -68,7 +66,6 @@ public class AllMemberGridFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        Log.v(TAG, "onCreateView()");
 
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_all_member_grid, container, false);
 
@@ -78,7 +75,7 @@ public class AllMemberGridFragment extends Fragment {
                 getMembers();
             }
         });
-        binding.refresh.setColorSchemeResources(R.color.primary, R.color.primary, R.color.primary, R.color.primary);
+        binding.refresh.setColorSchemeResources(R.color.primary);
         binding.refresh.post(new Runnable() {
             @Override
             public void run() {
@@ -90,10 +87,11 @@ public class AllMemberGridFragment extends Fragment {
         adapter = new AllMemberGridListAdapter(getContext());
         adapter.setOnMemberClickListener(new AllMemberGridListAdapter.OnMemberClickListener() {
             @Override
-            public void onClick(Member member) {
+            public void onClick(Member member, int position) {
                 if (listenerType.equals(ListenerType.MEMBER_CHOOSER.name())) {
-                    Favorite.toggle(member);
-                    adapter.notifyDataSetChanged();
+                    Favorites.toggle(getContext(), member);
+                    adapter.notifyItemChanged(position);
+                    getActivity().setResult(Activity.RESULT_OK);
 
                 } else {
                     Intent intent = MemberDetailActivity.getStartIntent(
@@ -123,7 +121,6 @@ public class AllMemberGridFragment extends Fragment {
     }
 
     private void getMembers() {
-        Log.v(TAG, "getMembers() start !");
         subscriptions.add(KeyakiFeedApiClient.getAllMembers()
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -133,30 +130,25 @@ public class AllMemberGridFragment extends Fragment {
                         return new Members();
                     }
                 })
-                .subscribe(new Action1<Members>() {
+                .doOnCompleted(new Action0() {
                     @Override
-                    public void call(Members members) {
-                        Log.v(TAG, "getMembers() : onNext() ");
+                    public void call() {
                         if (binding.refresh != null) {
                             if (binding.refresh.isRefreshing()) {
                                 binding.refresh.setRefreshing(false);
                             }
                         }
-                        if (members == null || members.isEmpty()) {
-                            Log.e(TAG, "cannot get members");
-                        } else {
+                    }
+                })
+                .subscribe(new Action1<Members>() {
+                    @Override
+                    public void call(Members members) {
+                        if (members != null && !members.isEmpty()) {
                             adapter.reset(members);
                         }
                     }
                 }));
     }
-
-//    @Subscribe
-//    public void onChangedFavoriteState(Favorite.ChangedFavoriteState state) {
-//        if (state.e == null) {
-//            adapter.notifyDataSetChanged();
-//        }
-//    }
 
     public static class AllMemberGridListAdapter extends ArrayRecyclerAdapter<Member, BindingHolder<ListItemMemberBinding>> {
 
@@ -169,7 +161,7 @@ public class AllMemberGridFragment extends Fragment {
         private OnMemberClickListener listener;
 
         public interface OnMemberClickListener {
-            void onClick(Member member);
+            void onClick(Member member, int position);
         }
 
         public void setOnMemberClickListener(OnMemberClickListener listener) {
@@ -182,14 +174,14 @@ public class AllMemberGridFragment extends Fragment {
         }
 
         @Override
-        public void onBindViewHolder(BindingHolder<ListItemMemberBinding> holder, int position) {
+        public void onBindViewHolder(final BindingHolder<ListItemMemberBinding> holder, int position) {
             ListItemMemberBinding binding = holder.binding;
             final Member member = getItem(position);
             binding.setMember(member);
             binding.profileImage.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    if (listener != null) listener.onClick(member);
+                    if (listener != null) listener.onClick(member, holder.getAdapterPosition());
                 }
             });
         }

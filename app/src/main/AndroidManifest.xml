@@ -91,6 +91,10 @@
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="${fabricApiKey}" />
+
+        <provider
+            android:authorities="jp.shts.android.keyakifeed.providers.keyakifeed"
+            android:name="jp.shts.android.keyakifeed.providers.KeyakiFeedProvider" />
     </application>
 
 </manifest>

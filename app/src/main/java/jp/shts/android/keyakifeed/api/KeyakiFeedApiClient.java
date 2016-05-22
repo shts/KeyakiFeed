@@ -6,6 +6,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import jp.shts.android.keyakifeed.BuildConfig;
 import jp.shts.android.keyakifeed.models2.Entries;
 import jp.shts.android.keyakifeed.models2.Member;
 import jp.shts.android.keyakifeed.models2.Members;
@@ -70,14 +71,8 @@ public class KeyakiFeedApiClient {
 
     private static synchronized KeyakiFeedApiService getApiService() {
         if (apiService == null) {
-            HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-            logging.setLevel(HttpLoggingInterceptor.Level.BODY);
-
-            OkHttpClient client = new OkHttpClient.Builder()
-//                    .addNetworkInterceptor(logging)
-                    .build();
             Retrofit retrofit = new Retrofit.Builder()
-                    .client(client)
+                    .client(createOkHttpClient())
                     .baseUrl("http://tk2-262-40775.vs.sakura.ne.jp/")
                     .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
                     .addConverterFactory(GsonConverterFactory.create())
@@ -85,6 +80,18 @@ public class KeyakiFeedApiClient {
             apiService = retrofit.create(KeyakiFeedApiService.class);
         }
         return apiService;
+    }
+
+    private static OkHttpClient createOkHttpClient() {
+        if (BuildConfig.DEBUG) {
+            HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+            logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+            return new OkHttpClient.Builder()
+                    .addNetworkInterceptor(logging)
+                    .build();
+        } else {
+            return new OkHttpClient.Builder().build();
+        }
     }
 
     // http://tk2-262-40775.vs.sakura.ne.jp/members

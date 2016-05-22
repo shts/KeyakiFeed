@@ -160,12 +160,6 @@ public class Entry implements Parcelable {
         this.memberImageUrl = memberImageUrl;
     }
 
-
-    public boolean isFavorite() {
-        // TODO:
-        return false;
-    }
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

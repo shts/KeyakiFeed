@@ -25,6 +25,7 @@ import jp.shts.android.keyakifeed.databinding.ListItemEntryBinding;
 import jp.shts.android.keyakifeed.entities.Blog;
 import jp.shts.android.keyakifeed.models2.Entries;
 import jp.shts.android.keyakifeed.models2.Entry;
+import jp.shts.android.keyakifeed.providers.FavoriteContentObserver;
 import jp.shts.android.keyakifeed.utils.NetworkUtils;
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
@@ -43,8 +44,22 @@ public class AllFeedListFragment extends Fragment {
     private AllFeedListAdapter allFeedListAdapter;
     private CompositeSubscription subscriptions = new CompositeSubscription();
 
+    private final FavoriteContentObserver favoriteContentObserver = new FavoriteContentObserver() {
+        @Override
+        public void onChangeState(@State int state) {
+            if (allFeedListAdapter != null) allFeedListAdapter.notifyDataSetChanged();
+        }
+    };
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        favoriteContentObserver.register(getContext());
+    }
+
     @Override
     public void onDestroy() {
+        favoriteContentObserver.unregister(getContext());
         subscriptions.unsubscribe();
         super.onDestroy();
     }
@@ -52,7 +67,6 @@ public class AllFeedListFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        Log.w(TAG, "onCreateView() : ThreadId(" + Thread.currentThread().getId() + ")");
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_all_feed_list, container, false);
         binding.refresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -100,6 +114,11 @@ public class AllFeedListFragment extends Fragment {
                 .subscribe(new Observer<Entries>() {
                     @Override
                     public void onCompleted() {
+                        if (binding.refresh != null) {
+                            if (binding.refresh.isRefreshing()) {
+                                binding.refresh.setRefreshing(false);
+                            }
+                        }
                     }
 
                     @Override
@@ -114,12 +133,6 @@ public class AllFeedListFragment extends Fragment {
 
                     @Override
                     public void onNext(Entries entries) {
-                        Log.w(TAG, "onNext() : ThreadId(" + Thread.currentThread().getId() + ")");
-                        if (binding.refresh != null) {
-                            if (binding.refresh.isRefreshing()) {
-                                binding.refresh.setRefreshing(false);
-                            }
-                        }
                         if (entries == null || entries.isEmpty()) {
                             Log.e(TAG, "cannot get entries");
                         } else {
@@ -193,13 +206,6 @@ public class AllFeedListFragment extends Fragment {
                     }
                 }));
     }
-
-//    @Subscribe
-//    public void onChangedFavoriteState(Favorite.ChangedFavoriteState state) {
-//        if (state.e == null) {
-//            allFeedListAdapter.notifyDataSetChanged();
-//        }
-//    }
 
     public static class AllFeedListAdapter extends ArrayAdapter<Entry> {
 

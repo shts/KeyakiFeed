@@ -15,7 +15,7 @@ import com.squareup.picasso.Picasso;
 import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.activities.BlogActivity;
 import jp.shts.android.keyakifeed.entities.Blog;
-import jp.shts.android.keyakifeed.models.Favorite;
+import jp.shts.android.keyakifeed.providers.dao.Favorites;
 import jp.shts.android.keyakifeed.utils.PreferencesUtils;
 import jp.shts.android.keyakifeed.views.transformations.CircleTransformation;
 
@@ -96,12 +96,12 @@ public class BlogUpdateNotification {
             Log.d(TAG, "restriction is not setting");
             return false;
         }
+
         // TODO:
-//        final boolean exist = Favorite.exist(authorId);
         // お気に入りメンバー登録済みの場合false, お気に入りメンバー登録済みでない場合trueを返却する
-//        Log.d(TAG, "restriction exist(" + exist + ")");
-//        return !exist;
-        return false;
+        final boolean exist = Favorites.exist(context, authorId);
+        Log.d(TAG, "restriction exist(" + exist + ")");
+        return !exist;
     }
 
     private static int getNotificationId(Context context) {

@@ -8,7 +8,6 @@ import com.parse.ParseInstallation;
 import com.parse.ParseObject;
 
 import io.fabric.sdk.android.Fabric;
-import jp.shts.android.keyakifeed.models.Favorite;
 import jp.shts.android.keyakifeed.models.Report;
 
 public class KeyakiFeedApplication extends Application {
@@ -21,7 +20,7 @@ public class KeyakiFeedApplication extends Application {
         Fabric.with(this, new Crashlytics());
 
 //        ParseObject.registerSubclass(Entry.class);
-        ParseObject.registerSubclass(Favorite.class);
+//        ParseObject.registerSubclass(Favorite.class);
 //        ParseObject.registerSubclass(Member.class);
         ParseObject.registerSubclass(Report.class);
 

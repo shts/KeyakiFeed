@@ -2,6 +2,7 @@ package jp.shts.android.keyakifeed.views;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,12 +10,10 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.squareup.otto.Subscribe;
-
 import jp.shts.android.keyakifeed.R;
-import jp.shts.android.keyakifeed.models.Favorite;
 import jp.shts.android.keyakifeed.models2.Member;
-import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
+import jp.shts.android.keyakifeed.providers.FavoriteContentObserver;
+import jp.shts.android.keyakifeed.providers.dao.Favorites;
 import jp.shts.android.keyakifeed.utils.PicassoHelper;
 
 public class MemberDetailHeader extends RelativeLayout {
@@ -33,6 +32,21 @@ public class MemberDetailHeader extends RelativeLayout {
     private TextView constellationTextView;
     private TextView heightTextView;
 
+    @NonNull
+    private final FavoriteContentObserver favoriteContentObserver = new FavoriteContentObserver() {
+        @Override
+        public void onChangeState(@State int state) {
+            switch (state) {
+                case State.ADD:
+                    favoriteIconImageView.setVisibility(View.VISIBLE);
+                    break;
+                case State.REMOVE:
+                    favoriteIconImageView.setVisibility(View.GONE);
+                    break;
+            }
+        }
+    };
+
     public MemberDetailHeader(Context context) {
         this(context, null);
     }
@@ -47,12 +61,12 @@ public class MemberDetailHeader extends RelativeLayout {
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        BusHolder.get().register(this);
+        favoriteContentObserver.register(getContext());
     }
 
     @Override
     protected void onDetachedFromWindow() {
-        BusHolder.get().unregister(this);
+        favoriteContentObserver.unregister(getContext());
         super.onDetachedFromWindow();
     }
 
@@ -85,7 +99,7 @@ public class MemberDetailHeader extends RelativeLayout {
         constellationTextView.setText(res.getString(R.string.property_name_constellation, member.getConstellation()));
         heightTextView.setText(res.getString(R.string.property_name_height, member.getHeight()));
 
-        if (Favorite.exist(member)) {
+        if (Favorites.exist(getContext(), member)) {
             favoriteIconImageView.setVisibility(View.VISIBLE);
         } else {
             favoriteIconImageView.setVisibility(View.GONE);
@@ -105,16 +119,4 @@ public class MemberDetailHeader extends RelativeLayout {
         profileImageView.animate().scaleY(0).scaleX(0).setDuration(200).start();
         favoriteIconImageView.animate().scaleY(0).scaleX(0).setDuration(200).start();
     }
-
-    @Subscribe
-    public void onChangedFavoriteState(Favorite.ChangedFavoriteState state) {
-        if (state.e == null) {
-            if (state.action == Favorite.ChangedFavoriteState.Action.ADD) {
-                favoriteIconImageView.setVisibility(View.VISIBLE);
-            } else {
-                favoriteIconImageView.setVisibility(View.GONE);
-            }
-        }
-    }
-
 }
