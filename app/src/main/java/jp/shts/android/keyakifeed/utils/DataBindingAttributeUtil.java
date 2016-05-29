@@ -8,8 +8,8 @@ import android.widget.ImageView;
 import java.util.List;
 
 import jp.shts.android.keyakifeed.R;
-import jp.shts.android.keyakifeed.models2.Entry;
-import jp.shts.android.keyakifeed.models2.Member;
+import jp.shts.android.keyakifeed.models.Entry;
+import jp.shts.android.keyakifeed.models.Member;
 import jp.shts.android.keyakifeed.providers.dao.Favorites;
 
 public class DataBindingAttributeUtil {

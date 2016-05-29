@@ -25,9 +25,8 @@ import jp.shts.android.keyakifeed.api.KeyakiFeedApiClient;
 import jp.shts.android.keyakifeed.databinding.FragmentFavoriteFeedListBinding;
 import jp.shts.android.keyakifeed.databinding.ListItemCardBinding;
 import jp.shts.android.keyakifeed.entities.Blog;
-import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
-import jp.shts.android.keyakifeed.models2.Entries;
-import jp.shts.android.keyakifeed.models2.Entry;
+import jp.shts.android.keyakifeed.models.Entries;
+import jp.shts.android.keyakifeed.models.Entry;
 import jp.shts.android.keyakifeed.providers.dao.Favorites;
 import rx.Observable;
 import rx.Subscription;
@@ -39,16 +38,13 @@ import rx.schedulers.Schedulers;
 import rx.subscriptions.CompositeSubscription;
 
 /**
- * TODO:
- * メンバー一覧とこのページを行き来するだけでクソ重い
- * Skipped 32 frames!  The application may be doing too much work on its main thread
+ * 推しメンのブログ記事一覧
  */
 public class FavoriteMemberFeedListFragment extends Fragment {
 
     private static final String TAG = FavoriteMemberFeedListFragment.class.getSimpleName();
 
     private FragmentFavoriteFeedListBinding binding;
-
     private FavoriteFeedListAdapter adapter;
 
     private static final int PAGE_LIMIT = 30;
@@ -58,7 +54,6 @@ public class FavoriteMemberFeedListFragment extends Fragment {
 
     @Override
     public void onDestroy() {
-        BusHolder.get().unregister(this);
         subscriptions.unsubscribe();
         super.onDestroy();
     }
@@ -83,7 +78,6 @@ public class FavoriteMemberFeedListFragment extends Fragment {
         });
         binding.refresh.setSwipeableChildren(R.id.recyclerview, R.id.empty_view);
         binding.refresh.setColorSchemeResources(R.color.primary);
-        binding.refresh.setRefreshing(true);
         setupFavoriteMemberFeed();
 
         return binding.getRoot();
@@ -103,7 +97,6 @@ public class FavoriteMemberFeedListFragment extends Fragment {
             return;
         }
 
-        counter = 0;
         Subscription subscription = getEntries(favorites.getMemberIdList())
                 .subscribe(new Action1<Entries>() {
                     @Override
@@ -115,9 +108,8 @@ public class FavoriteMemberFeedListFragment extends Fragment {
                             public void onMaxPageScrolled() {
                                 if (nowGettingNextEntry) return;
                                 nowGettingNextEntry = true;
-                                // get next feed
-                                counter++;
-                                Subscription subscription = getEntries(favorites.getMemberIdList())
+
+                                Subscription subscription = getNextEntries(favorites.getMemberIdList())
                                         .subscribe(new Action1<Entries>() {
                                             @Override
                                             public void call(Entries entries) {
@@ -142,10 +134,19 @@ public class FavoriteMemberFeedListFragment extends Fragment {
     }
 
     private Observable<Entries> getEntries(List<Integer> memberIdList) {
+        counter = 0;
         return KeyakiFeedApiClient.getMemberEntries(
                 memberIdList, (PAGE_LIMIT * counter), PAGE_LIMIT)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
+                .doOnRequest(new Action1<Long>() {
+                    @Override
+                    public void call(Long aLong) {
+                        if (binding.refresh.isRefreshing()) {
+                            binding.refresh.setRefreshing(true);
+                        }
+                    }
+                })
                 .doOnCompleted(new Action0() {
                     @Override
                     public void call() {
@@ -168,10 +169,18 @@ public class FavoriteMemberFeedListFragment extends Fragment {
                 });
     }
 
+    private Observable<Entries> getNextEntries(List<Integer> memberIdList) {
+        // get next feed
+        counter++;
+        return KeyakiFeedApiClient.getMemberEntries(
+                memberIdList, (PAGE_LIMIT * counter), PAGE_LIMIT)
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread());
+    }
+
     private void setVisibilityEmptyView(boolean isVisible) {
         if (isVisible) {
             // recyclerView を setVisiblity(View.GONE) で表示にするとプログレスが表示されない
-            //mEntries.clear();
             binding.recyclerview.setAdapter(null);
             binding.emptyView.setVisibility(View.VISIBLE);
         } else {
@@ -183,7 +192,6 @@ public class FavoriteMemberFeedListFragment extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 0 && resultCode == Activity.RESULT_OK) {
-            binding.refresh.setRefreshing(true);
             setupFavoriteMemberFeed();
         }
     }
@@ -234,5 +242,4 @@ public class FavoriteMemberFeedListFragment extends Fragment {
             }
         }
     }
-
 }

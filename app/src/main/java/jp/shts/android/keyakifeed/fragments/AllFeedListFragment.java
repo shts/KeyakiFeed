@@ -3,10 +3,10 @@ package jp.shts.android.keyakifeed.fragments;
 import android.content.Context;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
+import android.support.annotation.CheckResult;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,12 +23,13 @@ import jp.shts.android.keyakifeed.api.KeyakiFeedApiClient;
 import jp.shts.android.keyakifeed.databinding.FragmentAllFeedListBinding;
 import jp.shts.android.keyakifeed.databinding.ListItemEntryBinding;
 import jp.shts.android.keyakifeed.entities.Blog;
-import jp.shts.android.keyakifeed.models2.Entries;
-import jp.shts.android.keyakifeed.models2.Entry;
+import jp.shts.android.keyakifeed.models.Entries;
+import jp.shts.android.keyakifeed.models.Entry;
 import jp.shts.android.keyakifeed.providers.FavoriteContentObserver;
-import jp.shts.android.keyakifeed.utils.NetworkUtils;
-import rx.Observer;
+import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action0;
+import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 import rx.subscriptions.CompositeSubscription;
 
@@ -48,6 +49,25 @@ public class AllFeedListFragment extends Fragment {
         @Override
         public void onChangeState(@State int state) {
             if (allFeedListAdapter != null) allFeedListAdapter.notifyDataSetChanged();
+        }
+    };
+
+    private final AllFeedListAdapter.OnPageMaxScrolledListener pageMaxScrolledListener
+            = new AllFeedListAdapter.OnPageMaxScrolledListener() {
+        @Override
+        public void onScrolledMaxPage() {
+            subscriptions.add(getNextFeed().subscribe(new Action1<Entries>() {
+                @Override
+                public void call(Entries entries) {
+                    if (entries == null || entries.isEmpty()) {
+                        return;
+                    }
+                    if (allFeedListAdapter != null) {
+                        allFeedListAdapter.addAll(entries);
+                        allFeedListAdapter.notifyDataSetChanged();
+                    }
+                }
+            }));
         }
     };
 
@@ -71,17 +91,10 @@ public class AllFeedListFragment extends Fragment {
         binding.refresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                getAllEntries();
+                getEntries();
             }
         });
         binding.refresh.setColorSchemeResources(R.color.primary, R.color.primary, R.color.primary, R.color.primary);
-        binding.refresh.post(new Runnable() {
-            @Override
-            public void run() {
-                getAllEntries();
-                binding.refresh.setRefreshing(true);
-            }
-        });
         binding.allFeedList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -92,119 +105,82 @@ public class AllFeedListFragment extends Fragment {
         });
         footerView = (LinearLayout) inflater.inflate(R.layout.list_item_more_load, null);
         footerView.setVisibility(View.GONE);
-
         binding.allFeedList.addFooterView(footerView);
 
+        getEntries();
         return binding.getRoot();
     }
 
-    private void getAllEntries() {
-        if (!NetworkUtils.enableNetwork(getActivity())) {
-            if (binding.refresh != null) {
-                if (binding.refresh.isRefreshing()) {
-                    binding.refresh.setRefreshing(false);
+    private void getEntries() {
+        subscriptions.add(getAllEntries().subscribe(new Action1<Entries>() {
+            @Override
+            public void call(Entries entries) {
+                if (entries == null || entries.isEmpty()) {
+                    return;
                 }
+                allFeedListAdapter = new AllFeedListAdapter(getActivity(), entries);
+                allFeedListAdapter.setPageMaxScrolledListener(pageMaxScrolledListener);
+                binding.allFeedList.setAdapter(allFeedListAdapter);
             }
-            return;
-        }
-        counter = 0;
-        subscriptions.add(KeyakiFeedApiClient.getAllEntries(counter, PAGE_LIMIT)
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<Entries>() {
-                    @Override
-                    public void onCompleted() {
-                        if (binding.refresh != null) {
-                            if (binding.refresh.isRefreshing()) {
-                                binding.refresh.setRefreshing(false);
-                            }
-                        }
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        if (binding.refresh != null) {
-                            if (binding.refresh.isRefreshing()) {
-                                binding.refresh.setRefreshing(false);
-                            }
-                        }
-                        e.printStackTrace();
-                    }
-
-                    @Override
-                    public void onNext(Entries entries) {
-                        if (entries == null || entries.isEmpty()) {
-                            Log.e(TAG, "cannot get entries");
-                        } else {
-                            allFeedListAdapter = new AllFeedListAdapter(getActivity(), entries);
-                            allFeedListAdapter.setPageMaxScrolledListener(new AllFeedListAdapter.OnPageMaxScrolledListener() {
-                                @Override
-                                public void onScrolledMaxPage() {
-                                    getNextFeed();
-                                }
-                            });
-                            binding.allFeedList.setAdapter(allFeedListAdapter);
-                        }
-                    }
-                }));
+        }));
     }
 
-    private void getNextFeed() {
-        if (!NetworkUtils.enableNetwork(getActivity())) {
-            if (footerView != null) {
-                footerView.setVisibility(View.VISIBLE);
-            }
-            if (binding.refresh != null) {
-                if (binding.refresh.isRefreshing()) {
-                    binding.refresh.setRefreshing(false);
-                }
-            }
-            return;
-        }
-        if (footerView != null) {
-            footerView.setVisibility(View.VISIBLE);
-        }
-        counter++;
-        subscriptions.add(KeyakiFeedApiClient.getAllEntries((counter * PAGE_LIMIT), PAGE_LIMIT)
+    @CheckResult
+    private Observable<Entries> getAllEntries() {
+        counter = 0;
+        return KeyakiFeedApiClient.getAllEntries(counter, PAGE_LIMIT)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<Entries>() {
+                .doOnRequest(new Action1<Long>() {
                     @Override
-                    public void onCompleted() {}
+                    public void call(Long aLong) {
+                        if (binding.refresh.isRefreshing()) {
+                            binding.refresh.setRefreshing(true);
+                        }
+                    }
+                })
+                .doOnError(new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        if (binding.refresh.isRefreshing()) {
+                            binding.refresh.setRefreshing(false);
+                        }
+                    }
+                })
+                .doOnCompleted(new Action0() {
+                    @Override
+                    public void call() {
+                        if (binding.refresh.isRefreshing()) {
+                            binding.refresh.setRefreshing(false);
+                        }
+                    }
+                });
+    }
 
+    @CheckResult
+    private Observable<Entries> getNextFeed() {
+        counter++;
+        return KeyakiFeedApiClient.getAllEntries((counter * PAGE_LIMIT), PAGE_LIMIT)
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnRequest(new Action1<Long>() {
                     @Override
-                    public void onError(Throwable e) {
-                        if (footerView != null) {
-                            footerView.setVisibility(View.VISIBLE);
-                        }
-                        if (binding.refresh != null) {
-                            if (binding.refresh.isRefreshing()) {
-                                binding.refresh.setRefreshing(false);
-                            }
-                        }
-                        e.printStackTrace();
+                    public void call(Long aLong) {
+                        footerView.setVisibility(View.VISIBLE);
                     }
+                })
+                .doOnError(new Action1<Throwable>() {
                     @Override
-                    public void onNext(Entries entries) {
-                        Log.v(TAG, "onNext");
-                        if (footerView != null) {
-                            footerView.setVisibility(View.VISIBLE);
-                        }
-                        if (binding.refresh != null) {
-                            if (binding.refresh.isRefreshing()) {
-                                binding.refresh.setRefreshing(false);
-                            }
-                        }
-                        if (entries == null || entries.isEmpty()) {
-                            Log.e(TAG, "cannot get entries");
-                        } else {
-                            if (allFeedListAdapter != null) {
-                                allFeedListAdapter.addAll(entries);
-                                allFeedListAdapter.notifyDataSetChanged();
-                            }
-                        }
+                    public void call(Throwable throwable) {
+                        footerView.setVisibility(View.GONE);
                     }
-                }));
+                })
+                .doOnCompleted(new Action0() {
+                    @Override
+                    public void call() {
+                        footerView.setVisibility(View.GONE);
+                    }
+                });
     }
 
     public static class AllFeedListAdapter extends ArrayAdapter<Entry> {

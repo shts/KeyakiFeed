@@ -19,7 +19,7 @@ import java.util.List;
 import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.api.KeyakiFeedApiClient;
 import jp.shts.android.keyakifeed.databinding.FragmentDetailMemberBinding;
-import jp.shts.android.keyakifeed.models2.Member;
+import jp.shts.android.keyakifeed.models.Member;
 import jp.shts.android.keyakifeed.providers.FavoriteContentObserver;
 import jp.shts.android.keyakifeed.providers.dao.Favorites;
 import rx.android.schedulers.AndroidSchedulers;

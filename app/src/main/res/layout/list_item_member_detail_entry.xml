@@ -7,7 +7,7 @@
 
         <variable
             name="entry"
-            type="jp.shts.android.keyakifeed.models2.Entry" />
+            type="jp.shts.android.keyakifeed.models.Entry" />
     </data>
 
     <LinearLayout

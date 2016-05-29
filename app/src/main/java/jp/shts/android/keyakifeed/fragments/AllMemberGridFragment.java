@@ -20,13 +20,12 @@ import jp.shts.android.keyakifeed.adapters.BindingHolder;
 import jp.shts.android.keyakifeed.api.KeyakiFeedApiClient;
 import jp.shts.android.keyakifeed.databinding.FragmentAllMemberGridBinding;
 import jp.shts.android.keyakifeed.databinding.ListItemMemberBinding;
-import jp.shts.android.keyakifeed.models2.Member;
-import jp.shts.android.keyakifeed.models2.Members;
+import jp.shts.android.keyakifeed.models.Member;
+import jp.shts.android.keyakifeed.models.Members;
 import jp.shts.android.keyakifeed.providers.dao.Favorites;
+import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action0;
 import rx.functions.Action1;
-import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 import rx.subscriptions.CompositeSubscription;
 
@@ -76,13 +75,6 @@ public class AllMemberGridFragment extends Fragment {
             }
         });
         binding.refresh.setColorSchemeResources(R.color.primary);
-        binding.refresh.post(new Runnable() {
-            @Override
-            public void run() {
-                getMembers();
-                binding.refresh.setRefreshing(true);
-            }
-        });
 
         adapter = new AllMemberGridListAdapter(getContext());
         adapter.setOnMemberClickListener(new AllMemberGridListAdapter.OnMemberClickListener() {
@@ -117,6 +109,8 @@ public class AllMemberGridFragment extends Fragment {
             binding.toolbar.setVisibility(View.GONE);
         }
 
+        getMembers();
+
         return binding.getRoot();
     }
 
@@ -124,25 +118,31 @@ public class AllMemberGridFragment extends Fragment {
         subscriptions.add(KeyakiFeedApiClient.getAllMembers()
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
-                .onErrorReturn(new Func1<Throwable, Members>() {
+                .doOnRequest(new Action1<Long>() {
                     @Override
-                    public Members call(Throwable throwable) {
-                        return new Members();
-                    }
-                })
-                .doOnCompleted(new Action0() {
-                    @Override
-                    public void call() {
-                        if (binding.refresh != null) {
-                            if (binding.refresh.isRefreshing()) {
-                                binding.refresh.setRefreshing(false);
-                            }
+                    public void call(Long aLong) {
+                        if (binding.refresh.isRefreshing()) {
+                            binding.refresh.setRefreshing(true);
                         }
                     }
                 })
-                .subscribe(new Action1<Members>() {
+                .subscribe(new Subscriber<Members>() {
                     @Override
-                    public void call(Members members) {
+                    public void onCompleted() {
+                        if (binding.refresh.isRefreshing()) {
+                            binding.refresh.setRefreshing(false);
+                        }
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        if (binding.refresh.isRefreshing()) {
+                            binding.refresh.setRefreshing(false);
+                        }
+                    }
+
+                    @Override
+                    public void onNext(Members members) {
                         if (members != null && !members.isEmpty()) {
                             adapter.reset(members);
                         }

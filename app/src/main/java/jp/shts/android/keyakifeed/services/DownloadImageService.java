@@ -7,15 +7,9 @@ import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.util.Log;
 
-import com.parse.FindCallback;
-import com.parse.ParseException;
-import com.parse.ParseQuery;
-
-import java.util.ArrayList;
 import java.util.List;
 
 import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
-import jp.shts.android.keyakifeed.models2.Entry;
 import jp.shts.android.keyakifeed.notifications.DownloadNotification;
 import jp.shts.android.keyakifeed.utils.SdCardUtils;
 import jp.shts.android.keyakifeed.utils.SimpleImageDownloader;

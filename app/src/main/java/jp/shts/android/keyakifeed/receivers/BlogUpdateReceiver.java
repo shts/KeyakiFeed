@@ -11,10 +11,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import jp.shts.android.keyakifeed.entities.Blog;
-import jp.shts.android.keyakifeed.models.Report;
 import jp.shts.android.keyakifeed.notifications.BlogUpdateNotification;
 
 public class BlogUpdateReceiver extends BroadcastReceiver {

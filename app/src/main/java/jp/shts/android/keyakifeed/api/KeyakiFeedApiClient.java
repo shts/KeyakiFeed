@@ -7,9 +7,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import jp.shts.android.keyakifeed.BuildConfig;
-import jp.shts.android.keyakifeed.models2.Entries;
-import jp.shts.android.keyakifeed.models2.Member;
-import jp.shts.android.keyakifeed.models2.Members;
+import jp.shts.android.keyakifeed.models.Entries;
+import jp.shts.android.keyakifeed.models.Member;
+import jp.shts.android.keyakifeed.models.Members;
+import jp.shts.android.keyakifeed.models.Reports;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.GsonConverterFactory;
@@ -38,6 +39,10 @@ public class KeyakiFeedApiClient {
 
     public static Observable<Entries> getAllEntries(int skip, int limit) {
         return getApiService().getAllEntries(skip, limit);
+    }
+
+    public static Observable<Reports> getAllReports(int skip, int limit) {
+        return getApiService().getAllReports(skip, limit);
     }
 
     public static Observable<Entries> getMemberEntries(int memberId, int skip, int limit) {
@@ -102,6 +107,9 @@ public class KeyakiFeedApiClient {
 
         @GET("/entries")
         Observable<Entries> getAllEntries(@Query("skip") int skip, @Query("limit") int limit);
+
+        @GET("/reports")
+        Observable<Reports> getAllReports(@Query("skip") int skip, @Query("limit") int limit);
 
         @GET("/members/{id}")
         Observable<Member> getMember(@Path("id") int id);

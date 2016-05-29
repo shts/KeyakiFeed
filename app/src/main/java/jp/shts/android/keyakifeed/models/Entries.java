@@ -1,4 +1,4 @@
-package jp.shts.android.keyakifeed.models2;
+package jp.shts.android.keyakifeed.models;
 
 import java.util.ArrayList;
 

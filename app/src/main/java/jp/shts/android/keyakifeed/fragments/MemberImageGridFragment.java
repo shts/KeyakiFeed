@@ -12,7 +12,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import jp.shts.android.keyakifeed.R;
@@ -23,11 +22,10 @@ import jp.shts.android.keyakifeed.api.KeyakiFeedApiClient;
 import jp.shts.android.keyakifeed.databinding.FragmentMemberImageGridBinding;
 import jp.shts.android.keyakifeed.databinding.ListItemImageGridBinding;
 import jp.shts.android.keyakifeed.dialogs.DownloadConfirmDialog;
-import jp.shts.android.keyakifeed.models2.Entries;
-import jp.shts.android.keyakifeed.models2.Entry;
-import jp.shts.android.keyakifeed.models2.Member;
+import jp.shts.android.keyakifeed.models.Entries;
+import jp.shts.android.keyakifeed.models.Entry;
+import jp.shts.android.keyakifeed.models.Member;
 import jp.shts.android.keyakifeed.services.DownloadImageService;
-import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.functions.Func1;

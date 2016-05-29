@@ -10,7 +10,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 import jp.shts.android.keyakifeed.models.Report;
-import jp.shts.android.keyakifeed.models2.Entry;
+import jp.shts.android.keyakifeed.models.Entry;
 
 /**
  * Blog情報を扱うデータクラス
@@ -66,7 +66,7 @@ public class Blog implements Parcelable {
     }
 
     public Blog(Report report) {
-        entryObjectId = report.getObjectId();
+        entryObjectId = String.valueOf(report.getId());
         url = report.getUrl();
         title = report.getTitle();
         memberId = "";

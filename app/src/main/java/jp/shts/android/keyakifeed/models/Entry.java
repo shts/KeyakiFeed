@@ -1,4 +1,4 @@
-package jp.shts.android.keyakifeed.models2;
+package jp.shts.android.keyakifeed.models;
 
 import android.os.Parcel;
 import android.os.Parcelable;

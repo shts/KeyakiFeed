@@ -27,7 +27,6 @@ import java.util.List;
 
 import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.dialogs.DownloadConfirmDialog;
-import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
 import jp.shts.android.keyakifeed.utils.PicassoHelper;
 import jp.shts.android.keyakifeed.utils.SdCardUtils;
 import jp.shts.android.keyakifeed.utils.SimpleImageDownloader;
@@ -99,13 +98,6 @@ public class GalleryActivity extends AppCompatActivity {
             }
         });
         viewPager.setCurrentItem(getIntent().getIntExtra("index", 0));
-        BusHolder.get().register(this);
-    }
-
-    @Override
-    protected void onDestroy() {
-        BusHolder.get().unregister(this);
-        super.onDestroy();
     }
 
     private void download(String url) {

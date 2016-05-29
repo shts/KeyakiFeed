@@ -11,7 +11,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import jp.shts.android.keyakifeed.R;
-import jp.shts.android.keyakifeed.models2.Member;
+import jp.shts.android.keyakifeed.models.Member;
 import jp.shts.android.keyakifeed.providers.FavoriteContentObserver;
 import jp.shts.android.keyakifeed.providers.dao.Favorites;
 import jp.shts.android.keyakifeed.utils.PicassoHelper;

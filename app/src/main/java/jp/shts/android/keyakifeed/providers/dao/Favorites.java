@@ -7,7 +7,7 @@ import android.support.annotation.NonNull;
 
 import java.util.ArrayList;
 
-import jp.shts.android.keyakifeed.models2.Member;
+import jp.shts.android.keyakifeed.models.Member;
 import jp.shts.android.keyakifeed.providers.KeyakiFeedContent;
 
 public class Favorites extends ArrayList<Favorite> {

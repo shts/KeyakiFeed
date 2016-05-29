@@ -10,7 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 
 import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.fragments.MemberDetailFragment;
-import jp.shts.android.keyakifeed.models2.Member;
+import jp.shts.android.keyakifeed.models.Member;
 
 public class MemberDetailActivity extends AppCompatActivity {
 

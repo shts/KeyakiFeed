@@ -1,5 +1,6 @@
 package jp.shts.android.keyakifeed.api;
 
+import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.util.Log;
@@ -9,7 +10,6 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 import org.apache.http.Header;
 
 import java.io.ByteArrayInputStream;
-import android.os.Handler;
 
 import jp.shts.android.keyakifeed.entities.FeedItemList;
 import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
