@@ -1,9 +1,9 @@
 package jp.shts.android.keyakifeed.api;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import android.support.annotation.CheckResult;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import jp.shts.android.keyakifeed.BuildConfig;
@@ -18,6 +18,7 @@ import retrofit2.Retrofit;
 import retrofit2.RxJavaCallAdapterFactory;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.Headers;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
@@ -29,49 +30,53 @@ public class KeyakiFeedApiClient {
 
     private static KeyakiFeedApiService apiService;
 
+    @CheckResult
     public static Observable<Members> getAllMembers() {
         return getApiService().getAllMembers();
     }
 
+    @CheckResult
     public static Observable<Member> getMember(int id) {
         return getApiService().getMember(id);
     }
 
+    @CheckResult
     public static Observable<Entries> getAllEntries(int skip, int limit) {
         return getApiService().getAllEntries(skip, limit);
     }
 
+    @CheckResult
     public static Observable<Reports> getAllReports(int skip, int limit) {
         return getApiService().getAllReports(skip, limit);
     }
 
+    @CheckResult
     public static Observable<Entries> getMemberEntries(int memberId, int skip, int limit) {
         List<Integer> ids = new ArrayList<>();
         ids.add(memberId);
         return getApiService().getMemberEntries(ids, skip, limit);
     }
 
+    @CheckResult
     public static Observable<Entries> getMemberEntries(List<Integer> memberIds, int skip, int limit) {
         return getApiService().getMemberEntries(memberIds, skip, limit);
     }
 
-    public static void addFavorite(int memberId) {
-        getApiService().changeFavoriteState(createFavoritePostBody(memberId, "incriment"));
+    @CheckResult
+    public static Observable<Void> addFavorite(int memberId) {
+        return getApiService().changeFavoriteState(createFavoritePostBody(memberId, "incriment"));
     }
 
-    public static void removeFavorite(int memberId) {
-        getApiService().changeFavoriteState(createFavoritePostBody(memberId, "decriment"));
+    @CheckResult
+    public static Observable<Void> removeFavorite(int memberId) {
+        return getApiService().changeFavoriteState(createFavoritePostBody(memberId, "decriment"));
     }
 
-    private static String createFavoritePostBody(int memberId, String action) {
-        JSONObject jsonObject = new JSONObject();
-        try {
-            jsonObject.put("member_id", String.valueOf(memberId));
-            jsonObject.put("action", action);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return jsonObject.toString();
+    private static HashMap<String, String> createFavoritePostBody(int memberId, String action) {
+        HashMap<String, String> hashMap = new HashMap<>();
+        hashMap.put("member_id", String.valueOf(memberId));
+        hashMap.put("action", action);
+        return hashMap;
     }
 
     private static synchronized KeyakiFeedApiService getApiService() {
@@ -118,8 +123,12 @@ public class KeyakiFeedApiClient {
         Observable<Entries> getMemberEntries(
                 @Query("ids[]") List<Integer> ids, @Query("skip") int skip, @Query("limit") int limit);
 
+        @Headers({
+                "Accept: application/json",
+                "Content-type: application/json"
+        })
         @POST("/favorite")
-        Observable<Void> changeFavoriteState(@Body String json);
+        Observable<Void> changeFavoriteState(@Body HashMap<String, String> body);
     }
 
 }

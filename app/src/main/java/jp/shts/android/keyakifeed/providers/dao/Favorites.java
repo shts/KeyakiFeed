@@ -4,11 +4,17 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import java.util.ArrayList;
 
+import jp.shts.android.keyakifeed.api.KeyakiFeedApiClient;
 import jp.shts.android.keyakifeed.models.Member;
 import jp.shts.android.keyakifeed.providers.KeyakiFeedContent;
+import rx.Scheduler;
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 public class Favorites extends ArrayList<Favorite> {
 
@@ -34,6 +40,7 @@ public class Favorites extends ArrayList<Favorite> {
 
     /**
      * 指定したメンバーのお気に入り状況をトグルする
+     *
      * @param context
      * @param member
      * @return トグルした結果を返却する。trueなら推しメン登録, falseなら推しメン解除
@@ -50,17 +57,63 @@ public class Favorites extends ArrayList<Favorite> {
         ContentValues cv = new ContentValues();
         cv.put(KeyakiFeedContent.Favorite.Key.MEMBER_ID, member.getId());
         context.getContentResolver().insert(KeyakiFeedContent.Favorite.CONTENT_URI, cv);
+
+        final Scheduler scheduler = Schedulers.newThread();
+        KeyakiFeedApiClient.addFavorite(member.getId())
+                .subscribeOn(scheduler)
+                .observeOn(scheduler)
+                .subscribe(new Subscriber<Void>() {
+                    @Override
+                    public void onCompleted() {
+                        unsubscribe();
+                        Log.e(TAG, "onCompleted: ");
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.e(TAG, "onError: ", e);
+                        unsubscribe();
+                    }
+
+                    @Override
+                    public void onNext(Void aVoid) {
+                        Log.e(TAG, "onNext: ");
+                    }
+                });
     }
 
     private static void remove(@NonNull Context context, @NonNull Member member) {
         String selection = KeyakiFeedContent.Favorite.Key.MEMBER_ID + "=?";
-        String[] selectionArgs = { String.valueOf(member.getId()) };
+        String[] selectionArgs = {String.valueOf(member.getId())};
         context.getContentResolver().delete(KeyakiFeedContent.Favorite.CONTENT_URI, selection, selectionArgs);
+
+        final Scheduler scheduler = Schedulers.newThread();
+        KeyakiFeedApiClient.removeFavorite(member.getId())
+                .subscribeOn(scheduler)
+                .observeOn(scheduler)
+                .subscribe(new Subscriber<Void>() {
+                    @Override
+                    public void onCompleted() {
+                        unsubscribe();
+                        Log.e(TAG, "onCompleted: ");
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        unsubscribe();
+                        Log.e(TAG, "onError: ", e);
+                    }
+
+                    @Override
+                    public void onNext(Void aVoid) {
+                        Log.e(TAG, "onNext: ");
+                    }
+                });
     }
 
     public static boolean exist(@NonNull Context context, @NonNull Member member) {
         String selection = KeyakiFeedContent.Favorite.Key.MEMBER_ID + "=?";
-        String[] selectionArgs = { String.valueOf(member.getId()) };
+        String[] selectionArgs = {String.valueOf(member.getId())};
 
         Cursor c = context.getContentResolver().query(
                 KeyakiFeedContent.Favorite.CONTENT_URI,
@@ -77,7 +130,7 @@ public class Favorites extends ArrayList<Favorite> {
     // TODO: 後で消す
     public static boolean exist(@NonNull Context context, @NonNull String memberId) {
         String selection = KeyakiFeedContent.Favorite.Key.MEMBER_ID + "=?";
-        String[] selectionArgs = { memberId };
+        String[] selectionArgs = {memberId};
 
         Cursor c = context.getContentResolver().query(
                 KeyakiFeedContent.Favorite.CONTENT_URI,
@@ -93,7 +146,7 @@ public class Favorites extends ArrayList<Favorite> {
 
     public boolean contain(int memberId) {
         for (Favorite f : this) {
-            if(f.memberId == memberId) return true;
+            if (f.memberId == memberId) return true;
         }
         return false;
     }
