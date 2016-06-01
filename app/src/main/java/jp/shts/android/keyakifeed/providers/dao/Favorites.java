@@ -13,7 +13,6 @@ import jp.shts.android.keyakifeed.models.Member;
 import jp.shts.android.keyakifeed.providers.KeyakiFeedContent;
 import rx.Scheduler;
 import rx.Subscriber;
-import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
 public class Favorites extends ArrayList<Favorite> {
