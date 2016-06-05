@@ -22,7 +22,6 @@ import com.squareup.otto.Subscribe;
 
 import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.activities.BlogActivity;
-import jp.shts.android.keyakifeed.activities.GalleryActivity;
 import jp.shts.android.keyakifeed.databinding.FragmentGalleryBinding;
 import jp.shts.android.keyakifeed.dialogs.DownloadConfirmDialog;
 import jp.shts.android.keyakifeed.entities.Blog;
@@ -65,7 +64,7 @@ public class GalleryFragment extends Fragment {
                 confirmDialog.setCallbacks(new DownloadConfirmDialog.Callbacks() {
                     @Override
                     public void onClickPositiveButton() {
-                        //download((String) v.getTag());
+                        download(blogImage.url);
                     }
                     @Override
                     public void onClickNegativeButton() {}
@@ -84,7 +83,7 @@ public class GalleryFragment extends Fragment {
         return binding.getRoot();
     }
 
-    private void download(String url) {
+    private void download(@NonNull String url) {
         if (!hasPermission()) {
             // 権限がない場合はリクエスト
             ActivityCompat.requestPermissions(getActivity(),

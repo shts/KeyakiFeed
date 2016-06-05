@@ -2,31 +2,22 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <android.support.design.widget.CoordinatorLayout
-        android:id="@+id/coordinator"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#000"
         android:fitsSystemWindows="true">
 
-        <RelativeLayout
+        <jp.shts.android.keyakifeed.views.HackyViewPager
+            android:id="@+id/view_pager"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center_vertical">
-
-            <android.support.v4.view.ViewPager
-                android:id="@+id/view_pager"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-
-        </RelativeLayout>
+            android:layout_height="match_parent" />
 
         <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
-            android:background="#4d000000"
+            android:background="@color/black_transparent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"/>
 
-    </android.support.design.widget.CoordinatorLayout>
+    </FrameLayout>
 </layout>
