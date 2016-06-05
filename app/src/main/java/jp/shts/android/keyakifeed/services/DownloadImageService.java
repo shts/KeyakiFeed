@@ -9,7 +9,6 @@ import android.util.Log;
 
 import java.util.List;
 
-import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
 import jp.shts.android.keyakifeed.notifications.DownloadNotification;
 import jp.shts.android.keyakifeed.utils.SdCardUtils;
 import jp.shts.android.keyakifeed.utils.SimpleImageDownloader;
@@ -36,12 +35,13 @@ public class DownloadImageService extends IntentService {
     @Override
     public void onCreate() {
         super.onCreate();
-        BusHolder.get().register(this);
+        //TODO:
+        //BusHolder.get().register(this);
     }
 
     @Override
     public void onDestroy() {
-        BusHolder.get().unregister(this);
+        //BusHolder.get().unregister(this);
         super.onDestroy();
     }
 

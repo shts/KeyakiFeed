@@ -23,7 +23,6 @@ import jp.shts.android.keyakifeed.api.MatomeFeedClient;
 import jp.shts.android.keyakifeed.databinding.FragmentMatomeFeedListBinding;
 import jp.shts.android.keyakifeed.databinding.ListItemMatomeFeedBinding;
 import jp.shts.android.keyakifeed.entities.FeedItem;
-import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
 
 public class MatomeFeedListFragment extends Fragment {
 
@@ -34,14 +33,16 @@ public class MatomeFeedListFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        BusHolder.get().unregister(this);
+        // TODO:
+        //BusHolder.get().unregister(this);
         binding.adView.pause();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        BusHolder.get().register(this);
+        // TODO:
+        //BusHolder.get().register(this);
         binding.adView.resume();
     }
 

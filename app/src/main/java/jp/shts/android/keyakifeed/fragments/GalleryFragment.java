@@ -10,13 +10,10 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
-
-import com.squareup.otto.Subscribe;
 
 import java.util.List;
 
@@ -27,15 +24,21 @@ import jp.shts.android.keyakifeed.databinding.FragmentGalleryBinding;
 import jp.shts.android.keyakifeed.dialogs.DownloadConfirmDialog;
 import jp.shts.android.keyakifeed.entities.Blog;
 import jp.shts.android.keyakifeed.entities.BlogImage;
+import jp.shts.android.keyakifeed.models.eventbus.RxBusProvider;
 import jp.shts.android.keyakifeed.utils.PicassoHelper;
 import jp.shts.android.keyakifeed.utils.SdCardUtils;
 import jp.shts.android.keyakifeed.utils.SimpleImageDownloader;
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
+import rx.subscriptions.CompositeSubscription;
 
 public class GalleryFragment extends Fragment {
 
     private static final String TAG = GalleryFragment.class.getSimpleName();
 
     private FragmentGalleryBinding binding;
+    private CompositeSubscription subscriptions = new CompositeSubscription();
 
     @NonNull
     public static GalleryFragment newInstance(BlogImage blogImage) {
@@ -44,6 +47,58 @@ public class GalleryFragment extends Fragment {
         bundle.putParcelable("blogImage", blogImage);
         galleryFragment.setArguments(bundle);
         return galleryFragment;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // 上位画面にBlogFragmentが表示される
+        // そこでダウンロード処理を行うとバックグラウンドでイベントを拾ってしまうのでresume-pauseでイベント監視
+        subscriptions.add(RxBusProvider.getInstance()
+                .toObservable()
+                .observeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<Object>() {
+                    @Override
+                    public void onCompleted() {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Toast.makeText(getActivity(), "ダウンロードに失敗しました", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onNext(Object o) {
+                        if (o instanceof SimpleImageDownloader.Callback) {
+                            SimpleImageDownloader.Callback callback
+                                    = (SimpleImageDownloader.Callback) o;
+                            if (callback == null || callback.file == null) {
+                                Toast.makeText(getActivity(), "ダウンロードに失敗しました", Toast.LENGTH_SHORT).show();
+                                return;
+                            }
+                            SdCardUtils.scanFile(getContext(), callback.file,
+                                    new MediaScannerConnection.OnScanCompletedListener() {
+                                        @Override
+                                        public void onScanCompleted(String path, Uri uri) {
+                                            getActivity().runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    Toast.makeText(getActivity(), "ダウンロード完了しました", Toast.LENGTH_SHORT).show();
+                                                }
+                                            });
+                                        }
+                                    });
+                        }
+                    }
+                }));
+    }
+
+    @Override
+    public void onPause() {
+        subscriptions.unsubscribe();
+        super.onPause();
     }
 
     @Nullable
@@ -103,37 +158,8 @@ public class GalleryFragment extends Fragment {
         String url = urlList.get(0);
         if (TextUtils.isEmpty(url)) return;
 
-        Log.e(TAG, "onActivityResult: ");
         if (!new SimpleImageDownloader(getContext(), url).get()) {
             Toast.makeText(getActivity(), "ダウンロードに失敗しました", Toast.LENGTH_SHORT).show();
         }
     }
-
-    /**
-     * SimpleImageDownloader のコールバック
-     *
-     * @param callback callback
-     */
-    @Subscribe
-    public void onFinishDownload(SimpleImageDownloader.Callback callback) {
-        Log.e(TAG, "onFinishDownload: ");
-        if (callback == null || callback.file == null) {
-            Toast.makeText(getActivity(), "ダウンロードに失敗しました", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        SdCardUtils.scanFile(getContext(), callback.file,
-                new MediaScannerConnection.OnScanCompletedListener() {
-                    @Override
-                    public void onScanCompleted(String path, Uri uri) {
-                        Log.e(TAG, "onScanCompleted: ");
-                        getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(getActivity(), "ダウンロード完了しました", Toast.LENGTH_SHORT).show();
-                            }
-                        });
-                    }
-                });
-    }
-
 }

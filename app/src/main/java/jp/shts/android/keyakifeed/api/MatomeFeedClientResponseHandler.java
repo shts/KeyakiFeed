@@ -12,7 +12,7 @@ import org.apache.http.Header;
 import java.io.ByteArrayInputStream;
 
 import jp.shts.android.keyakifeed.entities.FeedItemList;
-import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
+import jp.shts.android.keyakifeed.models.eventbus.RxBusProvider;
 
 public class MatomeFeedClientResponseHandler extends AsyncHttpResponseHandler {
 
@@ -54,7 +54,7 @@ public class MatomeFeedClientResponseHandler extends AsyncHttpResponseHandler {
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
-                    BusHolder.get().post(new MatomeFeedClient.GetMatomeFeedCallback(feedItemList, null));
+                    RxBusProvider.getInstance().send(new MatomeFeedClient.GetMatomeFeedCallback(feedItemList, null));
                 }
             });
         }
