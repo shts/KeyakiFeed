@@ -3,6 +3,7 @@ package jp.shts.android.keyakifeed.fragments;
 import android.content.Context;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
@@ -22,11 +23,14 @@ import jp.shts.android.keyakifeed.api.KeyakiFeedApiClient;
 import jp.shts.android.keyakifeed.databinding.FragmentMemberImageGridBinding;
 import jp.shts.android.keyakifeed.databinding.ListItemImageGridBinding;
 import jp.shts.android.keyakifeed.dialogs.DownloadConfirmDialog;
+import jp.shts.android.keyakifeed.entities.BlogImage;
 import jp.shts.android.keyakifeed.models.Entries;
 import jp.shts.android.keyakifeed.models.Entry;
 import jp.shts.android.keyakifeed.models.Member;
 import jp.shts.android.keyakifeed.services.DownloadImageService;
+import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action0;
 import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
@@ -93,87 +97,60 @@ public class MemberImageGridFragment extends Fragment {
         final Member member = getArguments().getParcelable("member");
         if (member == null) return;
         counter = 0;
-        subscriptions.add(KeyakiFeedApiClient.getMemberEntries(
-                member.getId(), counter, PAGE_LIMIT)
-                .subscribeOn(Schedulers.io())
+        subscriptions.add(getMemberEntries(member.getId(), counter, PAGE_LIMIT)
+                .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
-                .map(new Func1<Entries, ArrayList<String>>() {
+                .subscribe(new Action1<List<BlogImage>>() {
                     @Override
-                    public ArrayList<String> call(Entries entries) {
-                        ArrayList<String> list = new ArrayList<>();
-                        for (Entry e : entries) {
-                            list.addAll(e.getImageUrlList());
+                    public void call(List<BlogImage> blogImages) {
+                        if (blogImages == null || blogImages.isEmpty()) {
+                            return;
                         }
-                        return list;
-                    }
-                })
-                .onErrorReturn(new Func1<Throwable, ArrayList<String>>() {
-                    @Override
-                    public ArrayList<String> call(Throwable throwable) {
-                        return null;
-                    }
-                })
-                .subscribe(new Action1<ArrayList<String>>() {
-                    @Override
-                    public void call(ArrayList<String> list) {
-                        if (list == null || list.isEmpty()) {
-                            Log.e(TAG, "cannot get entries");
-                        } else {
-                            // setup adapter
-                            adapter = new MemberImageGridAdapter(getContext(), list);
-                            adapter.setOnMaxPageScrollListener(new FooterRecyclerViewAdapter.OnMaxPageScrollListener() {
-                                @Override
-                                public void onMaxPageScrolled() {
-                                    Log.v(TAG, "onMaxPageScrolled() : nowGettingNextEntry(" + nowGettingNextEntry + ")");
-                                    if (nowGettingNextEntry) return;
-                                    nowGettingNextEntry = true;
-                                    // get next feed
-                                    getMemberNextEntries();
-                                }
-                            });
-                            binding.recyclerView.setAdapter(adapter);
-                        }
+                        // setup adapter
+                        adapter = new MemberImageGridAdapter(getContext(), blogImages);
+                        adapter.setOnMaxPageScrollListener(new FooterRecyclerViewAdapter.OnMaxPageScrollListener() {
+                            @Override
+                            public void onMaxPageScrolled() {
+                                if (nowGettingNextEntry) return;
+                                nowGettingNextEntry = true;
+                                // get next feed
+                                getMemberNextEntries();
+                            }
+                        });
+                        binding.recyclerView.setAdapter(adapter);
+
                     }
                 }));
     }
 
-    public void getMemberNextEntries() {
+    private void getMemberNextEntries() {
         final Member member = getArguments().getParcelable("member");
         if (member == null) return;
         counter++;
-        subscriptions.add(KeyakiFeedApiClient.getMemberEntries(
-                member.getId(), (PAGE_LIMIT * counter), PAGE_LIMIT)
-                .subscribeOn(Schedulers.io())
+        subscriptions.add(getMemberEntries(member.getId(), (PAGE_LIMIT * counter), PAGE_LIMIT)
+                .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
-                .map(new Func1<Entries, ArrayList<String>>() {
+                .doOnCompleted(new Action0() {
                     @Override
-                    public ArrayList<String> call(Entries entries) {
-                        ArrayList<String> list = new ArrayList<>();
-                        for (Entry e : entries) {
-                            list.addAll(e.getImageUrlList());
-                        }
-                        return list;
-                    }
-                })
-                .onErrorReturn(new Func1<Throwable, ArrayList<String>>() {
-                    @Override
-                    public ArrayList<String> call(Throwable throwable) {
-                        Snackbar.make(binding.coordinator, "ブログ記事の取得に失敗しました。通信状態を確認してください。", Snackbar.LENGTH_SHORT).show();
-                        throwable.printStackTrace();
-                        return new ArrayList<>();
-                    }
-                })
-                .subscribe(new Action1<ArrayList<String>>() {
-                    @Override
-                    public void call(ArrayList<String> list) {
+                    public void call() {
                         nowGettingNextEntry = false;
-                        if (list == null || list.isEmpty()) {
-                            Log.e(TAG, "cannot get entries");
+                    }
+                })
+                .doOnError(new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        nowGettingNextEntry = false;
+                    }
+                })
+                .subscribe(new Action1<List<BlogImage>>() {
+                    @Override
+                    public void call(List<BlogImage> blogImages) {
+                        if (blogImages == null || blogImages.isEmpty()) {
                             if (adapter != null) adapter.setFoooterVisibility(false);
                         } else {
                             if (adapter != null) {
                                 adapter.setFoooterVisibility(true);
-                                adapter.add(list);
+                                adapter.add(blogImages);
                                 adapter.notifyDataSetChanged();
                             }
                         }
@@ -181,10 +158,36 @@ public class MemberImageGridFragment extends Fragment {
                 }));
     }
 
-    private static class MemberImageGridAdapter
-            extends FooterRecyclerViewAdapter<String, ListItemImageGridBinding> {
+    @NonNull
+    private Observable<List<BlogImage>> getMemberEntries(int memberId, int skip, int limit) {
+        return KeyakiFeedApiClient.getMemberEntries(memberId, skip, limit)
+                .doOnError(new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        Snackbar.make(binding.coordinator,
+                                "ブログ記事の取得に失敗しました。通信状態を確認してください。",
+                                Snackbar.LENGTH_SHORT).show();
+                    }
+                })
+                .map(new Func1<Entries, List<BlogImage>>() {
+                    @Override
+                    public List<BlogImage> call(Entries entries) {
+                        List<BlogImage> blogImageArrayList = new ArrayList<>();
+                        for (Entry entry : entries) {
+                            List<String> imageUrlList = entry.getImageUrlList();
+                            for (String imageUrl : imageUrlList) {
+                                blogImageArrayList.add(new BlogImage(imageUrl, entry));
+                            }
+                        }
+                        return blogImageArrayList;
+                    }
+                });
+    }
 
-        public MemberImageGridAdapter(Context context, List<String> list) {
+    private static class MemberImageGridAdapter
+            extends FooterRecyclerViewAdapter<BlogImage, ListItemImageGridBinding> {
+
+        public MemberImageGridAdapter(Context context, List<BlogImage> list) {
             super(context, list);
         }
 
@@ -195,17 +198,18 @@ public class MemberImageGridFragment extends Fragment {
         }
 
         @Override
-        public void onBindContentItemViewHolder(
-                BindingHolder<ListItemImageGridBinding> bindingHolder, final String url) {
+        public void onBindContentItemViewHolder(BindingHolder<ListItemImageGridBinding> bindingHolder,
+                                                final BlogImage blogImage) {
             final ListItemImageGridBinding binding = bindingHolder.binding;
-            binding.setUrl(url);
+            //binding.setUrl(url);
+            binding.setBlogImage(blogImage);
             final View root = binding.getRoot();
             root.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     getContext().startActivity(
                             GalleryActivity.getStartIntent(
-                                    getContext(), (ArrayList<String>) getList(), getPosition(url)));
+                                    getContext(), (ArrayList<BlogImage>) getList(), getPosition(blogImage)));
                 }
             });
         }

@@ -1,172 +1,91 @@
 package jp.shts.android.keyakifeed.activities;
 
-import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.media.MediaScannerConnection;
-import android.net.Uri;
+import android.databinding.DataBindingUtil;
+import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.design.widget.CoordinatorLayout;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.view.PagerAdapter;
-import android.support.v4.view.ViewPager;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageView;
-
-import com.squareup.otto.Subscribe;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import jp.shts.android.keyakifeed.R;
-import jp.shts.android.keyakifeed.dialogs.DownloadConfirmDialog;
-import jp.shts.android.keyakifeed.utils.PicassoHelper;
-import jp.shts.android.keyakifeed.utils.SdCardUtils;
-import jp.shts.android.keyakifeed.utils.SimpleImageDownloader;
+import jp.shts.android.keyakifeed.databinding.ActivityGalleryBinding;
+import jp.shts.android.keyakifeed.entities.BlogImage;
+import jp.shts.android.keyakifeed.fragments.GalleryFragment;
 
 public class GalleryActivity extends AppCompatActivity {
 
     private static final String TAG = GalleryActivity.class.getSimpleName();
-    private static final int REQUEST_DOWNLOAD = 1;
 
-    public static Intent getStartIntent(Context context, ArrayList<String> imageUrlList, int index) {
+    public static Intent getStartIntent(Context context,
+                                        ArrayList<BlogImage> blogImages,
+                                        int index) {
         Intent intent = new Intent(context, GalleryActivity.class);
-        intent.putStringArrayListExtra("imageUrlList", imageUrlList);
+        intent.putParcelableArrayListExtra("blogImages", blogImages);
         intent.putExtra("index", index);
         return intent;
     }
 
-    private String downloadTarget;
-    private CoordinatorLayout coordinatorLayout;
-    private Uri recentDownloadedUri;
+    private ActivityGalleryBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_gallery);
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_gallery);
+        final List<BlogImage> blogImages = getIntent().getParcelableArrayListExtra("blogImages");
+        binding.viewPager.setAdapter(new GalleryPagerAdapter(blogImages));
+        binding.viewPager.setCurrentItem(getIntent().getIntExtra("index", 0));
 
-        coordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinator);
-
-        final List<String> imageUrlList = getIntent().getStringArrayListExtra("imageUrlList");
-        final ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
-        viewPager.setAdapter(new PagerAdapter() {
+        binding.toolbar.setNavigationIcon(R.drawable.ic_clear_white_24dp);
+        binding.toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
-            public int getCount() {
-                return imageUrlList.size();
-            }
-            @Override
-            public boolean isViewFromObject(View view, Object object) {
-                return object.equals(view);
-            }
-            @Override
-            public Object instantiateItem(ViewGroup container, int position) {
-                final ImageView iv = new ImageView(getApplicationContext());
-                final String url = imageUrlList.get(position);
-                iv.setTag(url);
-                iv.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                PicassoHelper.load(iv, url);
-                iv.setOnLongClickListener(new View.OnLongClickListener() {
-                    @Override
-                    public boolean onLongClick(final View v) {
-                        DownloadConfirmDialog confirmDialog = new DownloadConfirmDialog();
-                        confirmDialog.setCallbacks(new DownloadConfirmDialog.Callbacks() {
-                            @Override
-                            public void onClickPositiveButton() {
-                                download((String) v.getTag());
-                            }
-                            @Override
-                            public void onClickNegativeButton() {}
-                        });
-                        confirmDialog.show(getSupportFragmentManager(), TAG);
-                        return false;
-                    }
-                });
-                container.addView(iv);
-                return iv;
-            }
-            @Override
-            public void destroyItem(ViewGroup container, int position, Object object) {
-                View v = (View) object;
-                container.removeView(v);
+            public void onClick(View v) {
+                finish();
             }
         });
-        viewPager.setCurrentItem(getIntent().getIntExtra("index", 0));
-    }
 
-    private void download(String url) {
-        if (!hasPermission()) {
-            // 権限がない場合はリクエスト
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_DOWNLOAD);
-            downloadTarget = url;
-            return;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            // noinspection ConstantConditions
+            findViewById(android.R.id.content).setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
         }
-        if (!new SimpleImageDownloader(getApplicationContext(), url).get()) {
-            Snackbar.make(coordinatorLayout, "ダウンロードに失敗しました", Snackbar.LENGTH_LONG).show();
-        }
-    }
-
-    private boolean hasPermission() {
-        final int permission = ContextCompat.checkSelfPermission(
-                this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        return permission == PackageManager.PERMISSION_GRANTED;
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (REQUEST_DOWNLOAD == requestCode) {
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                download(downloadTarget);
-            } else {
-                Snackbar.make(coordinatorLayout, "アプリに書き込み権限がないためダウンロードできません。", Snackbar.LENGTH_LONG)
-                        .show();
-            }
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                super.onBackPressed();
+                return true;
         }
+        return super.onOptionsItemSelected(item);
     }
 
-    /**
-     * SimpleImageDownloader のコールバック
-     * @param callback callback
-     */
-    @Subscribe
-    public void onFinishDownload(SimpleImageDownloader.Callback callback) {
-        if (callback == null || callback.file == null) {
-            Snackbar.make(coordinatorLayout, "ダウンロードに失敗しました", Snackbar.LENGTH_LONG).show();
-            return;
+    private class GalleryPagerAdapter extends FragmentStatePagerAdapter {
+
+        private final List<BlogImage> blogImageList;
+
+        public GalleryPagerAdapter(List<BlogImage> blogImageList) {
+            super(GalleryActivity.this.getSupportFragmentManager());
+            this.blogImageList = blogImageList;
         }
-        SdCardUtils.scanFile(this, callback.file,
-                new MediaScannerConnection.OnScanCompletedListener() {
-            @Override
-            public void onScanCompleted(String path, Uri uri) {
-                Log.w(TAG, "path(" + path + ") uri(" + uri + ")");
-                recentDownloadedUri = uri;
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Snackbar.make(coordinatorLayout, "ダウンロード完了しました", Snackbar.LENGTH_LONG)
-                                .setAction("確認する", new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-                                        Intent intent = new Intent();
-                                        intent.setAction(Intent.ACTION_VIEW);
-                                        intent.setDataAndType(recentDownloadedUri, "image/jpeg");
-                                        startActivity(intent);
-                                    }
-                                })
-                                .setActionTextColor(ContextCompat.getColor(
-                                        getApplicationContext(), R.color.accent))
-                                .show();
-                    }
-                });
-            }
-        });
+
+        @Override
+        public Fragment getItem(int position) {
+            return GalleryFragment.newInstance(blogImageList.get(position));
+        }
+
+        @Override
+        public int getCount() {
+            return blogImageList.size();
+        }
     }
 
 }
