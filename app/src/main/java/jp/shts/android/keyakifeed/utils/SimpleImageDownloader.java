@@ -29,11 +29,12 @@ public class SimpleImageDownloader extends ImageDownloader {
 
     @Override
     public void onResponse(Response response) {
+        Log.e(TAG, "onResponse: ");
         if (response.result != Response.Result.SUCCESS) {
             Log.e(TAG, "failed to download image : response("
                     + response.toString() + ")");
         }
-        BusHolder.get().post(new Callback(response.file));
+        BusHolder.get().post(new SimpleImageDownloader.Callback(response.file));
     }
 
 }

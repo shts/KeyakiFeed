@@ -42,6 +42,7 @@
         <activity android:name=".activities.AllMemberActivity" />
         <activity android:name=".activities.OtherMenuActivity" />
         <activity android:name=".activities.MatomeBrowseActivity" />
+        <activity android:name=".activities.PermissionRequireActivity" />
         <activity android:name=".activities.GalleryActivity"
             android:theme="@style/Theme.AppTheme.TranslucentStatusBar"/>
         <activity android:name=".activities.DeepLinkActivity">
