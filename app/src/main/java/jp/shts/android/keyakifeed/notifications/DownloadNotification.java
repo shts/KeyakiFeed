@@ -18,25 +18,25 @@ public class DownloadNotification {
     private static final int DEFAULT_NOTIFICATION_ID = 2000;
     private static final String NOTIFICATION_ID_KEY = "pref_key_download_notification_id";
 
-    private final Context mContext;
+    private final Context context;
 
-    private NotificationCompat.Builder mNotification = null;
-    private NotificationManager mNotificationManager = null;
+    private NotificationCompat.Builder notification = null;
+    private NotificationManager notificationManager = null;
 
-    private int mCounter = 0;
-    private int mMaxCounter = 0;
-    private final int mNotificationId;
+    private int counter = 0;
+    private int maxSize = 0;
+    private final int notificationId;
     private Uri lastDownloadedFileUri;
 
     public DownloadNotification(Context context, int targetSize) {
         this(context);
-        mMaxCounter = targetSize;
+        maxSize = targetSize;
     }
 
     public DownloadNotification(Context context) {
-        mNotificationId = getNotificationId(context);
-        mContext = context;
-        mNotificationManager = (NotificationManager) context
+        notificationId = getNotificationId(context);
+        this.context = context;
+        notificationManager = (NotificationManager) context
                 .getSystemService(Context.NOTIFICATION_SERVICE);
     }
 
@@ -44,16 +44,16 @@ public class DownloadNotification {
      * start notification progress.
      */
     public void startProgress() {
-        mNotification = new NotificationCompat.Builder(mContext);
-        mNotification.setSmallIcon(R.drawable.ic_notification);
-        Resources res = mContext.getResources();
-        mNotification.setTicker(res.getString(R.string.notify_start_download_ticker));
-        mNotification.setContentTitle(res.getString(R.string.notify_start_download_title));
-        mNotification.setContentText(res.getString(R.string.notify_start_download_text));
+        notification = new NotificationCompat.Builder(context);
+        notification.setSmallIcon(R.drawable.ic_file_download_white_24dp);
+        Resources res = context.getResources();
+        notification.setTicker(res.getString(R.string.notify_start_download_ticker));
+        notification.setContentTitle(res.getString(R.string.notify_start_download_title));
+        notification.setContentText(res.getString(R.string.notify_start_download_text));
         // クリック時に消去させない
-        mNotification.setOngoing(true);
+        notification.setOngoing(true);
 
-        mNotificationManager.notify(mNotificationId, mNotification.build());
+        notificationManager.notify(notificationId, notification.build());
     }
 
     /**
@@ -61,35 +61,36 @@ public class DownloadNotification {
      */
     public void updateProgress(Uri uri) {
         if (uri != null) lastDownloadedFileUri = uri;
-        mNotification.setProgress(mMaxCounter, mCounter++, false);
-        mNotification.setOngoing(true);
-        mNotificationManager.notify(mNotificationId, mNotification.build());
+        notification.setProgress(maxSize, counter++, false);
+        notification.setContentText(counter + "/" + maxSize + " ...");
+        notification.setOngoing(true);
+        notificationManager.notify(notificationId, notification.build());
 
-        if (mMaxCounter <= mCounter) {
+        if (maxSize <= counter) {
             finishProgress();
         }
     }
 
     private void finishProgress() {
-        mCounter = 0;
-        mNotification.setSmallIcon(R.drawable.ic_notification);
-        Resources res = mContext.getResources();
-        mNotification.setTicker(res.getString(R.string.notify_finish_download_ticker));
-        mNotification.setContentTitle(res.getString(R.string.notify_finish_download_title));
-        mNotification.setContentText(res.getString(R.string.notify_finish_download_text));
-        mNotification.setContentIntent(getPendingIntentFrom(lastDownloadedFileUri));
-        mNotification.setProgress(0, 0, false);
-        mNotification.setOngoing(false);
-        mNotification.setAutoCancel(true);
-        mNotificationManager.notify(mNotificationId, mNotification.build());
-        notified(mContext, mNotificationId);
+        counter = 0;
+        notification.setSmallIcon(R.drawable.ic_notification);
+        Resources res = context.getResources();
+        notification.setTicker(res.getString(R.string.notify_finish_download_ticker));
+        notification.setContentTitle(res.getString(R.string.notify_finish_download_title));
+        notification.setContentText(res.getString(R.string.notify_finish_download_text));
+        notification.setContentIntent(getPendingIntentFrom(lastDownloadedFileUri));
+        notification.setProgress(0, 0, false);
+        notification.setOngoing(false);
+        notification.setAutoCancel(true);
+        notificationManager.notify(notificationId, notification.build());
+        notified(context, notificationId);
     }
 
     private PendingIntent getPendingIntentFrom(Uri uri) {
         Intent intent = new Intent();
         intent.setAction(Intent.ACTION_VIEW);
         intent.setDataAndType(uri, "image/jpeg");
-        return PendingIntent.getActivity(mContext, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        return PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
     }
 
     private static int getNotificationId(Context context) {

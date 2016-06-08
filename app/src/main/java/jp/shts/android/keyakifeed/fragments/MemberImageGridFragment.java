@@ -1,13 +1,14 @@
 package jp.shts.android.keyakifeed.fragments;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +18,7 @@ import java.util.List;
 
 import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.activities.GalleryActivity;
+import jp.shts.android.keyakifeed.activities.PermissionRequireActivity;
 import jp.shts.android.keyakifeed.adapters.BindingHolder;
 import jp.shts.android.keyakifeed.adapters.FooterRecyclerViewAdapter;
 import jp.shts.android.keyakifeed.api.KeyakiFeedApiClient;
@@ -75,10 +77,8 @@ public class MemberImageGridFragment extends Fragment {
                 downloadConfirmDialog.setCallbacks(new DownloadConfirmDialog.Callbacks() {
                     @Override
                     public void onClickPositiveButton() {
-                        Log.v(TAG, "onClickPositiveButton");
-                        DownloadImageService.download(
-                                getActivity().getApplicationContext()
-                                , getArguments().getString("memberObjectId"));
+                        startActivityForResult(PermissionRequireActivity
+                                .getDownloadStartIntent(getActivity(), ""), 0);
                     }
 
                     @Override
@@ -184,6 +184,23 @@ public class MemberImageGridFragment extends Fragment {
                 });
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode != Activity.RESULT_OK) {
+            Snackbar.make(binding.coordinator,
+                    "ストレージへアクセス許可がない場合は、ダウンロードできません。",
+                    Snackbar.LENGTH_SHORT).show();
+            return;
+        }
+        final Member member = getArguments().getParcelable("member");
+        if (member == null) {
+            return;
+        }
+        getActivity().startService(
+                DownloadImageService.getStartIntent(getActivity(), member.getId()));
+    }
+
     private static class MemberImageGridAdapter
             extends FooterRecyclerViewAdapter<BlogImage, ListItemImageGridBinding> {
 
@@ -201,7 +218,6 @@ public class MemberImageGridFragment extends Fragment {
         public void onBindContentItemViewHolder(BindingHolder<ListItemImageGridBinding> bindingHolder,
                                                 final BlogImage blogImage) {
             final ListItemImageGridBinding binding = bindingHolder.binding;
-            //binding.setUrl(url);
             binding.setBlogImage(blogImage);
             final View root = binding.getRoot();
             root.setOnClickListener(new View.OnClickListener() {

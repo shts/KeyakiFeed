@@ -1,10 +1,19 @@
 package jp.shts.android.keyakifeed.models;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Entries extends ArrayList<Entry> {
 
     private static final String TAG = Entries.class.getSimpleName();
+
+    public List<String> getImageUrlList() {
+        List<String> imageUrlList = new ArrayList<>();
+        for (Entry e : this) {
+            imageUrlList.addAll(e.getImageUrlList());
+        }
+        return imageUrlList;
+    }
 
     @Override
     public String toString() {
