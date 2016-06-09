@@ -47,6 +47,8 @@
             android:theme="@style/PermissionRequireActivity" />
         <activity android:name=".activities.GalleryActivity"
             android:theme="@style/Theme.AppTheme.TranslucentStatusBar"/>
+        <activity android:name=".activities.SampleActivity"
+            android:theme="@style/Theme.AppTheme.TranslucentStatusBar"/>
         <activity android:name=".activities.DeepLinkActivity">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
