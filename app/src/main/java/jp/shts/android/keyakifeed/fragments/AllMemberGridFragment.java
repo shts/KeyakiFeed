@@ -22,6 +22,7 @@ import jp.shts.android.keyakifeed.databinding.FragmentAllMemberGridBinding;
 import jp.shts.android.keyakifeed.databinding.ListItemMemberBinding;
 import jp.shts.android.keyakifeed.models.Member;
 import jp.shts.android.keyakifeed.models.Members;
+import jp.shts.android.keyakifeed.providers.FavoriteContentObserver;
 import jp.shts.android.keyakifeed.providers.dao.Favorites;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
@@ -50,15 +51,27 @@ public class AllMemberGridFragment extends Fragment {
     private FragmentAllMemberGridBinding binding;
     private CompositeSubscription subscriptions = new CompositeSubscription();
 
+    private final FavoriteContentObserver favoriteContentObserver = new FavoriteContentObserver() {
+        @Override
+        public void onChangeState(@State int state) {
+            if (adapter != null) adapter.notifyDataSetChanged();
+        }
+    };
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         listenerType = getArguments().getString("listenerType");
+        // 推しメン登録時には個別にnotifyするためメンバー一覧画面のみ登録する
+        if (ListenerType.START_DETAIL.name().equals(listenerType))
+            favoriteContentObserver.register(getContext());
     }
 
     @Override
     public void onDestroy() {
         subscriptions.unsubscribe();
+        if (ListenerType.START_DETAIL.name().equals(listenerType))
+            favoriteContentObserver.unregister(getContext());
         super.onDestroy();
     }
 
