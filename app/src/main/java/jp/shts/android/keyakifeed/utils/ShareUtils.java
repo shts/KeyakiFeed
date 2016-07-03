@@ -1,9 +1,10 @@
 package jp.shts.android.keyakifeed.utils;
 
 import android.content.Intent;
+import android.support.annotation.NonNull;
 
 import jp.shts.android.keyakifeed.entities.Blog;
-import jp.shts.android.keyakifeed.entities.FeedItem;
+import jp.shts.android.keyakifeed.models.Matome;
 
 public class ShareUtils {
 
@@ -20,11 +21,12 @@ public class ShareUtils {
         return intent;
     }
 
-    public static Intent getShareMatomeBlogIntent(FeedItem feedItem) {
+    @NonNull
+    public static Intent getShareMatomeBlogIntent(@NonNull Matome matome) {
         StringBuilder sb = new StringBuilder();
-        sb.append(feedItem.title).append(" | ");
-        sb.append(feedItem.siteTitle).append("\n");
-        sb.append(feedItem.url);
+        sb.append(matome.getEntryTitle()).append(" | ");
+        sb.append(matome.getFeedTitle()).append("\n");
+        sb.append(matome.getEntryUrl());
 
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("text/plain");

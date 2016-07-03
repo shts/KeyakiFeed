@@ -8,6 +8,7 @@ import java.util.List;
 
 import jp.shts.android.keyakifeed.BuildConfig;
 import jp.shts.android.keyakifeed.models.Entries;
+import jp.shts.android.keyakifeed.models.Matome;
 import jp.shts.android.keyakifeed.models.Member;
 import jp.shts.android.keyakifeed.models.Members;
 import jp.shts.android.keyakifeed.models.Reports;
@@ -72,6 +73,11 @@ public class KeyakiFeedApiClient {
         return getApiService().changeFavoriteState(createFavoritePostBody(memberId, "decriment"));
     }
 
+    @CheckResult
+    public static Observable<List<Matome>> getMatomeFeeds() {
+        return getApiService().getMatomeFeeds();
+    }
+
     private static HashMap<String, String> createFavoritePostBody(int memberId, String action) {
         HashMap<String, String> hashMap = new HashMap<>();
         hashMap.put("member_id", String.valueOf(memberId));
@@ -129,6 +135,9 @@ public class KeyakiFeedApiClient {
         })
         @POST("/favorite")
         Observable<Void> changeFavoriteState(@Body HashMap<String, String> body);
+
+        @GET("/matomes")
+        Observable<List<Matome>> getMatomeFeeds();
     }
 
 }
