@@ -77,6 +77,14 @@ public class MatomeBrowseFragment extends Fragment {
         return binding.getRoot();
     }
 
+    public boolean goBack() {
+        if (binding.browser.canGoBack()) {
+            binding.browser.goBack();
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public void onResume() {
         super.onResume();

@@ -43,4 +43,12 @@ public class MatomeBrowseActivity extends AppCompatActivity {
         ft.replace(R.id.container, matomeBrowseFragment, MatomeBrowseFragment.class.getSimpleName());
         ft.commit();
     }
+
+    @Override
+    public void onBackPressed() {
+        MatomeBrowseFragment matomeBrowseFragment =(MatomeBrowseFragment) getSupportFragmentManager()
+                .findFragmentByTag(MatomeBrowseFragment.class.getSimpleName());
+        if (matomeBrowseFragment.goBack()) return;
+        super.onBackPressed();
+    }
 }
