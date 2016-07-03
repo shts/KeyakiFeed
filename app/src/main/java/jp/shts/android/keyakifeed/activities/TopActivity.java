@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.GravityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
@@ -25,26 +26,26 @@ public class TopActivity extends AppCompatActivity {
 
     private static final String TAG = TopActivity.class.getSimpleName();
 
-    private ActivityTopBinding activityTopBinding;
+    private ActivityTopBinding binding;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        activityTopBinding = DataBindingUtil.setContentView(this, R.layout.activity_top);
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_top);
 
-        activityTopBinding.toolbar.setNavigationIcon(R.drawable.ic_menu_white_24dp);
-        activityTopBinding.toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+        binding.toolbar.setNavigationIcon(R.drawable.ic_menu_white_24dp);
+        binding.toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                activityTopBinding.drawer.openDrawer(activityTopBinding.navigation);
+                binding.drawer.openDrawer(binding.navigation);
             }
         });
 
-        activityTopBinding.navigation.setNavigationItemSelectedListener(
+        binding.navigation.setNavigationItemSelectedListener(
                 new NavigationView.OnNavigationItemSelectedListener() {
                     @Override
                     public boolean onNavigationItemSelected(MenuItem menuItem) {
-                        activityTopBinding.drawer.closeDrawers();
+                        binding.drawer.closeDrawers();
                         final int id = menuItem.getItemId();
                         if (id == getLastSelectedMenuId()) {
                             return false;
@@ -96,13 +97,38 @@ public class TopActivity extends AppCompatActivity {
                 return;
         }
 
-        activityTopBinding.navigation.getMenu().findItem(id).setChecked(true);
-        activityTopBinding.toolbar.setTitle(
-                activityTopBinding.navigation.getMenu().findItem(id).getTitle());
+        binding.navigation.getMenu().findItem(id).setChecked(true);
+        binding.toolbar.setTitle(
+                binding.navigation.getMenu().findItem(id).getTitle());
 
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         ft.replace(R.id.container, fragment, fragment.toString());
         ft.commit();
         setLastSelectedMenuId(id);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (binding.drawer.isDrawerOpen(GravityCompat.START)) {
+            binding.drawer.closeDrawer(GravityCompat.START);
+            return;
+        }
+        boolean currentPageHome = binding.navigation.getMenu().findItem(
+                R.id.menu_all_feed).isChecked();
+        if (!currentPageHome) {
+            setHomeFragment();
+            return;
+        }
+        super.onBackPressed();
+    }
+
+    private void setHomeFragment() {
+        binding.navigation.getMenu().findItem(R.id.menu_all_feed).setChecked(true);
+        binding.toolbar.setTitle(
+                binding.navigation.getMenu().findItem(R.id.menu_all_feed).getTitle());
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.replace(R.id.container, new AllFeedListFragment(), AllFeedListFragment.class.getSimpleName());
+        ft.commit();
+        setLastSelectedMenuId(R.id.menu_all_feed);
     }
 }
