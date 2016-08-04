@@ -47,8 +47,6 @@
             android:theme="@style/PermissionRequireActivity" />
         <activity android:name=".activities.GalleryActivity"
             android:theme="@style/Theme.AppTheme.TranslucentStatusBar"/>
-        <activity android:name=".activities.SampleActivity"
-            android:theme="@style/Theme.AppTheme.TranslucentStatusBar"/>
         <activity android:name=".activities.DeepLinkActivity">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
@@ -64,7 +62,7 @@
             android:theme="@android:style/Theme.Translucent" />
         <service android:name=".services.DownloadImageService" android:exported="true" />
 
-        <!-- for push service START -->
+        <!--
         <service android:name="com.parse.PushService" />
         <receiver android:name="com.parse.ParsePushBroadcastReceiver"
             android:exported="false">
@@ -79,13 +77,24 @@
             <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
                 <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
-                <!--
-                  IMPORTANT: Change "com.parse.starter" to match your app's package name.
-                -->
+
                 <category android:name="jp.shts.android.keyakifeed" />
             </intent-filter>
         </receiver>
-        <!-- for push service END -->
+        -->
+        <service
+            android:name="jp.shts.android.keyakifeed.receivers.TokenRefreshService">
+            <intent-filter>
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name="jp.shts.android.keyakifeed.receivers.PushReceiver">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
         <!-- for receive parse push -->
         <receiver android:name="jp.shts.android.keyakifeed.receivers.BlogUpdateReceiver"
             android:exported="false">

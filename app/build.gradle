@@ -86,4 +86,9 @@ dependencies {
     // https://github.com/hotchemi/PermissionsDispatcher
     compile 'com.github.hotchemi:permissionsdispatcher:2.1.2'
     apt 'com.github.hotchemi:permissionsdispatcher-processor:2.1.2'
+
+    compile 'com.google.firebase:firebase-messaging:9.0.0'
 }
+// Add to the bottom of the file
+apply plugin: 'com.google.gms.google-services'
+

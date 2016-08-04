@@ -7,6 +7,7 @@ import com.parse.Parse;
 import com.parse.ParseInstallation;
 
 import io.fabric.sdk.android.Fabric;
+import jp.shts.android.keyakifeed.receivers.PushRegister;
 
 public class KeyakiFeedApplication extends Application {
 
@@ -19,5 +20,7 @@ public class KeyakiFeedApplication extends Application {
 
         Parse.initialize(this, BuildConfig.PARSE_API_ID, BuildConfig.PARSE_API_KEY);
         ParseInstallation.getCurrentInstallation().saveInBackground();
+
+        PushRegister.init(this, true);
     }
 }

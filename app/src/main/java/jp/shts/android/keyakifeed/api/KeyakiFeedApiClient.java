@@ -78,6 +78,22 @@ public class KeyakiFeedApiClient {
         return getApiService().getMatomeFeeds();
     }
 
+    @CheckResult
+    public static Observable<Void> registrationId(String regId) {
+        return getApiService().registrationId(createRegistrationPostBody(regId));
+    }
+
+    @CheckResult
+    public static Observable<Void> unregistrationId(String regId) {
+        return getApiService().unregistrationId(createRegistrationPostBody(regId));
+    }
+
+    private static HashMap<String, String> createRegistrationPostBody(String regId) {
+        HashMap<String, String> hashMap = new HashMap<>();
+        hashMap.put("reg_id", regId);
+        return hashMap;
+    }
+
     private static HashMap<String, String> createFavoritePostBody(int memberId, String action) {
         HashMap<String, String> hashMap = new HashMap<>();
         hashMap.put("member_id", String.valueOf(memberId));
@@ -138,6 +154,20 @@ public class KeyakiFeedApiClient {
 
         @GET("/matomes")
         Observable<List<Matome>> getMatomeFeeds();
+
+        @Headers({
+                "Accept: application/json",
+                "Content-type: application/json"
+        })
+        @POST("/registration")
+        Observable<Void> registrationId(@Body HashMap<String, String> body);
+
+        @Headers({
+                "Accept: application/json",
+                "Content-type: application/json"
+        })
+        @POST("/unregistration")
+        Observable<Void> unregistrationId(@Body HashMap<String, String> body);
     }
 
 }
