@@ -26,6 +26,7 @@ import jp.shts.android.keyakifeed.models.Entries;
 import jp.shts.android.keyakifeed.models.Entry;
 import jp.shts.android.keyakifeed.providers.FavoriteContentObserver;
 import rx.Observable;
+import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 import rx.functions.Action1;
@@ -111,9 +112,20 @@ public class AllFeedListFragment extends Fragment {
     }
 
     private void getEntries() {
-        subscriptions.add(getAllEntries().subscribe(new Action1<Entries>() {
+        subscriptions.add(getAllEntries().subscribe(new Subscriber<Entries>() {
             @Override
-            public void call(Entries entries) {
+            public void onCompleted() {
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                e.printStackTrace();
+                // TODO: error handling
+            }
+
+            @Override
+            public void onNext(Entries entries) {
                 if (entries == null || entries.isEmpty()) {
                     return;
                 }

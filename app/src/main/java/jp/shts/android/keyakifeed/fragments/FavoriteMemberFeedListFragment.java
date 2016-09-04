@@ -28,6 +28,7 @@ import jp.shts.android.keyakifeed.models.Entries;
 import jp.shts.android.keyakifeed.models.Entry;
 import jp.shts.android.keyakifeed.providers.dao.Favorites;
 import rx.Observable;
+import rx.Subscriber;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
@@ -97,9 +98,20 @@ public class FavoriteMemberFeedListFragment extends Fragment {
         }
 
         Subscription subscription = getEntries(favorites.getMemberIdList())
-                .subscribe(new Action1<Entries>() {
+                .subscribe(new Subscriber<Entries>() {
                     @Override
-                    public void call(Entries entries) {
+                    public void onCompleted() {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        e.printStackTrace();
+                        // TODO: error handling
+                    }
+
+                    @Override
+                    public void onNext(Entries entries) {
                         if (entries.isEmpty()) return;
                         adapter = new FavoriteFeedListAdapter(getActivity(), entries);
                         adapter.setOnMaxPageScrollListener(new FooterRecyclerViewAdapter.OnMaxPageScrollListener() {

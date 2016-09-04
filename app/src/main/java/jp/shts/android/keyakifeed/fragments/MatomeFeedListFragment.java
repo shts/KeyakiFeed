@@ -92,6 +92,8 @@ public class MatomeFeedListFragment extends Fragment {
 
                     @Override
                     public void onError(Throwable e) {
+                        e.printStackTrace();
+                        // TODO: error handling
                         if (binding.refresh != null) {
                             if (binding.refresh.isRefreshing()) {
                                 binding.refresh.setRefreshing(false);

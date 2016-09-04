@@ -23,6 +23,7 @@ import jp.shts.android.keyakifeed.databinding.ListItemReportBinding;
 import jp.shts.android.keyakifeed.models.Report;
 import jp.shts.android.keyakifeed.models.Reports;
 import rx.Observable;
+import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 import rx.functions.Action1;
@@ -67,9 +68,20 @@ public class OfficialReportListFragment extends Fragment {
         binding.refresh.setColorSchemeResources(R.color.primary);
 
         subscriptions.add(getAllReports()
-                .subscribe(new Action1<Reports>() {
+                .subscribe(new Subscriber<Reports>() {
                     @Override
-                    public void call(Reports reports) {
+                    public void onCompleted() {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        e.printStackTrace();
+                        // TODO: error handling
+                    }
+
+                    @Override
+                    public void onNext(Reports reports) {
                         binding.recyclerview.setAdapter(
                                 new OfficialReportListAdapter(getContext(), reports));
                     }

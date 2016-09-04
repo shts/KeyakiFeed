@@ -149,6 +149,8 @@ public class AllMemberGridFragment extends Fragment {
 
                     @Override
                     public void onError(Throwable e) {
+                        e.printStackTrace();
+                        // TODO: error handling
                         if (binding.refresh.isRefreshing()) {
                             binding.refresh.setRefreshing(false);
                         }
