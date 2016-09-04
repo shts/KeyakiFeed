@@ -13,30 +13,39 @@ import java.util.ArrayList;
 
 public class Entry implements Parcelable {
 
-    @SerializedName("id")
+    @SerializedName(value = "__id", alternate = {"id", "_id"})
     @Expose
     private Integer id;
-    @SerializedName("title")
+    @SerializedName(value = "__title", alternate = {"title", "_title"})
     @Expose
     private String title;
-    @SerializedName("url")
+    @SerializedName(value = "__url", alternate = {"url", "_url"})
     @Expose
     private String url;
-    @SerializedName("published")
+    @SerializedName(value = "__published", alternate = {"published", "_published"})
     @Expose
     private String published;
-    @SerializedName("image_url_list")
+    @SerializedName(value = "__image_url_list", alternate = {"image_url_list", "_image_url_list"})
     @Expose
     private String imageUrlList;
-    @SerializedName("member_id")
+    @SerializedName(value = "__member_id", alternate = {"member_id", "_member_id"})
     @Expose
     private Integer memberId;
-    @SerializedName("member_name")
+    @SerializedName(value = "__member_name", alternate = {"member_name", "_member_name"})
     @Expose
     private String memberName;
-    @SerializedName("member_image_url")
+    @SerializedName(value = "__member_image_url", alternate = {"member_image_url", "_member_image_url"})
     @Expose
     private String memberImageUrl;
+
+    Entry(Report report) {
+        this.id = report.getId();
+        this.title = report.getTitle();
+        this.url = report.getUrl();
+        this.published = report.getPublished();
+        this.imageUrlList = report.getImageUrlArray();
+        this.memberName = "Official Report";
+    }
 
     /**
      * @return The id
@@ -162,18 +171,16 @@ public class Entry implements Parcelable {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("entry {").append("\n");
-        sb.append("id(").append(id).append(") ");
-        sb.append("title(").append(title).append(") ");
-        sb.append("url(").append(url).append(") ");
-        sb.append("published(").append(published).append(") ");
-        sb.append("imageUrlList(").append(imageUrlList).append(") ");
-        sb.append("memberId(").append(memberId).append(") ");
-        sb.append("memberImageUrl(").append(memberImageUrl).append(") ");
-        sb.append("memberName(").append(memberName).append(") ");
-        sb.append("}");
-        return sb.toString();
+        return "Entry{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", url='" + url + '\'' +
+                ", published='" + published + '\'' +
+                ", imageUrlList='" + imageUrlList + '\'' +
+                ", memberId=" + memberId +
+                ", memberName='" + memberName + '\'' +
+                ", memberImageUrl='" + memberImageUrl + '\'' +
+                '}';
     }
 
     protected Entry(Parcel in) {

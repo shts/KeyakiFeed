@@ -5,6 +5,8 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Looper;
+import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 import android.text.TextUtils;
 import android.util.Log;
@@ -14,7 +16,7 @@ import com.squareup.picasso.Picasso;
 
 import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.activities.BlogActivity;
-import jp.shts.android.keyakifeed.entities.Blog;
+import jp.shts.android.keyakifeed.models.Entry;
 import jp.shts.android.keyakifeed.providers.dao.Favorites;
 import jp.shts.android.keyakifeed.utils.PreferencesUtils;
 import jp.shts.android.keyakifeed.views.transformations.CircleTransformation;
@@ -33,7 +35,17 @@ public class BlogUpdateNotification {
     /** ブログ更新通知制限設定(お気に入りメンバーのみ通知する設定) */
     private static final String NOTIFICATION_RESTRICTION_ENABLE = "pref_key_blog_updated_notification_restriction_enable";
 
-    public static void show(Context context, Blog blog) {
+    public static void showExecUiThread(@NonNull final Context context,
+                                        @NonNull final Entry entry) {
+        new android.os.Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                show(context, entry);
+            }
+        });
+    }
+
+    public static void show(Context context, Entry entry) {
 
         final boolean isEnableNotification
                 = PreferencesUtils.getBoolean(context, NOTIFICATION_ENABLE, true);
@@ -42,12 +54,12 @@ public class BlogUpdateNotification {
             return;
         }
 
-        if (isRestriction(context, blog.getMemberId())) {
+        if (isRestriction(context, String.valueOf(entry.getMemberId()))) {
             Log.d(TAG, "do not show notification because of notification restriction");
             return;
         }
 
-        Intent intent = BlogActivity.getStartIntent(context, blog);
+        Intent intent = BlogActivity.getStartIntent(context, entry);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                 | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
@@ -57,8 +69,8 @@ public class BlogUpdateNotification {
                 context, notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.notification_blog_update);
-        views.setTextViewText(R.id.title, blog.getTitle());
-        views.setTextViewText(R.id.text, blog.getMemberName());
+        views.setTextViewText(R.id.title, entry.getTitle());
+        views.setTextViewText(R.id.text, entry.getMemberName());
         Notification notification = new NotificationCompat.Builder(context)
                 .setContentIntent(contentIntent)
                 .setContent(views)
@@ -74,8 +86,8 @@ public class BlogUpdateNotification {
 
         notified(context, notificationId);
 
-        if (!TextUtils.isEmpty(blog.getMemberImageUrl())) {
-            Picasso.with(context).load(blog.getMemberImageUrl())
+        if (!TextUtils.isEmpty(entry.getMemberImageUrl())) {
+            Picasso.with(context).load(entry.getMemberImageUrl())
                     .placeholder(R.drawable.ic_account_circle_black_48dp)
                     .transform(new CircleTransformation()).into(
                     views, R.id.icon, notificationId, notification);

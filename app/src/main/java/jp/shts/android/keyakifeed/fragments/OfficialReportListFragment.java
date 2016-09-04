@@ -20,7 +20,6 @@ import jp.shts.android.keyakifeed.adapters.BindingHolder;
 import jp.shts.android.keyakifeed.api.KeyakiFeedApiClient;
 import jp.shts.android.keyakifeed.databinding.FragmentOfficialReportBinding;
 import jp.shts.android.keyakifeed.databinding.ListItemReportBinding;
-import jp.shts.android.keyakifeed.entities.Blog;
 import jp.shts.android.keyakifeed.models.Report;
 import jp.shts.android.keyakifeed.models.Reports;
 import rx.Observable;
@@ -134,7 +133,7 @@ public class OfficialReportListFragment extends Fragment {
                 @Override
                 public void onClick(View v) {
                     getContext().startActivity(
-                            BlogActivity.getStartIntent(getContext(), new Blog(report)));
+                            BlogActivity.getStartIntent(getContext(), report));
                 }
             });
 

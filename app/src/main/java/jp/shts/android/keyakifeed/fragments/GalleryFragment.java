@@ -20,7 +20,6 @@ import jp.shts.android.keyakifeed.activities.BlogActivity;
 import jp.shts.android.keyakifeed.activities.PermissionRequireActivity;
 import jp.shts.android.keyakifeed.databinding.FragmentGalleryBinding;
 import jp.shts.android.keyakifeed.dialogs.DownloadConfirmDialog;
-import jp.shts.android.keyakifeed.entities.Blog;
 import jp.shts.android.keyakifeed.entities.BlogImage;
 import jp.shts.android.keyakifeed.utils.PicassoHelper;
 import jp.shts.android.keyakifeed.utils.SimpleImageDownloader;
@@ -73,7 +72,7 @@ public class GalleryFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 startActivity(BlogActivity.getStartIntent(
-                        getActivity(), new Blog(blogImage.entry)));
+                        getActivity(), blogImage.entry));
             }
         });
         return binding.getRoot();

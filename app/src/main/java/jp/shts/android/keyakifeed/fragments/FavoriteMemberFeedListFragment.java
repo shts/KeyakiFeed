@@ -24,7 +24,6 @@ import jp.shts.android.keyakifeed.adapters.FooterRecyclerViewAdapter;
 import jp.shts.android.keyakifeed.api.KeyakiFeedApiClient;
 import jp.shts.android.keyakifeed.databinding.FragmentFavoriteFeedListBinding;
 import jp.shts.android.keyakifeed.databinding.ListItemCardBinding;
-import jp.shts.android.keyakifeed.entities.Blog;
 import jp.shts.android.keyakifeed.models.Entries;
 import jp.shts.android.keyakifeed.models.Entry;
 import jp.shts.android.keyakifeed.providers.dao.Favorites;
@@ -229,7 +228,7 @@ public class FavoriteMemberFeedListFragment extends Fragment {
                 @Override
                 public void onClick(View v) {
                     getContext().startActivity(
-                            BlogActivity.getStartIntent(getContext(), new Blog(entry)));
+                            BlogActivity.getStartIntent(getContext(), entry));
                 }
             });
 

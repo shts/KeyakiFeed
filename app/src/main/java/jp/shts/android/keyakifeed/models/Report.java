@@ -13,28 +13,28 @@ import java.util.ArrayList;
 
 public class Report implements Parcelable {
 
-    @SerializedName("id")
+    @SerializedName(value = "__id", alternate = {"id", "_id"})
     @Expose
     private Integer id;
-    @SerializedName("title")
+    @SerializedName(value = "__title", alternate = {"title", "_title"})
     @Expose
     private String title;
-    @SerializedName("url")
+    @SerializedName(value = "__url", alternate = {"url", "_url"})
     @Expose
     private String url;
-    @SerializedName("thumbnail_url")
+    @SerializedName(value = "__thumbnail_url", alternate = {"thumbnail_url", "_thumbnail_url"})
     @Expose
     private String thumbnailUrl;
-    @SerializedName("published")
+    @SerializedName(value = "__published", alternate = {"published", "_published"})
     @Expose
     private String published;
-    @SerializedName("created_at")
+    @SerializedName(value = "__created_at", alternate = {"created_at", "_created_at"})
     @Expose
     private String createdAt;
-    @SerializedName("updated_at")
+    @SerializedName(value = "__updated_at", alternate = {"updated_at", "_updated_at"})
     @Expose
     private String updatedAt;
-    @SerializedName("image_url_list")
+    @SerializedName(value = "__image_url_list", alternate = {"image_url_list", "_image_url_list"})
     @Expose
     private String imageUrlList;
 
@@ -154,6 +154,14 @@ public class Report implements Parcelable {
     }
 
     /**
+     * jsonをそのまま返す
+     * @return
+     */
+    public String getImageUrlArray() {
+        return imageUrlList;
+    }
+
+    /**
      * @param imageUrlList The image_url_list
      */
     public void setImageUrlList(String imageUrlList) {
@@ -170,6 +178,10 @@ public class Report implements Parcelable {
         sb.append("published(").append(published).append(") ");
         sb.append("imageUrlList(").append(imageUrlList).append(") ");
         return sb.toString();
+    }
+
+    public Entry toEntry() {
+        return new Entry(this);
     }
 
     protected Report(Parcel in) {

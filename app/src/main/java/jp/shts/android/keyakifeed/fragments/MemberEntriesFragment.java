@@ -19,7 +19,6 @@ import jp.shts.android.keyakifeed.adapters.FooterRecyclerViewAdapter;
 import jp.shts.android.keyakifeed.api.KeyakiFeedApiClient;
 import jp.shts.android.keyakifeed.databinding.FragmentMemberEntriesBinding;
 import jp.shts.android.keyakifeed.databinding.ListItemMemberDetailEntryBinding;
-import jp.shts.android.keyakifeed.entities.Blog;
 import jp.shts.android.keyakifeed.models.Entries;
 import jp.shts.android.keyakifeed.models.Entry;
 import jp.shts.android.keyakifeed.models.Member;
@@ -161,7 +160,7 @@ public class MemberEntriesFragment extends Fragment {
                 @Override
                 public void onClick(View v) {
                     getContext().startActivity(
-                            BlogActivity.getStartIntent(getContext(), new Blog(entry)));
+                            BlogActivity.getStartIntent(getContext(), entry));
                 }
             });
         }

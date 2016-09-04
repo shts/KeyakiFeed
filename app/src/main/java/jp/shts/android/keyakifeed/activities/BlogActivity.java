@@ -9,17 +9,25 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 
 import jp.shts.android.keyakifeed.R;
-import jp.shts.android.keyakifeed.entities.Blog;
 import jp.shts.android.keyakifeed.fragments.BlogFragment;
+import jp.shts.android.keyakifeed.models.Entry;
+import jp.shts.android.keyakifeed.models.Report;
 
 public class BlogActivity extends AppCompatActivity {
 
     private static final String TAG = BlogActivity.class.getSimpleName();
 
     @NonNull
-    public static Intent getStartIntent(@NonNull Context context, Blog blog) {
+    public static Intent getStartIntent(@NonNull Context context, Entry entry) {
         Intent intent = new Intent(context, BlogActivity.class);
-        intent.putExtra("blog", blog);
+        intent.putExtra("entry", entry);
+        return intent;
+    }
+
+    @NonNull
+    public static Intent getStartIntent(@NonNull Context context, Report report) {
+        Intent intent = new Intent(context, BlogActivity.class);
+        intent.putExtra("report", report);
         return intent;
     }
 
@@ -28,8 +36,12 @@ public class BlogActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        final Blog blog = getIntent().getParcelableExtra("blog");
-        BlogFragment blogFragment = BlogFragment.newInstance(blog);
+        Entry entry = getIntent().getParcelableExtra("entry");
+        if (entry == null) {
+            Report report = getIntent().getParcelableExtra("report");
+            if (report != null) entry = report.toEntry();
+        }
+        BlogFragment blogFragment = BlogFragment.newInstance(entry);
 
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         ft.replace(R.id.container, blogFragment, BlogFragment.class.getSimpleName());

@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.google.firebase.iid.FirebaseInstanceId;
 
@@ -50,6 +51,7 @@ public class PushRegister {
                 .flatMap(new Func1<String, Observable<?>>() {
                     @Override
                     public Observable<?> call(final String regId) {
+                        Log.d(TAG, "call: regId(" + regId + ")");
                         // getToken()で取得した値が空の場合
                         if (TextUtils.isEmpty(regId)) return null;
 

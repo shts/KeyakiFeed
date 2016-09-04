@@ -25,7 +25,7 @@ import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.activities.PermissionRequireActivity;
 import jp.shts.android.keyakifeed.databinding.FragmentBlogBinding;
 import jp.shts.android.keyakifeed.dialogs.DownloadConfirmDialog;
-import jp.shts.android.keyakifeed.entities.Blog;
+import jp.shts.android.keyakifeed.models.Entry;
 import jp.shts.android.keyakifeed.models.eventbus.RxBusProvider;
 import jp.shts.android.keyakifeed.utils.SdCardUtils;
 import jp.shts.android.keyakifeed.utils.ShareUtils;
@@ -43,9 +43,9 @@ public class BlogFragment extends Fragment {
     private static final int DOWNLOAD_LIST = 1;
 
     @NonNull
-    public static BlogFragment newInstance(@NonNull Blog blog) {
+    public static BlogFragment newInstance(@Nullable Entry entry) {
         Bundle bundle = new Bundle();
-        bundle.putParcelable("blog", blog);
+        bundle.putParcelable("entry", entry);
         BlogFragment blogFragment = new BlogFragment();
         blogFragment.setArguments(bundle);
         return blogFragment;
@@ -122,8 +122,8 @@ public class BlogFragment extends Fragment {
 
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_blog, container, false);
 
-        final Blog blog = getArguments().getParcelable("blog");
-        if (blog == null) {
+        final Entry entry = getArguments().getParcelable("entry");
+        if (entry == null) {
             return binding.getRoot();
         }
 
@@ -138,13 +138,13 @@ public class BlogFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 binding.multipleActions.collapse();
-                getActivity().startActivity(ShareUtils.getShareBlogIntent(blog));
+                getActivity().startActivity(ShareUtils.getShareBlogIntent(entry));
             }
         });
         binding.fabActionDownload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final ArrayList<String> urlList = blog.getImageUrlList();
+                final ArrayList<String> urlList = entry.getImageUrlList();
                 if (urlList == null || urlList.isEmpty()) {
                     Snackbar.make(binding.coordinator, "ダウンロードする画像がありません", Snackbar.LENGTH_LONG)
                             .show();
@@ -166,9 +166,9 @@ public class BlogFragment extends Fragment {
             }
         });
         binding.browser.getSettings().setJavaScriptEnabled(true);
-        binding.toolbar.setTitle(blog.getTitle());
-        binding.toolbar.setSubtitle(blog.getMemberName());
-        binding.browser.loadUrl(blog.getUrl());
+        binding.toolbar.setTitle(entry.getTitle());
+        binding.toolbar.setSubtitle(entry.getMemberName());
+        binding.browser.loadUrl(entry.getUrl());
         return binding.getRoot();
     }
 

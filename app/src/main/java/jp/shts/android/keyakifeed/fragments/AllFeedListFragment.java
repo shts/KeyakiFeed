@@ -22,7 +22,6 @@ import jp.shts.android.keyakifeed.activities.MemberDetailActivity;
 import jp.shts.android.keyakifeed.api.KeyakiFeedApiClient;
 import jp.shts.android.keyakifeed.databinding.FragmentAllFeedListBinding;
 import jp.shts.android.keyakifeed.databinding.ListItemEntryBinding;
-import jp.shts.android.keyakifeed.entities.Blog;
 import jp.shts.android.keyakifeed.models.Entries;
 import jp.shts.android.keyakifeed.models.Entry;
 import jp.shts.android.keyakifeed.providers.FavoriteContentObserver;
@@ -100,7 +99,7 @@ public class AllFeedListFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Entry entry = (Entry) parent.getItemAtPosition(position);
                 getActivity().startActivity(
-                        BlogActivity.getStartIntent(getContext(), new Blog(entry)));
+                        BlogActivity.getStartIntent(getContext(), entry));
             }
         });
         footerView = (LinearLayout) inflater.inflate(R.layout.list_item_more_load, null);
