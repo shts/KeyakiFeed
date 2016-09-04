@@ -140,8 +140,6 @@ public class AllFeedListFragment extends Fragment {
     private Observable<Entries> getAllEntries() {
         counter = 0;
         return KeyakiFeedApiClient.getAllEntries(counter, PAGE_LIMIT)
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
                 .doOnRequest(new Action1<Long>() {
                     @Override
                     public void call(Long aLong) {
@@ -165,7 +163,9 @@ public class AllFeedListFragment extends Fragment {
                             binding.refresh.setRefreshing(false);
                         }
                     }
-                });
+                })
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread());
     }
 
     @CheckResult
