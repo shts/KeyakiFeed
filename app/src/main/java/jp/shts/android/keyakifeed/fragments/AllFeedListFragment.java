@@ -3,7 +3,6 @@ package jp.shts.android.keyakifeed.fragments;
 import android.content.Context;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
-import android.support.annotation.CheckResult;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -26,11 +25,9 @@ import jp.shts.android.keyakifeed.databinding.ListItemEntryBinding;
 import jp.shts.android.keyakifeed.models.Entries;
 import jp.shts.android.keyakifeed.models.Entry;
 import jp.shts.android.keyakifeed.providers.FavoriteContentObserver;
-import rx.Observable;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
-import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 import rx.subscriptions.CompositeSubscription;
 
@@ -57,18 +54,7 @@ public class AllFeedListFragment extends Fragment {
             = new AllFeedListAdapter.OnPageMaxScrolledListener() {
         @Override
         public void onScrolledMaxPage() {
-            subscriptions.add(getNextFeed().subscribe(new Action1<Entries>() {
-                @Override
-                public void call(Entries entries) {
-                    if (entries == null || entries.isEmpty()) {
-                        return;
-                    }
-                    if (allFeedListAdapter != null) {
-                        allFeedListAdapter.addAll(entries);
-                        allFeedListAdapter.notifyDataSetChanged();
-                    }
-                }
-            }));
+            getNextFeed();
         }
     };
 
@@ -95,7 +81,6 @@ public class AllFeedListFragment extends Fragment {
                 getEntries();
             }
         });
-        binding.refresh.setColorSchemeResources(R.color.primary, R.color.primary, R.color.primary, R.color.primary);
         binding.allFeedList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -113,86 +98,77 @@ public class AllFeedListFragment extends Fragment {
     }
 
     private void getEntries() {
-        subscriptions.add(getAllEntries().subscribe(new Subscriber<Entries>() {
-            @Override
-            public void onCompleted() {
-
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                e.printStackTrace();
-                // TODO: error handling
-            }
-
-            @Override
-            public void onNext(Entries entries) {
-                if (entries == null || entries.isEmpty()) {
-                    return;
-                }
-                allFeedListAdapter = new AllFeedListAdapter(getActivity(), entries);
-                allFeedListAdapter.setPageMaxScrolledListener(pageMaxScrolledListener);
-                binding.allFeedList.setAdapter(allFeedListAdapter);
-            }
-        }));
-    }
-
-    @CheckResult
-    private Observable<Entries> getAllEntries() {
         counter = 0;
-        return KeyakiFeedApiClient.getAllEntries(counter, PAGE_LIMIT)
-                .doOnRequest(new Action1<Long>() {
-                    @Override
-                    public void call(Long aLong) {
-                        if (binding.refresh.isRefreshing()) {
-                            binding.refresh.setRefreshing(true);
-                        }
-                    }
-                })
-                .doOnError(new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        if (binding.refresh.isRefreshing()) {
-                            binding.refresh.setRefreshing(false);
-                        }
-                    }
-                })
-                .doOnCompleted(new Action0() {
+        subscriptions.add(KeyakiFeedApiClient.getAllEntries(counter, PAGE_LIMIT)
+                .doOnSubscribe(new Action0() {
                     @Override
                     public void call() {
-                        if (binding.refresh.isRefreshing()) {
-                            binding.refresh.setRefreshing(false);
-                        }
+                        binding.refresh.setRefreshing(true);
                     }
                 })
                 .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread());
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<Entries>() {
+                    @Override
+                    public void onCompleted() {
+                        binding.refresh.setRefreshing(false);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        e.printStackTrace();
+                        binding.refresh.setRefreshing(false);
+                        // TODO: error handling
+                    }
+
+                    @Override
+                    public void onNext(Entries entries) {
+                        if (entries == null || entries.isEmpty()) {
+                            return;
+                        }
+                        allFeedListAdapter = new AllFeedListAdapter(getActivity(), entries);
+                        allFeedListAdapter.setPageMaxScrolledListener(pageMaxScrolledListener);
+                        binding.allFeedList.setAdapter(allFeedListAdapter);
+                    }
+                }));
     }
 
-    @CheckResult
-    private Observable<Entries> getNextFeed() {
+    private void getNextFeed() {
         counter++;
-        return KeyakiFeedApiClient.getAllEntries((counter * PAGE_LIMIT), PAGE_LIMIT)
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnRequest(new Action1<Long>() {
+        subscriptions.add(KeyakiFeedApiClient.getAllEntries((counter * PAGE_LIMIT), PAGE_LIMIT)
+                .doOnSubscribe(new Action0() {
                     @Override
-                    public void call(Long aLong) {
+                    public void call() {
                         footerView.setVisibility(View.VISIBLE);
                     }
                 })
-                .doOnError(new Action1<Throwable>() {
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<Entries>() {
                     @Override
-                    public void call(Throwable throwable) {
+                    public void onCompleted() {
                         footerView.setVisibility(View.GONE);
+
                     }
-                })
-                .doOnCompleted(new Action0() {
+
                     @Override
-                    public void call() {
+                    public void onError(Throwable e) {
+                        e.printStackTrace();
                         footerView.setVisibility(View.GONE);
+                        // TODO: error handling
                     }
-                });
+
+                    @Override
+                    public void onNext(Entries entries) {
+                        if (entries == null || entries.isEmpty()) {
+                            return;
+                        }
+                        if (allFeedListAdapter != null) {
+                            allFeedListAdapter.addAll(entries);
+                            allFeedListAdapter.notifyDataSetChanged();
+                        }
+                    }
+                }));
     }
 
     private static class AllFeedListAdapter extends ArrayAdapter<Entry> {
