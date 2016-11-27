@@ -75,7 +75,7 @@ public class TopActivity extends AppCompatActivity {
                 fragment = new FavoriteMemberFeedListFragment();
                 break;
             case R.id.menu_report:
-                fragment = OfficialReportListFragment.newInstance();
+                fragment = new OfficialReportListFragment();
                 break;
             case R.id.menu_member:
                 fragment = AllMemberGridFragment.newInstance(

@@ -4,7 +4,6 @@ import android.content.Context;
 import android.databinding.DataBindingUtil;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.CheckResult;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -22,24 +21,22 @@ import jp.shts.android.keyakifeed.databinding.FragmentOfficialReportBinding;
 import jp.shts.android.keyakifeed.databinding.ListItemReportBinding;
 import jp.shts.android.keyakifeed.models.Report;
 import jp.shts.android.keyakifeed.models.Reports;
-import rx.Observable;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
-import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 import rx.subscriptions.CompositeSubscription;
 
+// TODO: ページネーションを実装する
 public class OfficialReportListFragment extends Fragment {
 
     private static final String TAG = OfficialReportListFragment.class.getSimpleName();
 
+    private static final int PAGE_LIMIT = 30;
+    private int counter = 0;
+
     private FragmentOfficialReportBinding binding;
     private CompositeSubscription subscriptions = new CompositeSubscription();
-
-    public static OfficialReportListFragment newInstance() {
-        return new OfficialReportListFragment();
-    }
 
     @Override
     public void onDestroy() {
@@ -55,29 +52,36 @@ public class OfficialReportListFragment extends Fragment {
         binding.refresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                subscriptions.add(getAllReports()
-                        .subscribe(new Action1<Reports>() {
-                            @Override
-                            public void call(Reports reports) {
-                                binding.recyclerview.setAdapter(
-                                        new OfficialReportListAdapter(getContext(), reports));
-                            }
-                        }));
+                getAllReports();
             }
         });
-        binding.refresh.setColorSchemeResources(R.color.primary);
 
-        subscriptions.add(getAllReports()
+        getAllReports();
+        return binding.getRoot();
+    }
+
+    private void getAllReports() {
+        counter = 0;
+        subscriptions.add(KeyakiFeedApiClient.getAllReports((counter * PAGE_LIMIT), PAGE_LIMIT)
+                .doOnSubscribe(new Action0() {
+                    @Override
+                    public void call() {
+                        binding.refresh.setRefreshing(true);
+                    }
+                })
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Subscriber<Reports>() {
                     @Override
                     public void onCompleted() {
+                        binding.refresh.setRefreshing(false);
 
                     }
 
                     @Override
                     public void onError(Throwable e) {
+                        binding.refresh.setRefreshing(false);
                         e.printStackTrace();
-                        // TODO: error handling
                     }
 
                     @Override
@@ -86,45 +90,14 @@ public class OfficialReportListFragment extends Fragment {
                                 new OfficialReportListAdapter(getContext(), reports));
                     }
                 }));
-
-        return binding.getRoot();
     }
 
-    @CheckResult
-    private Observable<Reports> getAllReports() {
-        return KeyakiFeedApiClient.getAllReports(0, 30)
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnRequest(new Action1<Long>() {
-                    @Override
-                    public void call(Long aLong) {
-                        binding.refresh.setRefreshing(true);
-                    }
-                })
-                .doOnError(new Action1<Throwable>() {
-                    @Override
-                    public void call(Throwable throwable) {
-                        if (binding.refresh.isRefreshing()) {
-                            binding.refresh.setRefreshing(false);
-                        }
-                    }
-                })
-                .doOnCompleted(new Action0() {
-                    @Override
-                    public void call() {
-                        if (binding.refresh.isRefreshing()) {
-                            binding.refresh.setRefreshing(false);
-                        }
-                    }
-                });
-    }
-
-    public static class OfficialReportListAdapter
+    private static class OfficialReportListAdapter
             extends ArrayRecyclerAdapter<Report, BindingHolder<ListItemReportBinding>> {
 
         private static final String TAG = OfficialReportListAdapter.class.getSimpleName();
 
-        public OfficialReportListAdapter(@NonNull Context context, @NonNull Reports reports) {
+        OfficialReportListAdapter(@NonNull Context context, @NonNull Reports reports) {
             super(context);
             addAll(reports);
         }
