@@ -11,6 +11,8 @@ import org.json.JSONException;
 
 import java.util.ArrayList;
 
+import jp.shts.android.keyakifeed.utils.DateUtils;
+
 public class Entry implements Parcelable {
 
     @SerializedName(value = "__id", alternate = {"id", "_id"})
@@ -93,7 +95,7 @@ public class Entry implements Parcelable {
      * @return The published
      */
     public String getPublished() {
-        return published;
+        return DateUtils.parse(this.published);
     }
 
     /**
