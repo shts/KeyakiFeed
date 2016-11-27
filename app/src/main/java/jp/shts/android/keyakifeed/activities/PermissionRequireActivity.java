@@ -16,7 +16,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 
-import jp.shts.android.keyakifeed.R;
 import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.OnPermissionDenied;
 import permissions.dispatcher.OnShowRationale;
@@ -25,6 +24,7 @@ import permissions.dispatcher.PermissionUtils;
 import permissions.dispatcher.RuntimePermissions;
 
 /**
+ * パーミッション許可を要求するだけの透明なActivity
  */
 @RuntimePermissions
 public class PermissionRequireActivity extends AppCompatActivity {
@@ -57,7 +57,6 @@ public class PermissionRequireActivity extends AppCompatActivity {
         return intent;
     }
 
-    //@State
     private ArrayList<String> urlList;
 
     @Override
