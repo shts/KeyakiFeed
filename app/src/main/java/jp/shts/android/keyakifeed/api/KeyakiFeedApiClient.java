@@ -105,7 +105,7 @@ public class KeyakiFeedApiClient {
         if (apiService == null) {
             Retrofit retrofit = new Retrofit.Builder()
                     .client(createOkHttpClient())
-                    .baseUrl("http://tk2-262-40775.vs.sakura.ne.jp/")
+                    .baseUrl(BuildConfig.BASE_URL)
                     .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
                     .addConverterFactory(GsonConverterFactory.create())
                     .build();
@@ -126,7 +126,6 @@ public class KeyakiFeedApiClient {
         }
     }
 
-    // http://tk2-262-40775.vs.sakura.ne.jp/members
     private interface KeyakiFeedApiService {
 
         @GET("/members")
