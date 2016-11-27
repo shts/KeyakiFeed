@@ -14,7 +14,7 @@
         <item
             android:id="@+id/menu_report"
             android:icon="@drawable/ic_account_circle_black_48dp"
-            android:title="Officical Report" />
+            android:title="Official Report" />
         <item
             android:id="@+id/menu_member"
             android:icon="@drawable/ic_group_black_48dp"
