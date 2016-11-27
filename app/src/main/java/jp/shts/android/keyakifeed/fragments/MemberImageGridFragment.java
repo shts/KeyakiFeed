@@ -146,10 +146,10 @@ public class MemberImageGridFragment extends Fragment {
                     @Override
                     public void call(List<BlogImage> blogImages) {
                         if (blogImages == null || blogImages.isEmpty()) {
-                            if (adapter != null) adapter.setFoooterVisibility(false);
+                            if (adapter != null) adapter.setFooterVisibility(false);
                         } else {
                             if (adapter != null) {
-                                adapter.setFoooterVisibility(true);
+                                adapter.setFooterVisibility(true);
                                 adapter.add(blogImages);
                                 adapter.notifyDataSetChanged();
                             }

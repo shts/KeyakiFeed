@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import jp.shts.android.keyakifeed.api.KeyakiFeedApiClient;
 import jp.shts.android.keyakifeed.models.Member;
 import jp.shts.android.keyakifeed.providers.KeyakiFeedContent;
+import rx.Observable;
 import rx.Scheduler;
 import rx.Subscriber;
 import rx.schedulers.Schedulers;
@@ -35,6 +36,32 @@ public class Favorites extends ArrayList<Favorite> {
             c.close();
         }
         return favorites;
+    }
+
+    public static Observable<Favorites> getFavorites(@NonNull final Context context) {
+        return Observable.create(new Observable.OnSubscribe<Favorites>() {
+            @Override
+            public void call(Subscriber<? super Favorites> subscriber) {
+                Favorites favorites = new Favorites();
+                Cursor c = context.getContentResolver().query(
+                        KeyakiFeedContent.Favorite.CONTENT_URI, null, null, null, null);
+                try {
+                    if (c != null) {
+                        while (c.moveToNext()) {
+                            int id = c.getInt(c.getColumnIndex(KeyakiFeedContent.Favorite.Key.ID));
+                            int memberId = c.getInt(c.getColumnIndex(KeyakiFeedContent.Favorite.Key.MEMBER_ID));
+                            favorites.add(new Favorite(id, memberId));
+                        }
+                    }
+                    subscriber.onNext(favorites);
+                    subscriber.onCompleted();
+                } catch (Throwable throwable) {
+                    subscriber.onError(throwable);
+                } finally {
+                    if (c != null) c.close();
+                }
+            }
+        });
     }
 
     /**

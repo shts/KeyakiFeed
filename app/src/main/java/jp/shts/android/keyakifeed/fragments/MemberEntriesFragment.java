@@ -128,7 +128,7 @@ public class MemberEntriesFragment extends Fragment {
                             Log.e(TAG, "cannot get entries");
                         } else {
                             if (adapter != null) {
-                                adapter.setFoooterVisibility(true);
+                                adapter.setFooterVisibility(true);
                                 adapter.add(entries);
                                 adapter.notifyDataSetChanged();
                             }

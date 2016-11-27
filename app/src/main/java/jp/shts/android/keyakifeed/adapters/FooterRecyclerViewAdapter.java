@@ -119,7 +119,7 @@ public abstract class FooterRecyclerViewAdapter<T, ContentViewBindingHolder exte
         return footerView;
     }
 
-    public void setFoooterVisibility(boolean visibility) {
+    public void setFooterVisibility(boolean visibility) {
         final View view = getFooterView();
         if (view == null) { return; }
 

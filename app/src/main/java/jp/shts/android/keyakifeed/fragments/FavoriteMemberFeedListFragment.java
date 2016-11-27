@@ -29,10 +29,8 @@ import jp.shts.android.keyakifeed.models.Entry;
 import jp.shts.android.keyakifeed.providers.dao.Favorites;
 import rx.Observable;
 import rx.Subscriber;
-import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
-import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 import rx.subscriptions.CompositeSubscription;
@@ -43,6 +41,7 @@ import rx.subscriptions.CompositeSubscription;
 public class FavoriteMemberFeedListFragment extends Fragment {
 
     private static final String TAG = FavoriteMemberFeedListFragment.class.getSimpleName();
+    private static final int REQUEST_MEMBER_CHOOSER = 0;
 
     private FragmentFavoriteFeedListBinding binding;
     private FavoriteFeedListAdapter adapter;
@@ -52,10 +51,49 @@ public class FavoriteMemberFeedListFragment extends Fragment {
     private boolean nowGettingNextEntry;
     private CompositeSubscription subscriptions = new CompositeSubscription();
 
+    private final FooterRecyclerViewAdapter.OnMaxPageScrollListener listener
+            = new FooterRecyclerViewAdapter.OnMaxPageScrollListener() {
+        @Override
+        public void onMaxPageScrolled() {
+            if (nowGettingNextEntry) return;
+            nowGettingNextEntry = true;
+
+            counter++;
+            subscriptions.add(getEntries()
+                    .subscribeOn(Schedulers.newThread())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new Subscriber<Entries>() {
+                        @Override
+                        public void onCompleted() {
+                            nowGettingNextEntry = false;
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {
+                            e.printStackTrace();
+                            nowGettingNextEntry = false;
+                            // TODO: error handling
+                        }
+
+                        @Override
+                        public void onNext(Entries entries) {
+                            if (entries == null || entries.isEmpty()) {
+                                adapter.setFooterVisibility(false);
+                            } else {
+                                adapter.setFooterVisibility(true);
+                                adapter.add(entries);
+                                // TODO: ちらつく
+                                adapter.notifyDataSetChanged();
+                            }
+                        }
+                    }));
+        }
+    };
+
     @Override
-    public void onDestroy() {
+    public void onDestroyView() {
         subscriptions.unsubscribe();
-        super.onDestroy();
+        super.onDestroyView();
     }
 
     @Nullable
@@ -66,125 +104,76 @@ public class FavoriteMemberFeedListFragment extends Fragment {
         binding.fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startMemberChooser();
+                startActivityForResult(AllMemberActivity.getChooserIntent(getContext()), REQUEST_MEMBER_CHOOSER);
             }
         });
         binding.recyclerview.setHasFixedSize(true); // アイテムは固定サイズ
         binding.refresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                setupFavoriteMemberFeed();
+                getFavoriteMemberFeed();
             }
         });
-        binding.refresh.setSwipeableChildren(R.id.recyclerview, R.id.empty_view);
-        binding.refresh.setColorSchemeResources(R.color.primary);
-        setupFavoriteMemberFeed();
+        getFavoriteMemberFeed();
 
         return binding.getRoot();
     }
 
-    private void startMemberChooser() {
-        Intent intent = AllMemberActivity.getChooserIntent(getContext());
-        startActivityForResult(intent, 0);
-    }
-
-    private void setupFavoriteMemberFeed() {
+    private void getFavoriteMemberFeed() {
+        counter = 0;
         setVisibilityEmptyView(false);
 
-        final Favorites favorites = Favorites.all(getContext());
-        if (favorites.isEmpty()) {
-            setVisibilityEmptyView(true);
-            return;
-        }
-
-        Subscription subscription = getEntries(favorites.getMemberIdList())
+        subscriptions.add(getEntries()
+                .doOnSubscribe(new Action0() {
+                    @Override
+                    public void call() {
+                        binding.refresh.setRefreshing(true);
+                    }
+                })
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Subscriber<Entries>() {
                     @Override
                     public void onCompleted() {
-
+                        binding.refresh.setRefreshing(false);
                     }
 
                     @Override
                     public void onError(Throwable e) {
                         e.printStackTrace();
+                        binding.refresh.setRefreshing(false);
                         // TODO: error handling
                     }
 
                     @Override
                     public void onNext(Entries entries) {
-                        if (entries.isEmpty()) return;
+                        if (entries.isEmpty()) {
+                            setVisibilityEmptyView(true);
+                            return;
+                        }
                         adapter = new FavoriteFeedListAdapter(getActivity(), entries);
-                        adapter.setOnMaxPageScrollListener(new FooterRecyclerViewAdapter.OnMaxPageScrollListener() {
-                            @Override
-                            public void onMaxPageScrolled() {
-                                if (nowGettingNextEntry) return;
-                                nowGettingNextEntry = true;
-
-                                Subscription subscription = getNextEntries(favorites.getMemberIdList())
-                                        .subscribe(new Action1<Entries>() {
-                                            @Override
-                                            public void call(Entries entries) {
-                                                if (adapter == null) return;
-                                                if (entries == null || entries.isEmpty()) {
-                                                    adapter.setFoooterVisibility(false);
-                                                } else {
-                                                    adapter.setFoooterVisibility(true);
-                                                    adapter.add(entries);
-                                                    adapter.notifyDataSetChanged();
-                                                }
-                                            }
-                                        });
-                                subscriptions.add(subscription);
-                            }
-                        });
+                        adapter.setOnMaxPageScrollListener(listener);
                         binding.recyclerview.setAdapter(adapter);
                         setVisibilityEmptyView(false);
                     }
-                });
-        subscriptions.add(subscription);
+                }));
     }
 
-    private Observable<Entries> getEntries(List<Integer> memberIdList) {
-        counter = 0;
-        return KeyakiFeedApiClient.getMemberEntries(
-                memberIdList, (PAGE_LIMIT * counter), PAGE_LIMIT)
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnRequest(new Action1<Long>() {
+    private Observable<Entries> getEntries() {
+        return Favorites.getFavorites(getContext())
+                .map(new Func1<Favorites, List<Integer>>() {
                     @Override
-                    public void call(Long aLong) {
-                        if (binding.refresh.isRefreshing()) {
-                            binding.refresh.setRefreshing(true);
-                        }
+                    public List<Integer> call(Favorites favorites) {
+                        return favorites.getMemberIdList();
                     }
                 })
-                .doOnCompleted(new Action0() {
+                .flatMap(new Func1<List<Integer>, Observable<Entries>>() {
                     @Override
-                    public void call() {
-                        if (binding.refresh.isRefreshing()) {
-                            binding.refresh.setRefreshing(false);
-                        }
+                    public Observable<Entries> call(List<Integer> integers) {
+                        return KeyakiFeedApiClient.getMemberEntries(
+                                integers, (PAGE_LIMIT * counter), PAGE_LIMIT);
                     }
                 })
-                .onErrorReturn(new Func1<Throwable, Entries>() {
-                    @Override
-                    public Entries call(Throwable e) {
-                        setVisibilityEmptyView(true);
-                        if (binding.refresh != null) {
-                            if (binding.refresh.isRefreshing()) {
-                                binding.refresh.setRefreshing(false);
-                            }
-                        }
-                        return new Entries();
-                    }
-                });
-    }
-
-    private Observable<Entries> getNextEntries(List<Integer> memberIdList) {
-        // get next feed
-        counter++;
-        return KeyakiFeedApiClient.getMemberEntries(
-                memberIdList, (PAGE_LIMIT * counter), PAGE_LIMIT)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread());
     }
@@ -202,16 +191,16 @@ public class FavoriteMemberFeedListFragment extends Fragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 0 && resultCode == Activity.RESULT_OK) {
-            setupFavoriteMemberFeed();
+        if (requestCode == REQUEST_MEMBER_CHOOSER && resultCode == Activity.RESULT_OK) {
+            getFavoriteMemberFeed();
         }
     }
 
-    public static class FavoriteFeedListAdapter extends FooterRecyclerViewAdapter<Entry, ListItemCardBinding> {
+    private static class FavoriteFeedListAdapter extends FooterRecyclerViewAdapter<Entry, ListItemCardBinding> {
 
         private static final String TAG = FavoriteFeedListAdapter.class.getSimpleName();
 
-        public FavoriteFeedListAdapter(Context context, List<Entry> list) {
+        FavoriteFeedListAdapter(Context context, List<Entry> list) {
             super(context, list);
         }
 
