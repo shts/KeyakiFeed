@@ -11,11 +11,13 @@ public class UnreadArticle implements Parcelable {
     int memberId;
     String url;
 
-    public UnreadArticle() {
+    UnreadArticle() {
     }
 
-    public UnreadArticle(int id, int memberId, String url) {
-
+    UnreadArticle(int id, int memberId, String url) {
+        this.id = id;
+        this.memberId = memberId;
+        this.url = url;
     }
 
     protected UnreadArticle(Parcel in) {

@@ -27,6 +27,7 @@ import jp.shts.android.keyakifeed.databinding.FragmentBlogBinding;
 import jp.shts.android.keyakifeed.dialogs.DownloadConfirmDialog;
 import jp.shts.android.keyakifeed.models.Entry;
 import jp.shts.android.keyakifeed.models.eventbus.RxBusProvider;
+import jp.shts.android.keyakifeed.providers.dao.UnreadArticles;
 import jp.shts.android.keyakifeed.utils.SdCardUtils;
 import jp.shts.android.keyakifeed.utils.ShareUtils;
 import jp.shts.android.keyakifeed.utils.SimpleImageDownloader;
@@ -169,6 +170,7 @@ public class BlogFragment extends Fragment {
         binding.toolbar.setTitle(entry.getTitle());
         binding.toolbar.setSubtitle(entry.getMemberName());
         binding.browser.loadUrl(entry.getUrl());
+        UnreadArticles.remove(getContext(), entry.getUrl());
         return binding.getRoot();
     }
 

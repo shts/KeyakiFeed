@@ -43,8 +43,13 @@ public class KeyakiFeedContent {
 
         public @interface Key {
             String ID = BaseColumns._ID;
+            /** Widget用 */
             String MEMBER_ID = "member_id";
             String ARTICLE_URL = "article_url";
+        }
+
+        public @interface Value {
+            int OFFICIAL_REPORT = -10;
         }
 
         public static final String[] sProjection = {

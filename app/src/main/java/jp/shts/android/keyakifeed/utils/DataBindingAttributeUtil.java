@@ -11,6 +11,7 @@ import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.models.Entry;
 import jp.shts.android.keyakifeed.models.Member;
 import jp.shts.android.keyakifeed.providers.dao.Favorites;
+import jp.shts.android.keyakifeed.providers.dao.UnreadArticles;
 
 public class DataBindingAttributeUtil {
 
@@ -66,6 +67,15 @@ public class DataBindingAttributeUtil {
             imageView.setVisibility(View.VISIBLE);
         } else {
             imageView.setVisibility(View.GONE);
+        }
+    }
+
+    @BindingAdapter("unreadEntry")
+    public static void setUnreadIcon(View view, String url) {
+        if (UnreadArticles.exist(view.getContext(), url)) {
+            view.setVisibility(View.VISIBLE);
+        } else {
+            view.setVisibility(View.GONE);
         }
     }
 

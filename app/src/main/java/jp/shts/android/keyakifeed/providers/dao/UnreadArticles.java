@@ -13,6 +13,8 @@ public class UnreadArticles extends ArrayList<UnreadArticle> {
 
     private static final String TAG = UnreadArticles.class.getSimpleName();
 
+    private UnreadArticles() {}
+
     public static UnreadArticles all(@NonNull Context context) {
         UnreadArticles unreadArticles = new UnreadArticles();
         Cursor c = context.getContentResolver().query(
@@ -31,6 +33,23 @@ public class UnreadArticles extends ArrayList<UnreadArticle> {
         return unreadArticles;
     }
 
+    /**
+     * OfficialReportの記事を未読登録する
+     * @param context context
+     * @param url 記事のurl
+     */
+    public static void add(@NonNull Context context, @NonNull String url) {
+        ContentValues cv = new ContentValues();
+        cv.put(KeyakiFeedContent.UnRead.Key.MEMBER_ID, KeyakiFeedContent.UnRead.Value.OFFICIAL_REPORT);
+        cv.put(KeyakiFeedContent.UnRead.Key.ARTICLE_URL, url);
+        context.getContentResolver().insert(KeyakiFeedContent.UnRead.CONTENT_URI, cv);
+    }
+
+    /**
+     * Blogの記事を未読登録する
+     * @param context context
+     * @param url 記事のurl
+     */
     public static void add(@NonNull Context context, int memberId, @NonNull String url) {
         ContentValues cv = new ContentValues();
         cv.put(KeyakiFeedContent.UnRead.Key.MEMBER_ID, memberId);
