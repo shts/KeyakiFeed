@@ -6,6 +6,8 @@ import android.os.Parcelable;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+import jp.shts.android.keyakifeed.utils.DateUtils;
+
 public class Matome implements Parcelable {
 
     @SerializedName("id")
@@ -132,7 +134,7 @@ public class Matome implements Parcelable {
      * The entryPublished
      */
     public String getEntryPublished() {
-        return entryPublished;
+        return DateUtils.parse(entryPublished);
     }
 
     /**
