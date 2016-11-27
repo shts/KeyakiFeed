@@ -3,6 +3,7 @@ package jp.shts.android.keyakifeed.fragments;
 import android.content.Context;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -21,8 +22,8 @@ import jp.shts.android.keyakifeed.databinding.FragmentMatomeFeedListBinding;
 import jp.shts.android.keyakifeed.databinding.ListItemMatomeFeedBinding;
 import jp.shts.android.keyakifeed.models.Matome;
 import rx.Subscriber;
-import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action0;
 import rx.schedulers.Schedulers;
 import rx.subscriptions.CompositeSubscription;
 
@@ -46,59 +47,47 @@ public class MatomeFeedListFragment extends Fragment {
     }
 
     @Override
-    public void onDestroy() {
+    public void onDestroyView() {
         subscriptions.unsubscribe();
         binding.adView.destroy();
-        super.onDestroy();
+        super.onDestroyView();
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_matome_feed_list, container, false);
-
-        binding.refresh.setColorSchemeResources(R.color.primary);
         binding.refresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                subscriptions.add(getMatomeFeed());
+                getMatomeFeed();
             }
         });
-        binding.refresh.post(new Runnable() {
-            @Override public void run() {
-                binding.refresh.setRefreshing(true);
-            }
-        });
-
-        subscriptions.add(getMatomeFeed());
-
+        getMatomeFeed();
         return binding.getRoot();
     }
 
-    private Subscription getMatomeFeed() {
-        return KeyakiFeedApiClient.getMatomeFeeds()
+    private void getMatomeFeed() {
+        subscriptions.add(KeyakiFeedApiClient.getMatomeFeeds()
+                .doOnSubscribe(new Action0() {
+                    @Override
+                    public void call() {
+                        binding.refresh.setRefreshing(true);
+                    }
+                })
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Subscriber<List<Matome>>() {
                     @Override
                     public void onCompleted() {
-                        if (binding.refresh != null) {
-                            if (binding.refresh.isRefreshing()) {
-                                binding.refresh.setRefreshing(false);
-                            }
-                        }
+                        binding.refresh.setRefreshing(false);
                     }
 
                     @Override
                     public void onError(Throwable e) {
                         e.printStackTrace();
+                        binding.refresh.setRefreshing(false);
                         // TODO: error handling
-                        if (binding.refresh != null) {
-                            if (binding.refresh.isRefreshing()) {
-                                binding.refresh.setRefreshing(false);
-                            }
-                        }
                     }
 
                     @Override
@@ -113,22 +102,22 @@ public class MatomeFeedListFragment extends Fragment {
                             }
                         });
                     }
-                });
+                }));
     }
 
-    public static class MatomeFeedListAdapter extends ArrayAdapter<Matome> {
+    private static class MatomeFeedListAdapter extends ArrayAdapter<Matome> {
 
         private static final String TAG = MatomeFeedListAdapter.class.getSimpleName();
 
         private LayoutInflater inflater;
 
-        public MatomeFeedListAdapter(Context context, List<Matome> list) {
+        MatomeFeedListAdapter(Context context, List<Matome> list) {
             super(context, -1, list);
             inflater = LayoutInflater.from(context);
         }
 
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        public View getView(int position, View convertView, @NonNull ViewGroup parent) {
             ListItemMatomeFeedBinding binding;
 
             if (convertView == null) {
