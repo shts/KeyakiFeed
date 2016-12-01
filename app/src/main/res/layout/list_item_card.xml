@@ -125,7 +125,7 @@
                 app:primaryText="New"
                 app:primaryTextColor="@color/yellow_500"
                 app:primaryTextSize="16sp"
-                app:unreadEntry="@{entry.getUrl()}"
+                app:unreadFavoriteEntry="@{entry.getUrl()}"
                 tools:visibility="visible" />
         </RelativeLayout>
 

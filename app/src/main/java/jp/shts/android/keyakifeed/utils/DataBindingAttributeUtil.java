@@ -13,6 +13,9 @@ import jp.shts.android.keyakifeed.models.Member;
 import jp.shts.android.keyakifeed.providers.dao.Favorites;
 import jp.shts.android.keyakifeed.providers.dao.UnreadArticles;
 
+import static jp.shts.android.keyakifeed.fragments.SettingsFragment.MARK_UNREAD_ARTICLES;
+import static jp.shts.android.keyakifeed.fragments.SettingsFragment.MARK_UNREAD_ARTICLES_ONLY_FAVORITE;
+
 public class DataBindingAttributeUtil {
 
     private static final String TAG = DataBindingAttributeUtil.class.getSimpleName();
@@ -70,9 +73,32 @@ public class DataBindingAttributeUtil {
         }
     }
 
-    @BindingAdapter("unreadEntry")
-    public static void setUnreadIcon(View view, String url) {
-        if (UnreadArticles.exist(view.getContext(), url)) {
+    /**
+     * すべてのブログページのリストアイテムで使用する
+     */
+    @BindingAdapter("unreadAllEntry")
+    public static void setUnreadIconAllEntry(View view, String url) {
+        // すべてのブログ画面で未読表示させない設定の場合はGONE
+        boolean isShow = PreferencesUtils.getBoolean(
+                view.getContext(), MARK_UNREAD_ARTICLES, false);
+
+        if (isShow && UnreadArticles.exist(view.getContext(), url)) {
+            view.setVisibility(View.VISIBLE);
+        } else {
+            view.setVisibility(View.GONE);
+        }
+    }
+
+    /**
+     * 推しメンのブログページのリストアイテムで使用する
+     */
+    @BindingAdapter("unreadFavoriteEntry")
+    public static void setUnreadIconFavorite(View view, String url) {
+        // 推しメンのブログで未読表示させない設定の場合はGONE
+        boolean isShow = PreferencesUtils.getBoolean(
+                view.getContext(), MARK_UNREAD_ARTICLES_ONLY_FAVORITE, false);
+
+        if (isShow && UnreadArticles.exist(view.getContext(), url)) {
             view.setVisibility(View.VISIBLE);
         } else {
             view.setVisibility(View.GONE);

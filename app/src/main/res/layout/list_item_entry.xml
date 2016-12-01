@@ -29,7 +29,7 @@
             app:labelBottomPadding="3dp"
             app:labelCenterPadding="3dp"
             app:labelTopPadding="3dp"
-            app:unreadEntry="@{entry.getUrl()}"
+            app:unreadAllEntry="@{entry.getUrl()}"
             tools:visibility="visible" />
 
         <LinearLayout
