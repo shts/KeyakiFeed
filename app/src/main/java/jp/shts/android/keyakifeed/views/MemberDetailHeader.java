@@ -89,10 +89,7 @@ public class MemberDetailHeader extends RelativeLayout {
         PicassoHelper.loadAndCircleTransform(
                 context, profileImageView, member.getImageUrl());
 
-        // TODO: debug
-//        nameMainTextView.setText(member.getNameMain());
-        String name = member.getNameMain() + " " + String.valueOf(member.getFavorite());
-        nameMainTextView.setText(name);
+        nameMainTextView.setText(member.getNameMain());
         nameSubTextView.setText(member.getNameSub());
 
         final Resources res = context.getResources();
