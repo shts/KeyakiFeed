@@ -6,12 +6,16 @@ import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringDef;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.activities.MemberDetailActivity;
@@ -26,7 +30,7 @@ import jp.shts.android.keyakifeed.providers.FavoriteContentObserver;
 import jp.shts.android.keyakifeed.providers.dao.Favorites;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action1;
+import rx.functions.Action0;
 import rx.schedulers.Schedulers;
 import rx.subscriptions.CompositeSubscription;
 
@@ -34,13 +38,16 @@ public class AllMemberGridFragment extends Fragment {
 
     private static final String TAG = AllMemberGridFragment.class.getSimpleName();
 
-    public enum ListenerType {
-        MEMBER_CHOOSER, START_DETAIL
+    @StringDef({ListenerType.MEMBER_CHOOSER, ListenerType.START_DETAIL})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ListenerType {
+        String MEMBER_CHOOSER = "member_chooser";
+        String START_DETAIL = "start_detail";
     }
 
-    public static AllMemberGridFragment newInstance(ListenerType listenerType) {
+    public static AllMemberGridFragment newInstance(@ListenerType String listenerType) {
         Bundle bundle = new Bundle();
-        bundle.putString("listenerType", listenerType.name());
+        bundle.putString("listenerType", listenerType);
         AllMemberGridFragment allMemberGridFragment = new AllMemberGridFragment();
         allMemberGridFragment.setArguments(bundle);
         return allMemberGridFragment;
@@ -63,14 +70,14 @@ public class AllMemberGridFragment extends Fragment {
         super.onCreate(savedInstanceState);
         listenerType = getArguments().getString("listenerType");
         // 推しメン登録時には個別にnotifyするためメンバー一覧画面のみ登録する
-        if (ListenerType.START_DETAIL.name().equals(listenerType))
+        if (ListenerType.START_DETAIL.equals(listenerType))
             favoriteContentObserver.register(getContext());
     }
 
     @Override
     public void onDestroy() {
         subscriptions.unsubscribe();
-        if (ListenerType.START_DETAIL.name().equals(listenerType))
+        if (ListenerType.START_DETAIL.equals(listenerType))
             favoriteContentObserver.unregister(getContext());
         super.onDestroy();
     }
@@ -78,22 +85,19 @@ public class AllMemberGridFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_all_member_grid, container, false);
-
         binding.refresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 getMembers();
             }
         });
-        binding.refresh.setColorSchemeResources(R.color.primary);
 
         adapter = new AllMemberGridListAdapter(getContext());
         adapter.setOnMemberClickListener(new AllMemberGridListAdapter.OnMemberClickListener() {
             @Override
             public void onClick(Member member, int position) {
-                if (listenerType.equals(ListenerType.MEMBER_CHOOSER.name())) {
+                if (listenerType.equals(ListenerType.MEMBER_CHOOSER)) {
                     Favorites.toggle(getContext(), member);
                     adapter.notifyItemChanged(position);
                     getActivity().setResult(Activity.RESULT_OK);
@@ -107,7 +111,7 @@ public class AllMemberGridFragment extends Fragment {
         });
         binding.recyclerview.setAdapter(adapter);
 
-        if (listenerType.equals(ListenerType.MEMBER_CHOOSER.name())) {
+        if (listenerType.equals(ListenerType.MEMBER_CHOOSER)) {
             binding.toolbar.setVisibility(View.VISIBLE);
             binding.toolbar.setTitleTextColor(ContextCompat.getColor(getContext(), R.color.primary));
             binding.toolbar.setTitle("推しメンを選択してください");
@@ -118,7 +122,7 @@ public class AllMemberGridFragment extends Fragment {
                     getActivity().finish();
                 }
             });
-        } else if (listenerType.equals(ListenerType.START_DETAIL.name())) {
+        } else if (listenerType.equals(ListenerType.START_DETAIL)) {
             binding.toolbar.setVisibility(View.GONE);
         }
 
@@ -129,31 +133,25 @@ public class AllMemberGridFragment extends Fragment {
 
     private void getMembers() {
         subscriptions.add(KeyakiFeedApiClient.getAllMembers()
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnRequest(new Action1<Long>() {
+                .doOnSubscribe(new Action0() {
                     @Override
-                    public void call(Long aLong) {
-                        if (binding.refresh.isRefreshing()) {
-                            binding.refresh.setRefreshing(true);
-                        }
+                    public void call() {
+                        binding.refresh.setRefreshing(true);
                     }
                 })
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Subscriber<Members>() {
                     @Override
                     public void onCompleted() {
-                        if (binding.refresh.isRefreshing()) {
-                            binding.refresh.setRefreshing(false);
-                        }
+                        binding.refresh.setRefreshing(false);
                     }
 
                     @Override
                     public void onError(Throwable e) {
                         e.printStackTrace();
                         // TODO: error handling
-                        if (binding.refresh.isRefreshing()) {
-                            binding.refresh.setRefreshing(false);
-                        }
+                        binding.refresh.setRefreshing(false);
                     }
 
                     @Override
@@ -165,21 +163,21 @@ public class AllMemberGridFragment extends Fragment {
                 }));
     }
 
-    public static class AllMemberGridListAdapter extends ArrayRecyclerAdapter<Member, BindingHolder<ListItemMemberBinding>> {
+    private static class AllMemberGridListAdapter extends ArrayRecyclerAdapter<Member, BindingHolder<ListItemMemberBinding>> {
 
         private static final String TAG = AllMemberGridListAdapter.class.getSimpleName();
 
-        public AllMemberGridListAdapter(Context context) {
+        AllMemberGridListAdapter(Context context) {
             super(context);
         }
 
         private OnMemberClickListener listener;
 
-        public interface OnMemberClickListener {
+        interface OnMemberClickListener {
             void onClick(Member member, int position);
         }
 
-        public void setOnMemberClickListener(OnMemberClickListener listener) {
+        void setOnMemberClickListener(OnMemberClickListener listener) {
             this.listener = listener;
         }
 
