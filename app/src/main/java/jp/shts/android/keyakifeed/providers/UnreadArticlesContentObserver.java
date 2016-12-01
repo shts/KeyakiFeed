@@ -11,9 +11,9 @@ import android.support.annotation.NonNull;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-public abstract class FavoriteContentObserver extends ContentObserver {
+public abstract class UnreadArticlesContentObserver extends ContentObserver {
 
-    private static final String TAG = FavoriteContentObserver.class.getSimpleName();
+    private static final String TAG = UnreadArticlesContentObserver.class.getSimpleName();
 
     @IntDef({State.UNKNOWN, State.ADD, State.REMOVE})
     @Retention(RetentionPolicy.SOURCE)
@@ -25,13 +25,13 @@ public abstract class FavoriteContentObserver extends ContentObserver {
 
     private final Handler handler = new Handler(Looper.getMainLooper());
 
-    public FavoriteContentObserver() {
+    public UnreadArticlesContentObserver() {
         super(new Handler());
     }
 
     public void register(@NonNull Context context) {
         context.getContentResolver().registerContentObserver(
-                KeyakiFeedContent.Favorite.CONTENT_URI, true, this);
+                KeyakiFeedContent.UnRead.CONTENT_URI, true, this);
     }
 
     public void unregister(@NonNull Context context) {
@@ -41,8 +41,8 @@ public abstract class FavoriteContentObserver extends ContentObserver {
     /**
      * DBに更新がかかった時に通知される
      * <p/>
-     * ADD(content://jp.shts.android.keyakifeed.providers.keyakifeed/favorite/44)
-     * REMOVE(content://jp.shts.android.keyakifeed.providers.keyakifeed/favorite)
+     * ADD(content://jp.shts.android.keyakifeed.providers.keyakifeed/unread/44)
+     * REMOVE(content://jp.shts.android.keyakifeed.providers.keyakifeed/unread)
      *
      * @param selfChange
      * @param uri
@@ -51,7 +51,7 @@ public abstract class FavoriteContentObserver extends ContentObserver {
     public void onChange(boolean selfChange, Uri uri) {
         super.onChange(selfChange, uri);
         // ADDした時はpathの最後にIDが付与されるのでそれ以外はREMOVE
-        if (uri != null && "favorite".equals(uri.getLastPathSegment())) {
+        if (uri != null && "unread".equals(uri.getLastPathSegment())) {
             notify(State.REMOVE);
         } else {
             notify(State.ADD);

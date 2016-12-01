@@ -26,6 +26,7 @@ import jp.shts.android.keyakifeed.databinding.FragmentFavoriteFeedListBinding;
 import jp.shts.android.keyakifeed.databinding.ListItemCardBinding;
 import jp.shts.android.keyakifeed.models.Entries;
 import jp.shts.android.keyakifeed.models.Entry;
+import jp.shts.android.keyakifeed.providers.UnreadArticlesContentObserver;
 import jp.shts.android.keyakifeed.providers.dao.Favorites;
 import rx.Observable;
 import rx.Subscriber;
@@ -90,8 +91,16 @@ public class FavoriteMemberFeedListFragment extends Fragment {
         }
     };
 
+    private final UnreadArticlesContentObserver observer = new UnreadArticlesContentObserver() {
+        @Override
+        public void onChangeState(@State int state) {
+            if (adapter != null) adapter.notifyDataSetChanged();
+        }
+    };
+
     @Override
     public void onDestroyView() {
+        observer.unregister(getContext());
         subscriptions.unsubscribe();
         super.onDestroyView();
     }
@@ -116,6 +125,7 @@ public class FavoriteMemberFeedListFragment extends Fragment {
         });
         getFavoriteMemberFeed();
 
+        observer.register(getContext());
         return binding.getRoot();
     }
 
