@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
 
@@ -15,79 +16,98 @@
             type="jp.shts.android.keyakifeed.models.Entry" />
     </data>
 
-    <LinearLayout
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="72dp"
-        android:orientation="horizontal"
-        android:paddingRight="16dp">
-
-        <FrameLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-
-            <ImageView
-                android:id="@+id/profile_image"
-                android:layout_width="72dp"
-                android:layout_height="72dp"
-                android:layout_gravity="center_vertical"
-                android:padding="16dp"
-                app:imageUrl="@{entry.getMemberImageUrl()}" />
-
-            <ImageView
-                android:id="@+id/favorite_icon"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_gravity="right|bottom"
-                android:layout_marginBottom="8dp"
-                android:layout_marginRight="8dp"
-                android:src="@drawable/ic_favorite_black_48dp"
-                android:visibility="gone"
-                app:favorite="@{entry}"/>
-        </FrameLayout>
+        >
+        <jp.shts.android.library.TriangleLabelView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            app:backgroundColor="@color/yellow_900"
+            app:corner="leftTop"
+            app:labelBottomPadding="3dp"
+            app:labelCenterPadding="3dp"
+            app:labelTopPadding="3dp"
+            app:unreadEntry="@{entry.getUrl()}"
+            tools:visibility="visible" />
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:layout_height="72dp"
+            android:orientation="horizontal"
+            android:paddingRight="16dp">
 
-            <TextView
-                android:id="@+id/title"
-                android:layout_width="match_parent"
-                android:layout_height="36dp"
-                android:ellipsize="end"
-                android:gravity="center_vertical"
-                android:maxLines="2"
-                android:text="@{entry.getTitle()}"
-                android:textSize="12sp"
-                android:textStyle="bold" />
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:id="@+id/profile_image"
+                    android:layout_width="72dp"
+                    android:layout_height="72dp"
+                    android:layout_gravity="center_vertical"
+                    android:padding="16dp"
+                    app:imageUrl="@{entry.getMemberImageUrl()}" />
+
+                <ImageView
+                    android:id="@+id/favorite_icon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="right|bottom"
+                    android:layout_marginBottom="8dp"
+                    android:layout_marginRight="8dp"
+                    android:src="@drawable/ic_favorite_black_48dp"
+                    android:visibility="gone"
+                    app:favorite="@{entry}"/>
+            </FrameLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="36dp"
-                android:orientation="horizontal">
+                android:layout_height="match_parent"
+                android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/authorname"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
+                    android:id="@+id/title"
+                    android:layout_width="match_parent"
+                    android:layout_height="36dp"
+                    android:ellipsize="end"
                     android:gravity="center_vertical"
-                    android:text="@{entry.getMemberName()}"
-                    android:textSize="12sp" />
+                    android:maxLines="2"
+                    android:text="@{entry.getTitle()}"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
 
-                <View
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="36dp"
+                    android:orientation="horizontal">
 
-                <TextView
-                    android:id="@+id/updated"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:gravity="center_vertical"
-                    android:text="@{entry.getPublished()}"
-                    android:textColor="#999999"
-                    android:textSize="12sp" />
+                    <TextView
+                        android:id="@+id/authorname"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:text="@{entry.getMemberName()}"
+                        android:textSize="12sp" />
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1" />
+
+                    <TextView
+                        android:id="@+id/updated"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:text="@{entry.getPublished()}"
+                        android:textColor="#999999"
+                        android:textSize="12sp" />
+                </LinearLayout>
             </LinearLayout>
         </LinearLayout>
-    </LinearLayout>
+
+    </FrameLayout>
+
 </layout>
