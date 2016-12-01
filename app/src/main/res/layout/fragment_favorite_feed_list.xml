@@ -16,7 +16,7 @@
                 android:id="@+id/recyclerview"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:scrollbars="vertical"
+                android:scrollbars="none"
                 app:layoutManager="android.support.v7.widget.GridLayoutManager"
                 app:spanCount="@integer/favorite_member_grid_span" />
         </jp.shts.android.keyakifeed.views.HackySwipeRefreshLayout>
