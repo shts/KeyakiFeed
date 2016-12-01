@@ -54,27 +54,22 @@
 
         <TextView
             android:id="@+id/birthday"
-            android:text="@string/property_name_birthday"
             style="@style/MemberDetailHeader.TextView.Properties"
             />
         <TextView
             android:id="@+id/birthplace"
-            android:text="@string/property_name_birthplace"
             style="@style/MemberDetailHeader.TextView.Properties"
             />
         <TextView
             android:id="@+id/blood_type"
-            android:text="@string/property_name_blood_type"
             style="@style/MemberDetailHeader.TextView.Properties"
             />
         <TextView
             android:id="@+id/constellation"
-            android:text="@string/property_name_constellation"
             style="@style/MemberDetailHeader.TextView.Properties"
             />
         <TextView
             android:id="@+id/height"
-            android:text="@string/property_name_height"
             style="@style/MemberDetailHeader.TextView.Properties"
             />
     </LinearLayout>
