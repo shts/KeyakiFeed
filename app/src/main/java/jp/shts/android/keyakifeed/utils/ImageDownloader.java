@@ -56,7 +56,6 @@ class ImageDownloader {
 
     public final boolean get() {
         if (!NetworkUtils.enableNetwork(context)) {
-            Log.w(TAG, "cannot start download because of enable network");
             return false;
         }
         onStart();
@@ -114,6 +113,5 @@ class ImageDownloader {
     public void onResponse(Response response) {}
 
     public void onComplete(List<Response> responseList) {}
-
 
 }

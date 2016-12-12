@@ -9,62 +9,113 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.content.ContextCompat;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
-import com.squareup.otto.Subscribe;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import jp.shts.android.keyakifeed.R;
+import jp.shts.android.keyakifeed.api.KeyakiFeedApiClient;
 import jp.shts.android.keyakifeed.databinding.FragmentDetailMemberBinding;
-import jp.shts.android.keyakifeed.models.Favorite;
 import jp.shts.android.keyakifeed.models.Member;
-import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
+import jp.shts.android.keyakifeed.providers.FavoriteContentObserver;
+import jp.shts.android.keyakifeed.providers.dao.Favorites;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
+import rx.functions.Func1;
+import rx.schedulers.Schedulers;
+import rx.subscriptions.CompositeSubscription;
 
 public class MemberDetailFragment extends Fragment {
 
     private static final String TAG = MemberDetailFragment.class.getSimpleName();
 
-    public static MemberDetailFragment newInstance(String memberObjectId) {
+    public static MemberDetailFragment newInstance(Member member) {
         MemberDetailFragment memberDetailFragment = new MemberDetailFragment();
         Bundle bundle = new Bundle();
-        bundle.putString("memberObjectId", memberObjectId);
+        bundle.putParcelable("member", member);
+        memberDetailFragment.setArguments(bundle);
+        return memberDetailFragment;
+    }
+
+    public static MemberDetailFragment newInstance(int memberId) {
+        MemberDetailFragment memberDetailFragment = new MemberDetailFragment();
+        Bundle bundle = new Bundle();
+        bundle.putInt("memberId", memberId);
         memberDetailFragment.setArguments(bundle);
         return memberDetailFragment;
     }
 
     private FragmentDetailMemberBinding binding;
-    private String memberObjectId;
     private int maxScrollSize;
     private boolean isAvatarShown;
+    private CompositeSubscription subscriptions = new CompositeSubscription();
+
+    private final FavoriteContentObserver favoriteContentObserver = new FavoriteContentObserver() {
+        @Override
+        public void onChangeState(@State int state) {
+            switch (state) {
+                case State.ADD:
+                    Snackbar.make(binding.coordinator, "推しメン登録しました", Snackbar.LENGTH_SHORT).show();
+                    break;
+                case State.REMOVE:
+                    Snackbar.make(binding.coordinator, "推しメン登録を解除しました", Snackbar.LENGTH_SHORT).show();
+                    break;
+            }
+        }
+    };
 
     @Override
-    public void onResume() {
-        super.onResume();
-        BusHolder.get().register(this);
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        favoriteContentObserver.register(getContext());
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
-        BusHolder.get().unregister(this);
+    public void onDestroy() {
+        favoriteContentObserver.unregister(getContext());
+        subscriptions.unsubscribe();
+        super.onDestroy();
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_detail_member, container, false);
+        final Member member = getArguments().getParcelable("member");
+        if (member == null) {
+            subscriptions.add(KeyakiFeedApiClient.getMember(getArguments().getInt("memberId"))
+                    .subscribeOn(Schedulers.newThread())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .onErrorReturn(new Func1<Throwable, Member>() {
+                        @Override
+                        public Member call(Throwable e) {
+                            e.printStackTrace();
+                            return null;
+                        }
+                    })
+                    .subscribe(new Action1<Member>() {
+                        @Override
+                        public void call(Member member) {
+                            if (member == null) return;
+                            setupComponents(member);
+                        }
+                    })
+            );
+            return binding.getRoot();
+        }
+        setupComponents(member);
+        return binding.getRoot();
+    }
 
-        memberObjectId = getArguments().getString("memberObjectId");
+    private void setupComponents(final Member member) {
 
         binding.fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Favorite.toggle(memberObjectId);
+                Favorites.toggle(getContext(), member);
             }
         });
 
@@ -74,7 +125,7 @@ public class MemberDetailFragment extends Fragment {
                 ContextCompat.getColor(getContext(), android.R.color.transparent));
 
         ViewPageAdapter adapter = new ViewPageAdapter(
-                getActivity().getSupportFragmentManager(), memberObjectId);
+                getActivity().getSupportFragmentManager(), member);
         binding.viewpager.setAdapter(adapter);
         binding.tabs.setupWithViewPager(binding.viewpager);
 
@@ -99,42 +150,20 @@ public class MemberDetailFragment extends Fragment {
         });
         maxScrollSize = binding.appBar.getTotalScrollRange();
 
-        Member.fetch(memberObjectId);
-
-        return binding.getRoot();
-    }
-
-    @Subscribe
-    public void onFetchedMember(Member.FetchMemberCallback callback) {
-        if (callback.e != null) {
-            Log.e(TAG, "failed to get member : id(" + memberObjectId + ")", callback.e);
-            return;
-        }
-        binding.viewMemberDetailHeader.setup(callback.member);
-        binding.collapsingToolbar.setTitle(callback.member.getNameMain());
-    }
-
-    @Subscribe
-    public void onChangedFavoriteState(Favorite.ChangedFavoriteState state) {
-        if (state.e == null) {
-            if (state.action == Favorite.ChangedFavoriteState.Action.ADD) {
-                Snackbar.make(binding.coordinator, "推しメン登録しました", Snackbar.LENGTH_SHORT).show();
-            } else {
-                Snackbar.make(binding.coordinator, "推しメン登録を解除しました", Snackbar.LENGTH_SHORT).show();
-            }
-        }
+        binding.viewMemberDetailHeader.setup(member);
+        binding.collapsingToolbar.setTitle(member.getNameMain());
     }
 
     private static class ViewPageAdapter extends FragmentPagerAdapter {
 
         private List<Fragment> fragments = new ArrayList<>();
 
-        public ViewPageAdapter(FragmentManager fm, String memberObjectId) {
+        public ViewPageAdapter(FragmentManager fm, Member member) {
             super(fm);
             MemberEntriesFragment memberEntriesFragment
-                    = MemberEntriesFragment.newInstance(memberObjectId);
+                    = MemberEntriesFragment.newInstance(member);
             MemberImageGridFragment memberImageGridFragment
-                    = MemberImageGridFragment.newInstance(memberObjectId);
+                    = MemberImageGridFragment.newInstance(member);
             fragments.add(memberEntriesFragment);
             fragments.add(memberImageGridFragment);
         }

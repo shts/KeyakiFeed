@@ -11,14 +11,6 @@ public class PicassoHelper {
 
     private static final CircleTransformation CIRCLE_TRANSFORMATION = new CircleTransformation();
 
-    public static void load(Context context, ImageView target, String url) {
-        Picasso.with(context)
-                .load(url)
-                .fit()
-                .centerCrop()
-                .into(target);
-    }
-
     public static void load(ImageView target, String url) {
         Picasso.with(target.getContext())
                 .load(url)

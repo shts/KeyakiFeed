@@ -2,6 +2,7 @@ package jp.shts.android.keyakifeed.views;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,12 +10,10 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.squareup.otto.Subscribe;
-
 import jp.shts.android.keyakifeed.R;
-import jp.shts.android.keyakifeed.models.Favorite;
 import jp.shts.android.keyakifeed.models.Member;
-import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
+import jp.shts.android.keyakifeed.providers.FavoriteContentObserver;
+import jp.shts.android.keyakifeed.providers.dao.Favorites;
 import jp.shts.android.keyakifeed.utils.PicassoHelper;
 
 public class MemberDetailHeader extends RelativeLayout {
@@ -33,6 +32,21 @@ public class MemberDetailHeader extends RelativeLayout {
     private TextView constellationTextView;
     private TextView heightTextView;
 
+    @NonNull
+    private final FavoriteContentObserver favoriteContentObserver = new FavoriteContentObserver() {
+        @Override
+        public void onChangeState(@State int state) {
+            switch (state) {
+                case State.ADD:
+                    favoriteIconImageView.setVisibility(View.VISIBLE);
+                    break;
+                case State.REMOVE:
+                    favoriteIconImageView.setVisibility(View.GONE);
+                    break;
+            }
+        }
+    };
+
     public MemberDetailHeader(Context context) {
         this(context, null);
     }
@@ -47,12 +61,12 @@ public class MemberDetailHeader extends RelativeLayout {
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        BusHolder.get().register(this);
+        favoriteContentObserver.register(getContext());
     }
 
     @Override
     protected void onDetachedFromWindow() {
-        BusHolder.get().unregister(this);
+        favoriteContentObserver.unregister(getContext());
         super.onDetachedFromWindow();
     }
 
@@ -70,36 +84,22 @@ public class MemberDetailHeader extends RelativeLayout {
     }
 
     public void setup(Member member) {
-        if ("6QoBeRdiA9".equals(member.getObjectId())) {
-            // 運営ブログの場合
-            profileImageView.setBackgroundResource(R.drawable.ic_account_circle_black_48dp);
-            nameMainTextView.setText(member.getNameMain());
+        // そのほかメンバーのブログの場合
+        final Context context = getContext();
+        PicassoHelper.loadAndCircleTransform(
+                context, profileImageView, member.getImageUrl());
 
-            nameSubTextView.setVisibility(View.GONE);
-            birthdayTextView.setVisibility(View.GONE);
-            birthplaceTextView.setVisibility(View.GONE);
-            bloodTypeTextView.setVisibility(View.GONE);
-            constellationTextView.setVisibility(View.GONE);
-            heightTextView.setVisibility(View.GONE);
+        nameMainTextView.setText(member.getNameMain());
+        nameSubTextView.setText(member.getNameSub());
 
-        } else {
-            // そのほかメンバーのブログの場合
-            final Context context = getContext();
-            PicassoHelper.loadAndCircleTransform(
-                    context, profileImageView, member.getProfileImageUrl());
+        final Resources res = context.getResources();
+        birthdayTextView.setText(res.getString(R.string.property_name_birthday, member.getBirthday()));
+        birthplaceTextView.setText(res.getString(R.string.property_name_birthplace, member.getBirthplace()));
+        bloodTypeTextView.setText(res.getString(R.string.property_name_blood_type, member.getBloodType()));
+        constellationTextView.setText(res.getString(R.string.property_name_constellation, member.getConstellation()));
+        heightTextView.setText(res.getString(R.string.property_name_height, member.getHeight()));
 
-            nameMainTextView.setText(member.getNameMain());
-            nameSubTextView.setText(member.getNameSub());
-
-            final Resources res = context.getResources();
-            birthdayTextView.setText(res.getString(R.string.property_name_birthday, member.getBirthday()));
-            birthplaceTextView.setText(res.getString(R.string.property_name_birthplace, member.getBirthPlace()));
-            bloodTypeTextView.setText(res.getString(R.string.property_name_blood_type, member.getBloodType()));
-            constellationTextView.setText(res.getString(R.string.property_name_constellation, member.getConstellation()));
-            heightTextView.setText(res.getString(R.string.property_name_height, member.getHeight()));
-        }
-
-        if (Favorite.exist(member.getObjectId())) {
+        if (Favorites.exist(getContext(), member)) {
             favoriteIconImageView.setVisibility(View.VISIBLE);
         } else {
             favoriteIconImageView.setVisibility(View.GONE);
@@ -119,16 +119,4 @@ public class MemberDetailHeader extends RelativeLayout {
         profileImageView.animate().scaleY(0).scaleX(0).setDuration(200).start();
         favoriteIconImageView.animate().scaleY(0).scaleX(0).setDuration(200).start();
     }
-
-    @Subscribe
-    public void onChangedFavoriteState(Favorite.ChangedFavoriteState state) {
-        if (state.e == null) {
-            if (state.action == Favorite.ChangedFavoriteState.Action.ADD) {
-                favoriteIconImageView.setVisibility(View.VISIBLE);
-            } else {
-                favoriteIconImageView.setVisibility(View.GONE);
-            }
-        }
-    }
-
 }

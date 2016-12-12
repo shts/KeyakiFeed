@@ -11,10 +11,11 @@
             android:id="@+id/recycler_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:layoutManager="StaggeredGridLayoutManager"
-            app:spanCount="2"
+            android:clipToPadding="false"
             android:scrollbars="vertical"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
+            app:layoutManager="StaggeredGridLayoutManager"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"
+            app:spanCount="2" />
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/fab"

@@ -16,8 +16,7 @@ public class AllMemberActivity extends AppCompatActivity {
     private static final String TAG = AllMemberActivity.class.getSimpleName();
 
     public static Intent getChooserIntent(Context context) {
-        Intent intent = new Intent(context, AllMemberActivity.class);
-        return intent;
+        return new Intent(context, AllMemberActivity.class);
     }
 
     @Override

@@ -10,21 +10,24 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.parse.ParseQuery;
-import com.squareup.otto.Subscribe;
-
 import java.util.List;
 
 import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.activities.BlogActivity;
 import jp.shts.android.keyakifeed.adapters.BindingHolder;
 import jp.shts.android.keyakifeed.adapters.FooterRecyclerViewAdapter;
+import jp.shts.android.keyakifeed.api.KeyakiFeedApiClient;
 import jp.shts.android.keyakifeed.databinding.FragmentMemberEntriesBinding;
 import jp.shts.android.keyakifeed.databinding.ListItemMemberDetailEntryBinding;
-import jp.shts.android.keyakifeed.entities.Blog;
+import jp.shts.android.keyakifeed.models.Entries;
 import jp.shts.android.keyakifeed.models.Entry;
-import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
+import jp.shts.android.keyakifeed.models.Member;
 import jp.shts.android.keyakifeed.views.DividerItemDecoration;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
+import rx.functions.Func1;
+import rx.schedulers.Schedulers;
+import rx.subscriptions.CompositeSubscription;
 
 public class MemberEntriesFragment extends Fragment {
 
@@ -36,25 +39,20 @@ public class MemberEntriesFragment extends Fragment {
 
     private MemberFeedListAdapter adapter;
     private FragmentMemberEntriesBinding binding;
+    private CompositeSubscription subscriptions = new CompositeSubscription();
 
-    public static MemberEntriesFragment newInstance(String memberObjectId) {
+    public static MemberEntriesFragment newInstance(Member member) {
         MemberEntriesFragment memberEntriesFragment = new MemberEntriesFragment();
         Bundle bundle = new Bundle();
-        bundle.putString("memberObjectId", memberObjectId);
+        bundle.putParcelable("member", member);
         memberEntriesFragment.setArguments(bundle);
         return memberEntriesFragment;
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        BusHolder.get().register(this);
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        BusHolder.get().unregister(this);
+    public void onDestroy() {
+        subscriptions.unsubscribe();
+        super.onDestroy();
     }
 
     @Nullable
@@ -65,54 +63,78 @@ public class MemberEntriesFragment extends Fragment {
         binding.recyclerView.setHasFixedSize(false);
         binding.recyclerView.addItemDecoration(new DividerItemDecoration(getActivity()));
 
-        ParseQuery<Entry> query = Entry.getQuery(PAGE_LIMIT, counter);
-        Entry.findByIdAll(query, getArguments().getString("memberObjectId"));
+        getMemberEntries();
 
         return binding.getRoot();
     }
 
-    @Subscribe
-    public void onGotAllEntries(Entry.GetEntriesCallback.FindById.All callback) {
-        if (callback.e != null) {
-            //Snackbar.make(binding.coordinator, "ブログ記事の取得に失敗しました。通信状態を確認してください。", Snackbar.LENGTH_SHORT).show();
-            return;
-        } else if (callback.entries == null || callback.entries.isEmpty()) {
-            Log.v(TAG, "end of all entries !!!");
-            return;
-        }
-        // setup adapter
-        adapter = new MemberFeedListAdapter(getContext(), callback.entries);
-        adapter.setOnMaxPageScrollListener(new FooterRecyclerViewAdapter.OnMaxPageScrollListener() {
-            @Override
-            public void onMaxPageScrolled() {
-                Log.v(TAG, "onMaxPageScrolled() : nowGettingNextEntry(" + nowGettingNextEntry + ")");
-                if (nowGettingNextEntry) return;
-                nowGettingNextEntry = true;
-                // get next feed
-                counter++;
-                ParseQuery<Entry> query = Entry.getQuery(PAGE_LIMIT, (PAGE_LIMIT * counter));
-                Entry.findByIdNext(query, getArguments().getString("memberObjectId"));
-            }
-        });
-        binding.recyclerView.setAdapter(adapter);
+    private void getMemberEntries() {
+        final Member member = getArguments().getParcelable("member");
+        if (member == null) return;
+        counter = 0;
+        subscriptions.add(KeyakiFeedApiClient.getMemberEntries(
+                member.getId(), counter, PAGE_LIMIT)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .onErrorReturn(new Func1<Throwable, Entries>() {
+                    @Override
+                    public Entries call(Throwable throwable) {
+                        return new Entries();
+                    }
+                })
+                .subscribe(new Action1<Entries>() {
+                    @Override
+                    public void call(Entries entries) {
+                        if (entries == null || entries.isEmpty()) {
+                            Log.e(TAG, "cannot get entries");
+                        } else {
+                            // setup adapter
+                            adapter = new MemberFeedListAdapter(getContext(), entries);
+                            adapter.setOnMaxPageScrollListener(new FooterRecyclerViewAdapter.OnMaxPageScrollListener() {
+                                @Override
+                                public void onMaxPageScrolled() {
+                                    Log.v(TAG, "onMaxPageScrolled() : nowGettingNextEntry(" + nowGettingNextEntry + ")");
+                                    if (nowGettingNextEntry) return;
+                                    nowGettingNextEntry = true;
+                                    getMemberNextEntries();
+                                }
+                            });
+                            binding.recyclerView.setAdapter(adapter);
+                        }
+                    }
+                }));
     }
 
-    @Subscribe
-    public void onGotNextEntries(Entry.GetEntriesCallback.FindById.Next callback) {
-        nowGettingNextEntry = false;
-        if (callback.e != null) {
-            //Snackbar.make(binding.coordinator, "ブログ記事の取得に失敗しました。通信状態を確認してください。", Snackbar.LENGTH_SHORT).show();
-            return;
-        } else if (callback.entries == null || callback.entries.isEmpty()) {
-            Log.v(TAG, "end of all entries !!!");
-            if (adapter != null) adapter.setFoooterVisibility(false);
-            return;
-        }
-        if (adapter != null) {
-            adapter.setFoooterVisibility(true);
-            adapter.add(callback.entries);
-            adapter.notifyDataSetChanged();
-        }
+    public void getMemberNextEntries() {
+        final Member member = getArguments().getParcelable("member");
+        if (member == null) return;
+        counter++;
+        subscriptions.add(KeyakiFeedApiClient.getMemberEntries(
+                member.getId(), (PAGE_LIMIT * counter), PAGE_LIMIT)
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .onErrorReturn(new Func1<Throwable, Entries>() {
+                    @Override
+                    public Entries call(Throwable throwable) {
+                        return new Entries();
+                    }
+                })
+                .subscribe(new Action1<Entries>() {
+                    @Override
+                    public void call(Entries entries) {
+                        Log.v(TAG, "onNext");
+                        nowGettingNextEntry = false;
+                        if (entries == null || entries.isEmpty()) {
+                            Log.e(TAG, "cannot get entries");
+                        } else {
+                            if (adapter != null) {
+                                adapter.setFooterVisibility(true);
+                                adapter.add(entries);
+                                adapter.notifyDataSetChanged();
+                            }
+                        }
+                    }
+                }));
     }
 
     private static class MemberFeedListAdapter extends FooterRecyclerViewAdapter<Entry, ListItemMemberDetailEntryBinding> {
@@ -138,7 +160,7 @@ public class MemberEntriesFragment extends Fragment {
                 @Override
                 public void onClick(View v) {
                     getContext().startActivity(
-                            BlogActivity.getStartIntent(getContext(), new Blog(entry)));
+                            BlogActivity.getStartIntent(getContext(), entry));
                 }
             });
         }

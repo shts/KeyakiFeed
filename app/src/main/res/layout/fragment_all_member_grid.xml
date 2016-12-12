@@ -16,19 +16,20 @@
             android:visibility="gone"
             app:theme="@style/ThemeOverlay.AppCompat.Light" />
 
-        <android.support.v4.widget.SwipeRefreshLayout
+        <jp.shts.android.keyakifeed.views.HackySwipeRefreshLayout
             android:id="@+id/refresh"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="16dp">
+            android:layout_height="match_parent">
 
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/recyclerview"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:scrollbars="vertical"
+                android:clipToPadding="false"
+                android:padding="16dp"
+                android:scrollbars="none"
                 app:layoutManager="android.support.v7.widget.GridLayoutManager"
                 app:spanCount="@integer/all_member_grid_span" />
-        </android.support.v4.widget.SwipeRefreshLayout>
+        </jp.shts.android.keyakifeed.views.HackySwipeRefreshLayout>
     </LinearLayout>
 </layout>

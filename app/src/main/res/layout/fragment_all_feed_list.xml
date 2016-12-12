@@ -6,7 +6,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <android.support.v4.widget.SwipeRefreshLayout
+        <jp.shts.android.keyakifeed.views.HackySwipeRefreshLayout
             android:id="@+id/refresh"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
@@ -15,6 +15,6 @@
                 android:id="@+id/all_feed_list"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
-        </android.support.v4.widget.SwipeRefreshLayout>
+        </jp.shts.android.keyakifeed.views.HackySwipeRefreshLayout>
     </LinearLayout>
 </layout>
