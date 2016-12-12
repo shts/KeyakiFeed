@@ -9,8 +9,12 @@ import java.util.List;
 
 import jp.shts.android.keyakifeed.R;
 import jp.shts.android.keyakifeed.models.Entry;
-import jp.shts.android.keyakifeed.models.Favorite;
 import jp.shts.android.keyakifeed.models.Member;
+import jp.shts.android.keyakifeed.providers.dao.Favorites;
+import jp.shts.android.keyakifeed.providers.dao.UnreadArticles;
+
+import static jp.shts.android.keyakifeed.fragments.SettingsFragment.MARK_UNREAD_ARTICLES;
+import static jp.shts.android.keyakifeed.fragments.SettingsFragment.MARK_UNREAD_ARTICLES_ONLY_FAVORITE;
 
 public class DataBindingAttributeUtil {
 
@@ -53,7 +57,7 @@ public class DataBindingAttributeUtil {
 
     @BindingAdapter("favorite")
     public static void setFavoriteIcon(ImageView imageView, Entry entry) {
-        if (entry.isFavorite()) {
+        if (Favorites.exist(imageView.getContext(), String.valueOf(entry.getMemberId()))) {
             imageView.setVisibility(View.VISIBLE);
         } else {
             imageView.setVisibility(View.GONE);
@@ -62,10 +66,42 @@ public class DataBindingAttributeUtil {
 
     @BindingAdapter("favoriteMember")
     public static void setFavoriteIcon(ImageView imageView, Member member) {
-        if (Favorite.exist(member.getObjectId())) {
+        if (Favorites.exist(imageView.getContext(), member)) {
             imageView.setVisibility(View.VISIBLE);
         } else {
             imageView.setVisibility(View.GONE);
+        }
+    }
+
+    /**
+     * すべてのブログページのリストアイテムで使用する
+     */
+    @BindingAdapter("unreadAllEntry")
+    public static void setUnreadIconAllEntry(View view, String url) {
+        // すべてのブログ画面で未読表示させない設定の場合はGONE
+        boolean isShow = PreferencesUtils.getBoolean(
+                view.getContext(), MARK_UNREAD_ARTICLES, false);
+
+        if (isShow && UnreadArticles.exist(view.getContext(), url)) {
+            view.setVisibility(View.VISIBLE);
+        } else {
+            view.setVisibility(View.GONE);
+        }
+    }
+
+    /**
+     * 推しメンのブログページのリストアイテムで使用する
+     */
+    @BindingAdapter("unreadFavoriteEntry")
+    public static void setUnreadIconFavorite(View view, String url) {
+        // 推しメンのブログで未読表示させない設定の場合はGONE
+        boolean isShow = PreferencesUtils.getBoolean(
+                view.getContext(), MARK_UNREAD_ARTICLES_ONLY_FAVORITE, false);
+
+        if (isShow && UnreadArticles.exist(view.getContext(), url)) {
+            view.setVisibility(View.VISIBLE);
+        } else {
+            view.setVisibility(View.GONE);
         }
     }
 

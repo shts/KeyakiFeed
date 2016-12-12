@@ -1,164 +1,238 @@
 package jp.shts.android.keyakifeed.models;
 
-import android.util.Log;
+import android.os.Parcel;
+import android.os.Parcelable;
 
-import com.parse.FindCallback;
-import com.parse.ParseClassName;
-import com.parse.ParseException;
-import com.parse.ParseObject;
-import com.parse.ParseQuery;
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
+import org.json.JSONArray;
+import org.json.JSONException;
 
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
-import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
+import jp.shts.android.keyakifeed.utils.DateUtils;
 
-@ParseClassName("Entry")
-public class Entry extends ParseObject {
+public class Entry implements Parcelable {
 
-    private static final String TAG = Entry.class.getSimpleName();
+    @SerializedName(value = "__id", alternate = {"id", "_id"})
+    @Expose
+    private Integer id;
+    @SerializedName(value = "__title", alternate = {"title", "_title"})
+    @Expose
+    private String title;
+    @SerializedName(value = "__url", alternate = {"url", "_url"})
+    @Expose
+    private String url;
+    @SerializedName(value = "__published", alternate = {"published", "_published"})
+    @Expose
+    private String published;
+    @SerializedName(value = "__image_url_list", alternate = {"image_url_list", "_image_url_list"})
+    @Expose
+    private String imageUrlList;
+    @SerializedName(value = "__member_id", alternate = {"member_id", "_member_id"})
+    @Expose
+    private Integer memberId;
+    @SerializedName(value = "__member_name", alternate = {"member_name", "_member_name"})
+    @Expose
+    private String memberName;
+    @SerializedName(value = "__member_image_url", alternate = {"member_image_url", "_member_image_url"})
+    @Expose
+    private String memberImageUrl;
 
-    public static ParseQuery<Entry> getQuery(int limit, int skip) {
-        ParseQuery<Entry> query = ParseQuery.getQuery(Entry.class);
-        query.orderByDescending("published");
-        query.setLimit(limit);
-        query.setSkip(skip);
-        return query;
-    }
-
-    public static void all(ParseQuery<Entry> query) {
-        query.findInBackground(new FindCallback<Entry>() {
-            @Override
-            public void done(List<Entry> entries, ParseException e) {
-                BusHolder.get().post(new GetEntriesCallback.All(entries, e));
-            }
-        });
-    }
-
-    public static void next(ParseQuery<Entry> query) {
-        query.findInBackground(new FindCallback<Entry>() {
-            @Override
-            public void done(List<Entry> entries, ParseException e) {
-                BusHolder.get().post(new GetEntriesCallback.Next(entries, e));
-            }
-        });
-    }
-
-    public static void findByIdAll(ParseQuery<Entry> query, String memberObjecctId) {
-        query.whereEqualTo("member_id", memberObjecctId);
-        query.findInBackground(new FindCallback<Entry>() {
-            @Override
-            public void done(List<Entry> entries, ParseException e) {
-                BusHolder.get().post(new GetEntriesCallback.FindById.All(entries, e));
-            }
-        });
-    }
-
-    public static void findByIdNext(ParseQuery<Entry> query, String memberObjectId) {
-        query.whereEqualTo("member_id", memberObjectId);
-        query.findInBackground(new FindCallback<Entry>() {
-            @Override
-            public void done(List<Entry> entries, ParseException e) {
-                BusHolder.get().post(new GetEntriesCallback.FindById.Next(entries, e));
-            }
-        });
-    }
-
-    public static void memberAllImages(String memberObjectId) {
-        ParseQuery<Entry> query = ParseQuery.getQuery(Entry.class);
-        query.orderByDescending("published");
-        query.findInBackground(new FindCallback<Entry>() {
-            @Override
-            public void done(List<Entry> entries, ParseException e) {
-                BusHolder.get().post(new GetEntriesCallback.AllImage(entries, e));
-            }
-        });
+    Entry(Report report) {
+        this.id = report.getId();
+        this.title = report.getTitle();
+        this.url = report.getUrl();
+        this.published = report.getPublished();
+        this.imageUrlList = report.getImageUrlArray();
+        this.memberName = "Official Report";
     }
 
     /**
-     * For event bus callbacks
+     * @return The id
      */
-    public static class GetEntriesCallback {
-        final public List<Entry> entries;
-        final public ParseException e;
-        GetEntriesCallback(List<Entry> entries, ParseException e) {
-            this.entries = entries;
-            this.e = e;
-        }
-        public static class All extends GetEntriesCallback {
-            All(List<Entry> entries, ParseException e) {
-                super(entries, e);
-            }
-        }
-        public static class Next extends GetEntriesCallback {
-            Next(List<Entry> entries, ParseException e) {
-                super(entries, e);
-            }
-        }
-        public static class FindById extends GetEntriesCallback {
-            FindById(List<Entry> entries, ParseException e) {
-                super(entries, e);
-            }
-            public static class All extends FindById {
-                All(List<Entry> entries, ParseException e) {
-                    super(entries, e);
-                }
-            }
-            public static class Next extends FindById {
-                Next(List<Entry> entries, ParseException e) {
-                    super(entries, e);
-                }
-            }
-        }
-        public static class AllImage extends GetEntriesCallback {
-            AllImage(List<Entry> entries, ParseException e) {
-                super(entries, e);
-            }
-        }
-        public boolean hasError() { return e != null || (entries == null || entries.isEmpty()); }
-
-        public List<String> getAllThumbnailUrlList() {
-            List<String> list = new ArrayList<>();
-            if (hasError()) return list;
-
-            for (Entry entry : entries) {
-                list.addAll(entry.getImageUrlList());
-            }
-            return list;
-        }
+    public Integer getId() {
+        return id;
     }
 
-    public boolean isFavorite() {
-        return Favorite.exist(getMemberId());
+    /**
+     * @param id The id
+     */
+    public void setId(Integer id) {
+        this.id = id;
     }
 
-    public String getArticleUrl() {
-        return getString("article_url");
-    }
-
-    public String getMemberName() {
-        return getString("member_name");
-    }
-
-    public String getMemberId() {
-        return getString("member_id");
-    }
-
-    public String getMemberImageUrl() {
-        return getString("member_image_url");
-    }
-
-    public List<String> getImageUrlList() {
-        return getList("image_url_list");
-    }
-
-    public Date getPublishedDate() {
-        return getDate("published");
-    }
-
+    /**
+     * @return The title
+     */
     public String getTitle() {
-        return getString("title");
+        return title;
     }
 
+    /**
+     * @param title The title
+     */
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    /**
+     * @return The url
+     */
+    public String getUrl() {
+        return url;
+    }
+
+    /**
+     * @param url The url
+     */
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    /**
+     * @return The published
+     */
+    public String getPublished() {
+        return DateUtils.parse(this.published);
+    }
+
+    /**
+     * @param published The published
+     */
+    public void setPublished(String published) {
+        this.published = published;
+    }
+
+    /**
+     * @return The imageUrlList
+     */
+    public ArrayList<String> getImageUrlList() {
+        ArrayList<String> list = new ArrayList<>();
+        try {
+            JSONArray array = new JSONArray(imageUrlList);
+            final int N = array.length();
+            for (int i = 0; i < N; i++) {
+                list.add(array.getString(i));
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    /**
+     * @param imageUrlList The image_url_list
+     */
+    public void setImageUrlList(String imageUrlList) {
+        this.imageUrlList = imageUrlList;
+    }
+
+    /**
+     * @return The memberId
+     */
+    public Integer getMemberId() {
+        return memberId;
+    }
+
+    /**
+     * @param memberId The member_id
+     */
+    public void setMemberId(Integer memberId) {
+        this.memberId = memberId;
+    }
+
+    /**
+     * @return The memberName
+     */
+    public String getMemberName() {
+        return memberName;
+    }
+
+    /**
+     * @param memberName The member_name
+     */
+    public void setMemberName(String memberName) {
+        this.memberName = memberName;
+    }
+
+    /**
+     * @return The memberImageUrl
+     */
+    public String getMemberImageUrl() {
+        return memberImageUrl;
+    }
+
+    /**
+     * @param memberImageUrl The member_image_url
+     */
+    public void setMemberImageUrl(String memberImageUrl) {
+        this.memberImageUrl = memberImageUrl;
+    }
+
+    @Override
+    public String toString() {
+        return "Entry{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", url='" + url + '\'' +
+                ", published='" + published + '\'' +
+                ", imageUrlList='" + imageUrlList + '\'' +
+                ", memberId=" + memberId +
+                ", memberName='" + memberName + '\'' +
+                ", memberImageUrl='" + memberImageUrl + '\'' +
+                '}';
+    }
+
+    protected Entry(Parcel in) {
+        id = in.readByte() == 0x00 ? null : in.readInt();
+        title = in.readString();
+        url = in.readString();
+        published = in.readString();
+        imageUrlList = in.readString();
+        memberId = in.readByte() == 0x00 ? null : in.readInt();
+        memberName = in.readString();
+        memberImageUrl = in.readString();
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        if (id == null) {
+            dest.writeByte((byte) (0x00));
+        } else {
+            dest.writeByte((byte) (0x01));
+            dest.writeInt(id);
+        }
+        dest.writeString(title);
+        dest.writeString(url);
+        dest.writeString(published);
+        dest.writeString(imageUrlList);
+        if (memberId == null) {
+            dest.writeByte((byte) (0x00));
+        } else {
+            dest.writeByte((byte) (0x01));
+            dest.writeInt(memberId);
+        }
+        dest.writeString(memberName);
+        dest.writeString(memberImageUrl);
+    }
+
+    @SuppressWarnings("unused")
+    public static final Parcelable.Creator<Entry> CREATOR = new Parcelable.Creator<Entry>() {
+        @Override
+        public Entry createFromParcel(Parcel in) {
+            return new Entry(in);
+        }
+
+        @Override
+        public Entry[] newArray(int size) {
+            return new Entry[size];
+        }
+    };
 }

@@ -1,5 +1,6 @@
 package jp.shts.android.keyakifeed.fragments;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
@@ -8,15 +9,10 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.parse.ParseQuery;
-import com.squareup.otto.Subscribe;
-
-import java.util.ArrayList;
 import java.util.List;
 
 import jp.shts.android.keyakifeed.R;
@@ -25,53 +21,88 @@ import jp.shts.android.keyakifeed.activities.BlogActivity;
 import jp.shts.android.keyakifeed.activities.MemberDetailActivity;
 import jp.shts.android.keyakifeed.adapters.BindingHolder;
 import jp.shts.android.keyakifeed.adapters.FooterRecyclerViewAdapter;
-import jp.shts.android.keyakifeed.adapters.FooterRecyclerViewAdapter.OnMaxPageScrollListener;
+import jp.shts.android.keyakifeed.api.KeyakiFeedApiClient;
 import jp.shts.android.keyakifeed.databinding.FragmentFavoriteFeedListBinding;
 import jp.shts.android.keyakifeed.databinding.ListItemCardBinding;
-import jp.shts.android.keyakifeed.entities.Blog;
+import jp.shts.android.keyakifeed.models.Entries;
 import jp.shts.android.keyakifeed.models.Entry;
-import jp.shts.android.keyakifeed.models.Favorite;
-import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
+import jp.shts.android.keyakifeed.providers.UnreadArticlesContentObserver;
+import jp.shts.android.keyakifeed.providers.dao.Favorites;
+import rx.Observable;
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action0;
+import rx.functions.Func1;
+import rx.schedulers.Schedulers;
+import rx.subscriptions.CompositeSubscription;
 
+/**
+ * 推しメンのブログ記事一覧
+ */
 public class FavoriteMemberFeedListFragment extends Fragment {
 
     private static final String TAG = FavoriteMemberFeedListFragment.class.getSimpleName();
+    private static final int REQUEST_MEMBER_CHOOSER = 0;
 
     private FragmentFavoriteFeedListBinding binding;
-
     private FavoriteFeedListAdapter adapter;
-
-    private List<String> favoriteMemberIdList = new ArrayList<>();
 
     private static final int PAGE_LIMIT = 30;
     private int counter = 0;
     private boolean nowGettingNextEntry;
+    private CompositeSubscription subscriptions = new CompositeSubscription();
+
+    private final FooterRecyclerViewAdapter.OnMaxPageScrollListener listener
+            = new FooterRecyclerViewAdapter.OnMaxPageScrollListener() {
+        @Override
+        public void onMaxPageScrolled() {
+            if (nowGettingNextEntry) return;
+            nowGettingNextEntry = true;
+
+            counter++;
+            subscriptions.add(getEntries()
+                    .subscribeOn(Schedulers.newThread())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new Subscriber<Entries>() {
+                        @Override
+                        public void onCompleted() {
+                            nowGettingNextEntry = false;
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {
+                            e.printStackTrace();
+                            nowGettingNextEntry = false;
+                            // TODO: error handling
+                        }
+
+                        @Override
+                        public void onNext(Entries entries) {
+                            if (entries == null || entries.isEmpty()) {
+                                adapter.setFooterVisibility(false);
+                            } else {
+                                adapter.setFooterVisibility(true);
+                                adapter.add(entries);
+                                // TODO: ちらつく
+                                adapter.notifyDataSetChanged();
+                            }
+                        }
+                    }));
+        }
+    };
+
+    private final UnreadArticlesContentObserver observer = new UnreadArticlesContentObserver() {
+        @Override
+        public void onChangeState(@State int state) {
+            if (adapter != null) adapter.notifyDataSetChanged();
+        }
+    };
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        BusHolder.get().register(this);
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (changeFavoriteState) setupFavoriteMemberFeed();
-        changeFavoriteState = false;
-    }
-
-    private boolean changeFavoriteState;
-
-    @Subscribe
-    public void onChangedFavoriteState(Favorite.ChangedFavoriteState favoriteState) {
-        // TODO: use data observe
-        changeFavoriteState = true;
-    }
-
-    @Override
-    public void onDestroy() {
-        BusHolder.get().unregister(this);
-        super.onDestroy();
+    public void onDestroyView() {
+        observer.unregister(getContext());
+        subscriptions.unsubscribe();
+        super.onDestroyView();
     }
 
     @Nullable
@@ -82,102 +113,84 @@ public class FavoriteMemberFeedListFragment extends Fragment {
         binding.fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = AllMemberActivity.getChooserIntent(getContext());
-                getContext().startActivity(intent);
+                startActivityForResult(AllMemberActivity.getChooserIntent(getContext()), REQUEST_MEMBER_CHOOSER);
             }
         });
         binding.recyclerview.setHasFixedSize(true); // アイテムは固定サイズ
         binding.refresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                setupFavoriteMemberFeed();
+                getFavoriteMemberFeed();
             }
         });
-        binding.refresh.setSwipeableChildren(R.id.recyclerview, R.id.empty_view);
-        binding.refresh.setColorSchemeResources(
-                R.color.primary, R.color.primary, R.color.primary, R.color.primary);
-        binding.refresh.post(new Runnable() {
-            @Override
-            public void run() {
-                setupFavoriteMemberFeed();
-                binding.refresh.setRefreshing(true);
-            }
-        });
+        getFavoriteMemberFeed();
 
+        observer.register(getContext());
         return binding.getRoot();
     }
 
-    private void setupFavoriteMemberFeed() {
-        setVisibilityEmptyView(false);
-        ParseQuery<Favorite> query = ParseQuery.getQuery(Favorite.class);
-        query.fromLocalDatastore();
-        Favorite.all(query);
-    }
-
-    @Subscribe
-    public void GotAllFavorites(Favorite.GetFavoritesCallback callback) {
-        if (callback.e != null || callback.favorites == null || callback.favorites.isEmpty()) {
-            setVisibilityEmptyView(true);
-            if (binding.refresh.isRefreshing()) {
-                binding.refresh.setRefreshing(false);
-            }
-            return;
-        }
-        favoriteMemberIdList.clear();
-        for (Favorite favorite : callback.favorites) {
-            favoriteMemberIdList.add(favorite.getMemberObjectId());
-        }
+    private void getFavoriteMemberFeed() {
         counter = 0;
-        final ParseQuery<Entry> query = Entry.getQuery(PAGE_LIMIT, counter);
-        query.whereContainedIn("member_id", favoriteMemberIdList);
-        Entry.all(query);
-    }
-
-    @Subscribe
-    public void onGotAllEntries(Entry.GetEntriesCallback.All all) {
-        if (binding.refresh.isRefreshing()) {
-            binding.refresh.setRefreshing(false);
-        }
-        if (all.hasError()) {
-            setVisibilityEmptyView(true);
-            return;
-        }
-        adapter = new FavoriteFeedListAdapter(getActivity(), all.entries);
-        adapter.setOnMaxPageScrollListener(new OnMaxPageScrollListener() {
-            @Override
-            public void onMaxPageScrolled() {
-                if (nowGettingNextEntry) return;
-                nowGettingNextEntry = true;
-                // get next feed
-                counter++;
-                ParseQuery<Entry> query = Entry.getQuery(PAGE_LIMIT, (PAGE_LIMIT * counter));
-                query.whereContainedIn("member_id", favoriteMemberIdList);
-                Entry.next(query);
-            }
-        });
-        binding.recyclerview.setAdapter(adapter);
         setVisibilityEmptyView(false);
+
+        subscriptions.add(getEntries()
+                .doOnSubscribe(new Action0() {
+                    @Override
+                    public void call() {
+                        binding.refresh.setRefreshing(true);
+                    }
+                })
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<Entries>() {
+                    @Override
+                    public void onCompleted() {
+                        binding.refresh.setRefreshing(false);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        e.printStackTrace();
+                        binding.refresh.setRefreshing(false);
+                        // TODO: error handling
+                    }
+
+                    @Override
+                    public void onNext(Entries entries) {
+                        if (entries.isEmpty()) {
+                            setVisibilityEmptyView(true);
+                            return;
+                        }
+                        adapter = new FavoriteFeedListAdapter(getActivity(), entries);
+                        adapter.setOnMaxPageScrollListener(listener);
+                        binding.recyclerview.setAdapter(adapter);
+                        setVisibilityEmptyView(false);
+                    }
+                }));
     }
 
-    @Subscribe
-    public void onGotNextEntries(Entry.GetEntriesCallback.Next next) {
-        nowGettingNextEntry = false;
-        if (next.hasError()) {
-            Log.e(TAG, "cannot get entries", next.e);
-            if (adapter != null) adapter.setFoooterVisibility(false);
-            return;
-        }
-        if (adapter != null) {
-            adapter.setFoooterVisibility(true);
-            adapter.add(next.entries);
-            adapter.notifyDataSetChanged();
-        }
+    private Observable<Entries> getEntries() {
+        return Favorites.getFavorites(getContext())
+                .map(new Func1<Favorites, List<Integer>>() {
+                    @Override
+                    public List<Integer> call(Favorites favorites) {
+                        return favorites.getMemberIdList();
+                    }
+                })
+                .flatMap(new Func1<List<Integer>, Observable<Entries>>() {
+                    @Override
+                    public Observable<Entries> call(List<Integer> integers) {
+                        return KeyakiFeedApiClient.getMemberEntries(
+                                integers, (PAGE_LIMIT * counter), PAGE_LIMIT);
+                    }
+                })
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread());
     }
 
     private void setVisibilityEmptyView(boolean isVisible) {
         if (isVisible) {
             // recyclerView を setVisiblity(View.GONE) で表示にするとプログレスが表示されない
-            //mEntries.clear();
             binding.recyclerview.setAdapter(null);
             binding.emptyView.setVisibility(View.VISIBLE);
         } else {
@@ -185,11 +198,19 @@ public class FavoriteMemberFeedListFragment extends Fragment {
         }
     }
 
-    public static class FavoriteFeedListAdapter extends FooterRecyclerViewAdapter<Entry, ListItemCardBinding> {
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_MEMBER_CHOOSER && resultCode == Activity.RESULT_OK) {
+            getFavoriteMemberFeed();
+        }
+    }
+
+    private static class FavoriteFeedListAdapter extends FooterRecyclerViewAdapter<Entry, ListItemCardBinding> {
 
         private static final String TAG = FavoriteFeedListAdapter.class.getSimpleName();
 
-        public FavoriteFeedListAdapter(Context context, List<Entry> list) {
+        FavoriteFeedListAdapter(Context context, List<Entry> list) {
             super(context, list);
         }
 
@@ -218,7 +239,7 @@ public class FavoriteMemberFeedListFragment extends Fragment {
                 @Override
                 public void onClick(View v) {
                     getContext().startActivity(
-                            BlogActivity.getStartIntent(getContext(), new Blog(entry)));
+                            BlogActivity.getStartIntent(getContext(), entry));
                 }
             });
 
@@ -231,5 +252,4 @@ public class FavoriteMemberFeedListFragment extends Fragment {
             }
         }
     }
-
 }

@@ -5,8 +5,8 @@
     <data>
 
         <variable
-            name="feedItem"
-            type="jp.shts.android.keyakifeed.entities.FeedItem" />
+            name="matome"
+            type="jp.shts.android.keyakifeed.models.Matome" />
 
     </data>
 
@@ -28,7 +28,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
-                android:text="@{feedItem.title}" />
+                android:text="@{matome.getEntryTitle()}" />
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -40,7 +40,7 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentBottom="true"
                     android:layout_alignParentLeft="true"
-                    android:text="@{feedItem.siteTitle}"
+                    android:text="@{matome.getFeedTitle()}"
                     android:textColor="@color/half_black"
                     android:textSize="12dp" />
 
@@ -51,19 +51,12 @@
                     android:layout_alignParentBottom="true"
                     android:layout_alignParentRight="true"
                     android:paddingRight="8dp"
-                    android:text="@{feedItem.getFormatedDateText()}"
+                    android:text="@{matome.getEntryPublished()}"
                     android:textColor="@color/half_black"
                     android:textSize="12dp" />
             </RelativeLayout>
 
         </LinearLayout>
-
-        <ImageView
-            android:id="@+id/thumbnail"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            app:thumbnailUrl="@{feedItem.getThumbnailUrl()}" />
 
     </LinearLayout>
 </layout>

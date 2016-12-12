@@ -7,7 +7,7 @@ import android.util.Log;
 import java.io.File;
 import java.util.List;
 
-import jp.shts.android.keyakifeed.models.eventbus.BusHolder;
+import jp.shts.android.keyakifeed.models.eventbus.RxBusProvider;
 
 /**
  * 設定された秒数までコールバックを待ち合わせる画像ダウンローダー
@@ -54,7 +54,8 @@ public class WaitMinimunImageDownloader extends ImageDownloader {
                 synchronized (LOCK) {
                     isTimeUp = true;
                     if (isFinishDownload) {
-                        BusHolder.get().post(new Callback.CompleteDownloadImage(responseList));
+                        RxBusProvider.getInstance().send(
+                                new Callback.CompleteDownloadImage(responseList));
                     }
                 }
             }
@@ -63,11 +64,8 @@ public class WaitMinimunImageDownloader extends ImageDownloader {
 
     @Override
     final public void onResponse(Response response) {
-        if (response.result != Response.Result.SUCCESS) {
-            Log.e(TAG, "failed to download image : response("
-                    + response.toString() + ")");
-        }
-        BusHolder.get().post(new Callback.ResponseDownloadImage(response.file));
+        RxBusProvider.getInstance().send(
+                new Callback.ResponseDownloadImage(response.file));
     }
 
     @Override
@@ -77,7 +75,8 @@ public class WaitMinimunImageDownloader extends ImageDownloader {
         synchronized (LOCK) {
             isFinishDownload = true;
             if (isTimeUp) {
-                BusHolder.get().post(new Callback.CompleteDownloadImage(responseList));
+                RxBusProvider.getInstance().send(
+                        new Callback.CompleteDownloadImage(responseList));
             }
         }
     }

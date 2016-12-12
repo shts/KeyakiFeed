@@ -10,16 +10,16 @@ import android.text.TextUtils;
 import android.widget.Toast;
 
 import jp.shts.android.keyakifeed.R;
-import jp.shts.android.keyakifeed.entities.FeedItem;
 import jp.shts.android.keyakifeed.fragments.MatomeBrowseFragment;
+import jp.shts.android.keyakifeed.models.Matome;
 
 public class MatomeBrowseActivity extends AppCompatActivity {
 
     private static final String TAG = MatomeBrowseActivity.class.getSimpleName();
 
-    public static Intent getStartIntent(Context context, FeedItem feedItem) {
+    public static Intent getStartIntent(Context context, Matome matome) {
         Intent intent = new Intent(context, MatomeBrowseActivity.class);
-        intent.putExtra("feedItem", feedItem);
+        intent.putExtra("matome", matome);
         return intent;
     }
 
@@ -28,18 +28,27 @@ public class MatomeBrowseActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        final FeedItem feedItem = getIntent().getParcelableExtra("feedItem");
-        if (feedItem == null || TextUtils.isEmpty(feedItem.url)) {
+        final Matome matome = getIntent().getParcelableExtra("matome");
+        if (matome == null || TextUtils.isEmpty(matome.getEntryUrl())) {
             Toast.makeText(getApplicationContext(),
                     "記事の取得に失敗しました", Toast.LENGTH_SHORT).show();
+            finish();
             return;
         }
 
         MatomeBrowseFragment matomeBrowseFragment
-                = MatomeBrowseFragment.newInstance(feedItem);
+                = MatomeBrowseFragment.newInstance(matome);
 
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         ft.replace(R.id.container, matomeBrowseFragment, MatomeBrowseFragment.class.getSimpleName());
         ft.commit();
+    }
+
+    @Override
+    public void onBackPressed() {
+        MatomeBrowseFragment matomeBrowseFragment =(MatomeBrowseFragment) getSupportFragmentManager()
+                .findFragmentByTag(MatomeBrowseFragment.class.getSimpleName());
+        if (matomeBrowseFragment.goBack()) return;
+        super.onBackPressed();
     }
 }

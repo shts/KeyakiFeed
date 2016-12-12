@@ -55,7 +55,7 @@
                         android:ellipsize="end"
                         android:gravity="center_vertical"
                         android:maxLength="46"
-                        android:text="@{report.title}"
+                        android:text="@{report.getTitle()}"
                         android:textColor="#fff"
                         android:textSize="12sp"
                         android:textStyle="bold" />
@@ -83,7 +83,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="match_parent"
                             android:gravity="center_vertical"
-                            android:text="@{DateUtils.dateToString(report.getPublished())}"
+                            android:text="@{report.getPublished()}"
                             android:textColor="#fff"
                             android:textSize="12sp" />
                     </LinearLayout>

@@ -7,7 +7,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <android.support.v4.widget.SwipeRefreshLayout
+        <jp.shts.android.keyakifeed.views.HackySwipeRefreshLayout
             android:id="@+id/refresh"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
@@ -19,7 +19,7 @@
                 android:scrollbars="vertical"
                 app:layoutManager="android.support.v7.widget.GridLayoutManager"
                 app:spanCount="@integer/report_grid_span" />
-        </android.support.v4.widget.SwipeRefreshLayout>
+        </jp.shts.android.keyakifeed.views.HackySwipeRefreshLayout>
 
     </LinearLayout>
 </layout>
