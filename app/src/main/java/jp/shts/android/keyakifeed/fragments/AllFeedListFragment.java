@@ -25,6 +25,7 @@ import jp.shts.android.keyakifeed.databinding.ListItemEntryBinding;
 import jp.shts.android.keyakifeed.models.Entries;
 import jp.shts.android.keyakifeed.models.Entry;
 import jp.shts.android.keyakifeed.providers.FavoriteContentObserver;
+import jp.shts.android.keyakifeed.providers.UnreadArticlesContentObserver;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
@@ -42,6 +43,14 @@ public class AllFeedListFragment extends Fragment {
     private LinearLayout footerView;
     private AllFeedListAdapter allFeedListAdapter;
     private CompositeSubscription subscriptions = new CompositeSubscription();
+
+    private final UnreadArticlesContentObserver unreadArticlesContentObserver
+            = new UnreadArticlesContentObserver() {
+        @Override
+        public void onChangeState(@State int state) {
+            if (allFeedListAdapter != null) allFeedListAdapter.notifyDataSetChanged();
+        }
+    };
 
     private final FavoriteContentObserver favoriteContentObserver = new FavoriteContentObserver() {
         @Override
@@ -61,11 +70,13 @@ public class AllFeedListFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        unreadArticlesContentObserver.register(getContext());
         favoriteContentObserver.register(getContext());
     }
 
     @Override
     public void onDestroy() {
+        unreadArticlesContentObserver.unregister(getContext());
         favoriteContentObserver.unregister(getContext());
         subscriptions.unsubscribe();
         super.onDestroy();
