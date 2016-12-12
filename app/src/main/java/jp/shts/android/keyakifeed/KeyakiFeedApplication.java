@@ -3,8 +3,6 @@ package jp.shts.android.keyakifeed;
 import android.app.Application;
 
 import com.crashlytics.android.Crashlytics;
-import com.parse.Parse;
-import com.parse.ParseInstallation;
 
 import io.fabric.sdk.android.Fabric;
 import jp.shts.android.keyakifeed.receivers.PushRegister;
@@ -17,9 +15,6 @@ public class KeyakiFeedApplication extends Application {
     public void onCreate() {
         super.onCreate();
         Fabric.with(this, new Crashlytics());
-
-        Parse.initialize(this, BuildConfig.PARSE_API_ID, BuildConfig.PARSE_API_KEY);
-        ParseInstallation.getCurrentInstallation().saveInBackground();
 
         PushRegister.init(this, true);
     }
