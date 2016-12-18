@@ -21,7 +21,7 @@ import rx.functions.Func1;
 import rx.functions.Func2;
 import rx.schedulers.Schedulers;
 
-public class PushRegister {
+class PushRegister {
 
     private static final String TAG = PushRegister.class.getSimpleName();
 
@@ -41,13 +41,6 @@ public class PushRegister {
         @Nullable
         private static String getRegId(@NonNull Context context) {
             return getPref(context).getString(REG_ID, null);
-        }
-    }
-
-    public static void init(Context context, boolean isForceTokenRefresh) {
-        final String regId = Store.getRegId(context);
-        if (TextUtils.isEmpty(regId) || isForceTokenRefresh) {
-            onTokenRefresh(context);
         }
     }
 

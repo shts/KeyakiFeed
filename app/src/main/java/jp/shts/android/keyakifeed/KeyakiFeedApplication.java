@@ -5,7 +5,6 @@ import android.app.Application;
 import com.crashlytics.android.Crashlytics;
 
 import io.fabric.sdk.android.Fabric;
-import jp.shts.android.keyakifeed.receivers.PushRegister;
 
 public class KeyakiFeedApplication extends Application {
 
@@ -15,7 +14,5 @@ public class KeyakiFeedApplication extends Application {
     public void onCreate() {
         super.onCreate();
         Fabric.with(this, new Crashlytics());
-
-        PushRegister.init(this, true);
     }
 }
