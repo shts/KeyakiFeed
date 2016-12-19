@@ -80,7 +80,7 @@ public class DataBindingAttributeUtil {
     public static void setUnreadIconAllEntry(View view, String url) {
         // すべてのブログ画面で未読表示させない設定の場合はGONE
         boolean isShow = PreferencesUtils.getBoolean(
-                view.getContext(), MARK_UNREAD_ARTICLES, false);
+                view.getContext(), MARK_UNREAD_ARTICLES, true);
 
         if (isShow && UnreadArticles.exist(view.getContext(), url)) {
             view.setVisibility(View.VISIBLE);
@@ -96,7 +96,7 @@ public class DataBindingAttributeUtil {
     public static void setUnreadIconFavorite(View view, String url) {
         // 推しメンのブログで未読表示させない設定の場合はGONE
         boolean isShow = PreferencesUtils.getBoolean(
-                view.getContext(), MARK_UNREAD_ARTICLES_ONLY_FAVORITE, false);
+                view.getContext(), MARK_UNREAD_ARTICLES_ONLY_FAVORITE, true);
 
         if (isShow && UnreadArticles.exist(view.getContext(), url)) {
             view.setVisibility(View.VISIBLE);
