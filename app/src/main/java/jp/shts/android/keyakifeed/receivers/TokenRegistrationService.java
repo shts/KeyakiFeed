@@ -49,6 +49,13 @@ public class TokenRegistrationService extends IntentService {
                             Store.setRegId(context, regId);
                             return KeyakiFeedApiClient.registrationId(regId);
                         }
+
+                        // 旧サーバーから新サーバーにトークンを送信する
+                        if (Store.isLegacy(context)) {
+                            Store.removeLegacy(context);
+                            return KeyakiFeedApiClient.registrationId(oldRegId);
+                        }
+
                         return null;
                     }
                 })
@@ -109,11 +116,21 @@ public class TokenRegistrationService extends IntentService {
 
     private static class Store {
 
+        private static final String IS_LEGACY = "is_legacy";
         private static final String REG_PREF = "reg_pref";
         private static final String REG_ID = "reg_id";
 
         private static SharedPreferences getPref(@NonNull Context context) {
             return context.getSharedPreferences(REG_PREF, Context.MODE_PRIVATE);
+        }
+
+        private static boolean isLegacy(@NonNull Context context) {
+            return getPref(context).getBoolean(IS_LEGACY, true);
+        }
+
+        @SuppressLint("CommitPrefEdits")
+        private static void removeLegacy(@NonNull Context context) {
+            getPref(context).edit().putBoolean(IS_LEGACY, false).commit();
         }
 
         @SuppressLint("CommitPrefEdits")
