@@ -17,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -163,6 +164,12 @@ public class BlogFragment extends Fragment {
             public boolean onLongClick(View v) {
                 WebView webView = (WebView) v;
                 showDownloadConfirmDialog(webView);
+                return false;
+            }
+        });
+        binding.browser.setWebViewClient(new WebViewClient() {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
                 return false;
             }
         });
