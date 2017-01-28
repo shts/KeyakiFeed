@@ -204,7 +204,7 @@ public class MemberImageGridFragment extends Fragment {
     private static class MemberImageGridAdapter
             extends FooterRecyclerViewAdapter<BlogImage, ListItemImageGridBinding> {
 
-        public MemberImageGridAdapter(Context context, List<BlogImage> list) {
+        MemberImageGridAdapter(Context context, List<BlogImage> list) {
             super(context, list);
         }
 
