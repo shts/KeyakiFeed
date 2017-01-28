@@ -210,7 +210,7 @@ public class MemberImageGridFragment extends Fragment {
 
         @Override
         public BindingHolder<ListItemImageGridBinding>
-                onCreateContentItemViewHolder(LayoutInflater inflater, ViewGroup parent) {
+        onCreateContentItemViewHolder(LayoutInflater inflater, ViewGroup parent) {
             return new BindingHolder<>(getContext(), parent, R.layout.list_item_image_grid);
         }
 
