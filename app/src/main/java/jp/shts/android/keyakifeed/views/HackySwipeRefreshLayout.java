@@ -35,6 +35,15 @@ public class HackySwipeRefreshLayout extends SwipeRefreshLayout {
         }
     };
 
+    public void setRefreshingForce(boolean refreshing) {
+        if (refreshing) {
+            refreshHandler.post(refreshTask);
+        } else {
+            refreshHandler.removeCallbacks(refreshTask);
+            super.setRefreshing(refreshing);
+        }
+    }
+
     @Override
     public void setRefreshing(boolean refreshing) {
         if (isRunUiThread()) {

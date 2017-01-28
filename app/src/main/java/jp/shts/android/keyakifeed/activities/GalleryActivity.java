@@ -32,8 +32,6 @@ import rx.subscriptions.CompositeSubscription;
 
 public class GalleryActivity extends AppCompatActivity {
 
-    private static final String TAG = GalleryActivity.class.getSimpleName();
-
     public static Intent getStartIntent(Context context,
                                         ArrayList<BlogImage> blogImages,
                                         int index) {
@@ -49,7 +47,7 @@ public class GalleryActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ActivityGalleryBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_gallery);
-        final List<BlogImage> blogImages = getIntent().getParcelableArrayListExtra("blogImages");
+        List<BlogImage> blogImages = getIntent().getParcelableArrayListExtra("blogImages");
         binding.viewPager.setAdapter(new GalleryPagerAdapter(blogImages));
         binding.viewPager.setCurrentItem(getIntent().getIntExtra("index", 0));
 
@@ -132,7 +130,7 @@ public class GalleryActivity extends AppCompatActivity {
 
         private final List<BlogImage> blogImageList;
 
-        public GalleryPagerAdapter(List<BlogImage> blogImageList) {
+        GalleryPagerAdapter(List<BlogImage> blogImageList) {
             super(GalleryActivity.this.getSupportFragmentManager());
             this.blogImageList = blogImageList;
         }

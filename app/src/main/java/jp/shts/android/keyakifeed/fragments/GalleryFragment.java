@@ -42,39 +42,41 @@ public class GalleryFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         FragmentGalleryBinding binding = DataBindingUtil.inflate(inflater, R.layout.fragment_gallery, container, false);
         final BlogImage blogImage = getArguments().getParcelable("blogImage");
-        binding.title.setText(blogImage.entry.getTitle());
-        binding.date.setText(blogImage.entry.getPublished());
-        PicassoHelper.load(binding.image, blogImage.url);
-        binding.image.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                DownloadConfirmDialog confirmDialog = new DownloadConfirmDialog();
-                confirmDialog.setCallbacks(new DownloadConfirmDialog.Callbacks() {
-                    @Override
-                    public void onClickPositiveButton() {
-                        if (TextUtils.isEmpty(blogImage.url)) {
-                            Toast.makeText(getActivity(), "ダウンロードする画像がありません", Toast.LENGTH_SHORT).show();
-                            return;
+        if (blogImage != null) {
+            binding.title.setText(blogImage.getTitle());
+            binding.date.setText(blogImage.getPublished());
+            PicassoHelper.load(binding.image, blogImage.getImageUrl());
+            binding.image.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    DownloadConfirmDialog confirmDialog = new DownloadConfirmDialog();
+                    confirmDialog.setCallbacks(new DownloadConfirmDialog.Callbacks() {
+                        @Override
+                        public void onClickPositiveButton() {
+                            if (TextUtils.isEmpty(blogImage.getImageUrl())) {
+                                Toast.makeText(getActivity(), "ダウンロードする画像がありません", Toast.LENGTH_SHORT).show();
+                                return;
+                            }
+                            startActivityForResult(PermissionRequireActivity.getDownloadStartIntent(
+                                    getActivity(), blogImage.getImageUrl()), 0);
                         }
-                        startActivityForResult(PermissionRequireActivity.getDownloadStartIntent(
-                                getActivity(), blogImage.url), 0);
-                    }
 
-                    @Override
-                    public void onClickNegativeButton() {
-                    }
-                });
-                confirmDialog.show(getActivity().getSupportFragmentManager(), TAG);
-                return false;
-            }
-        });
-        binding.footer.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(BlogActivity.getStartIntent(
-                        getActivity(), blogImage.entry));
-            }
-        });
+                        @Override
+                        public void onClickNegativeButton() {
+                        }
+                    });
+                    confirmDialog.show(getActivity().getSupportFragmentManager(), TAG);
+                    return false;
+                }
+            });
+            binding.footer.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    startActivity(BlogActivity.getStartIntent(
+                            getActivity(), blogImage.getEntryId()));
+                }
+            });
+        }
         return binding.getRoot();
     }
 

@@ -8,6 +8,7 @@ import java.util.List;
 
 import jp.shts.android.keyakifeed.BuildConfig;
 import jp.shts.android.keyakifeed.models.Entries;
+import jp.shts.android.keyakifeed.models.Entry;
 import jp.shts.android.keyakifeed.models.Matome;
 import jp.shts.android.keyakifeed.models.Member;
 import jp.shts.android.keyakifeed.models.Members;
@@ -44,6 +45,11 @@ public class KeyakiFeedApiClient {
     @CheckResult
     public static Observable<Entries> getAllEntries(int skip, int limit) {
         return getApiService().getAllEntries(skip, limit);
+    }
+
+    @CheckResult
+    public static Observable<Entry> getEntry(int entryId) {
+        return getApiService().getEntry(entryId);
     }
 
     @CheckResult
@@ -133,6 +139,9 @@ public class KeyakiFeedApiClient {
 
         @GET("/entries")
         Observable<Entries> getAllEntries(@Query("skip") int skip, @Query("limit") int limit);
+
+        @GET("/entries/{id}")
+        Observable<Entry> getEntry(@Path("id") int id);
 
         @GET("/reports")
         Observable<Reports> getAllReports(@Query("skip") int skip, @Query("limit") int limit);

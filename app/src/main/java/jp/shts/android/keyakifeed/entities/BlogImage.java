@@ -7,32 +7,42 @@ import jp.shts.android.keyakifeed.models.Entry;
 
 public class BlogImage implements Parcelable {
 
-    public String url;
-    public Entry entry;
+    private String imageUrl;
+    private int entryId;
+    private String title;
+    private String published;
 
     public BlogImage(String imageUrl, Entry entry) {
-        this.url = imageUrl;
-        this.entry = entry;
+        this.imageUrl = imageUrl;
+        this.entryId = entry.getId();
+        this.title = entry.getTitle();
+        this.published = entry.getPublished();
     }
 
-    protected BlogImage(Parcel in) {
-        url = in.readString();
-        entry = (Entry) in.readValue(Entry.class.getClassLoader());
+    public String getImageUrl() {
+        return imageUrl;
     }
 
-    @Override
-    public int describeContents() {
-        return 0;
+    public int getEntryId() {
+        return entryId;
     }
 
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(url);
-        dest.writeValue(entry);
+    public String getTitle() {
+        return title;
     }
 
-    @SuppressWarnings("unused")
-    public static final Parcelable.Creator<BlogImage> CREATOR = new Parcelable.Creator<BlogImage>() {
+    public String getPublished() {
+        return published;
+    }
+
+    private BlogImage(Parcel in) {
+        imageUrl = in.readString();
+        entryId = in.readInt();
+        title = in.readString();
+        published = in.readString();
+    }
+
+    public static final Creator<BlogImage> CREATOR = new Creator<BlogImage>() {
         @Override
         public BlogImage createFromParcel(Parcel in) {
             return new BlogImage(in);
@@ -44,4 +54,16 @@ public class BlogImage implements Parcelable {
         }
     };
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(imageUrl);
+        dest.writeInt(entryId);
+        dest.writeString(title);
+        dest.writeString(published);
+    }
 }

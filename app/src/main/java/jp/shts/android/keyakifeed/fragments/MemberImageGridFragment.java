@@ -94,7 +94,7 @@ public class MemberImageGridFragment extends Fragment {
     }
 
     private void getMemberEntries() {
-        final Member member = getArguments().getParcelable("member");
+        Member member = getArguments().getParcelable("member");
         if (member == null) return;
         counter = 0;
         subscriptions.add(getMemberEntries(member.getId(), counter, PAGE_LIMIT)
