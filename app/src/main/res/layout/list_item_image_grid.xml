@@ -21,6 +21,6 @@
             android:layout_width="match_parent"
             android:layout_height="250dp"
             android:scaleType="centerCrop"
-            app:gridThumbnailUrl="@{blogImage.getImageUrl()}" />
+            app:gridThumbnailUrl="@{blogImage}" />
     </LinearLayout>
 </layout>

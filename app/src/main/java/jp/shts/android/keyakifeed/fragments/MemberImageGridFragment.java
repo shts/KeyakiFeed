@@ -175,8 +175,11 @@ public class MemberImageGridFragment extends Fragment {
                         List<BlogImage> blogImageArrayList = new ArrayList<>();
                         for (Entry entry : entries) {
                             List<String> imageUrlList = entry.getImageUrlList();
-                            for (String imageUrl : imageUrlList) {
-                                blogImageArrayList.add(new BlogImage(imageUrl, entry));
+                            for (int i = 0, N = imageUrlList.size(); i < N; i++) {
+                                String imageUrl = imageUrlList.get(i);
+                                List<String> thumbnailUrlList = entry.getThumbnailUrlList();
+                                String thumbnail = (thumbnailUrlList != null ? thumbnailUrlList.get(i) : null);
+                                blogImageArrayList.add(new BlogImage(imageUrl, thumbnail, entry));
                             }
                         }
                         return blogImageArrayList;

@@ -40,7 +40,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="250dp"
                         android:scaleType="centerCrop"
-                        app:entryThumbnailUrl="@{entry.getImageUrlList()}" />
+                        app:entryThumbnailUrl="@{entry}" />
 
                     <LinearLayout
                         android:id="@+id/card_rebel"

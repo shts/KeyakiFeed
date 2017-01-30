@@ -45,7 +45,9 @@ public class GalleryFragment extends Fragment {
         if (blogImage != null) {
             binding.title.setText(blogImage.getTitle());
             binding.date.setText(blogImage.getPublished());
-            PicassoHelper.load(binding.image, blogImage.getImageUrl());
+            String imageUrl = TextUtils.isEmpty(blogImage.getThumbnailUrl())
+                    ? blogImage.getImageUrl() : blogImage.getThumbnailUrl();
+            PicassoHelper.load(binding.image, imageUrl);
             binding.image.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {

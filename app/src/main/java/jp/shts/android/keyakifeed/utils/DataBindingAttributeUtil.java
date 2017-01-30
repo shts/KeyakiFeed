@@ -5,9 +5,12 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.squareup.picasso.Picasso;
+
 import java.util.List;
 
 import jp.shts.android.keyakifeed.R;
+import jp.shts.android.keyakifeed.entities.BlogImage;
 import jp.shts.android.keyakifeed.models.Entry;
 import jp.shts.android.keyakifeed.models.Member;
 import jp.shts.android.keyakifeed.providers.dao.Favorites;
@@ -25,29 +28,38 @@ public class DataBindingAttributeUtil {
         PicassoHelper.loadAndCircleTransform(imageView, url);
     }
 
-    @BindingAdapter("thumbnailUrl")
-    public static void loadThumbnailImage(ImageView imageView, String url) {
-        if (TextUtils.isEmpty(url)) {
-            imageView.setVisibility(View.GONE);
-        } else {
-            imageView.setVisibility(View.VISIBLE);
-            PicassoHelper.load(imageView, url);
-        }
-    }
-
     @BindingAdapter("gridThumbnailUrl")
-    public static void loadGridThumbnailUrl(ImageView imageView, String url) {
-        PicassoHelper.load(imageView, url);
+    public static void loadGridThumbnailUrl(ImageView imageView, BlogImage blogImage) {
+        String url = (TextUtils.isEmpty(blogImage.getThumbnailUrl()) ?
+                blogImage.getImageUrl() : blogImage.getThumbnailUrl());
+        Picasso.with(imageView.getContext())
+                .load(url)
+                .fit()
+                .placeholder(R.drawable.place_holder)
+                .error(R.drawable.no_image)
+                .centerCrop()
+                .into(imageView);
     }
 
     @BindingAdapter("entryThumbnailUrl")
-    public static void loadEntryThumbnailImage(ImageView imageView, List<String> urlList) {
-        if (urlList != null && !urlList.isEmpty()) {
-            String thumbnailUrl = urlList.get(0);
-            PicassoHelper.load(imageView, thumbnailUrl);
+    public static void loadEntryThumbnailImage(ImageView imageView, Entry entry) {
+        String imageUrl = null;
+        List<String> thumbnailUrlList = entry.getThumbnailUrlList();
+        if (thumbnailUrlList != null && !thumbnailUrlList.isEmpty()) {
+            imageUrl = thumbnailUrlList.get(0);
         } else {
-            imageView.setImageResource(R.drawable.no_image);
+            List<String> urlList = entry.getImageUrlList();
+            if (urlList != null && !urlList.isEmpty()) {
+                imageUrl = urlList.get(0);
+            }
         }
+        Picasso.with(imageView.getContext())
+                .load(imageUrl)
+                .fit()
+                .placeholder(R.drawable.place_holder)
+                .error(R.drawable.no_image)
+                .centerCrop()
+                .into(imageView);
     }
 
     @BindingAdapter("reportThumbnailUrl")

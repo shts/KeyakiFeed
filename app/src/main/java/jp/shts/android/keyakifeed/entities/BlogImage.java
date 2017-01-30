@@ -8,35 +8,22 @@ import jp.shts.android.keyakifeed.models.Entry;
 public class BlogImage implements Parcelable {
 
     private String imageUrl;
+    private String thumbnailUrl;
     private int entryId;
     private String title;
     private String published;
 
-    public BlogImage(String imageUrl, Entry entry) {
+    public BlogImage(String imageUrl, String thumbnailUrl, Entry entry) {
         this.imageUrl = imageUrl;
+        this.thumbnailUrl = thumbnailUrl;
         this.entryId = entry.getId();
         this.title = entry.getTitle();
         this.published = entry.getPublished();
     }
 
-    public String getImageUrl() {
-        return imageUrl;
-    }
-
-    public int getEntryId() {
-        return entryId;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public String getPublished() {
-        return published;
-    }
-
-    private BlogImage(Parcel in) {
+    protected BlogImage(Parcel in) {
         imageUrl = in.readString();
+        thumbnailUrl = in.readString();
         entryId = in.readInt();
         title = in.readString();
         published = in.readString();
@@ -54,6 +41,26 @@ public class BlogImage implements Parcelable {
         }
     };
 
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public String getThumbnailUrl() {
+        return thumbnailUrl;
+    }
+
+    public int getEntryId() {
+        return entryId;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getPublished() {
+        return published;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -62,6 +69,7 @@ public class BlogImage implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(imageUrl);
+        dest.writeString(thumbnailUrl);
         dest.writeInt(entryId);
         dest.writeString(title);
         dest.writeString(published);

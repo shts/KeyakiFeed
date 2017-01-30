@@ -2,6 +2,7 @@ package jp.shts.android.keyakifeed.models;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.Nullable;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -39,6 +40,10 @@ public class Entry implements Parcelable {
     @SerializedName(value = "__member_image_url", alternate = {"member_image_url", "_member_image_url"})
     @Expose
     private String memberImageUrl;
+    @Nullable
+    @SerializedName(value = "__thumbnail_url_list", alternate = {"thumbnail_url_list", "_thumbnail_url_list"})
+    @Expose
+    private String thumbnailUrlList;
 
     Entry(Report report) {
         this.id = report.getId();
@@ -49,46 +54,50 @@ public class Entry implements Parcelable {
         this.memberName = "Official Report";
     }
 
-    /**
-     * @return The id
-     */
+    protected Entry(Parcel in) {
+        title = in.readString();
+        url = in.readString();
+        published = in.readString();
+        imageUrlList = in.readString();
+        memberName = in.readString();
+        memberImageUrl = in.readString();
+        thumbnailUrlList = in.readString();
+    }
+
+    public static final Creator<Entry> CREATOR = new Creator<Entry>() {
+        @Override
+        public Entry createFromParcel(Parcel in) {
+            return new Entry(in);
+        }
+
+        @Override
+        public Entry[] newArray(int size) {
+            return new Entry[size];
+        }
+    };
+
     public Integer getId() {
         return id;
     }
 
-    /**
-     * @param id The id
-     */
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    /**
-     * @return The title
-     */
     public String getTitle() {
         return title;
     }
 
-    /**
-     * @param title The title
-     */
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    /**
-     * @return The url
-     */
     public String getUrl() {
         return url;
     }
 
-    /**
-     * @param url The url
-     */
-    public void setUrl(String url) {
-        this.url = url;
+    public Integer getMemberId() {
+        return memberId;
+    }
+
+    public String getMemberName() {
+        return memberName;
+    }
+
+    public String getMemberImageUrl() {
+        return memberImageUrl;
     }
 
     /**
@@ -96,13 +105,6 @@ public class Entry implements Parcelable {
      */
     public String getPublished() {
         return DateUtils.parse(this.published);
-    }
-
-    /**
-     * @param published The published
-     */
-    public void setPublished(String published) {
-        this.published = published;
     }
 
     /**
@@ -122,78 +124,22 @@ public class Entry implements Parcelable {
         return list;
     }
 
-    /**
-     * @param imageUrlList The image_url_list
-     */
-    public void setImageUrlList(String imageUrlList) {
-        this.imageUrlList = imageUrlList;
-    }
-
-    /**
-     * @return The memberId
-     */
-    public Integer getMemberId() {
-        return memberId;
-    }
-
-    /**
-     * @param memberId The member_id
-     */
-    public void setMemberId(Integer memberId) {
-        this.memberId = memberId;
-    }
-
-    /**
-     * @return The memberName
-     */
-    public String getMemberName() {
-        return memberName;
-    }
-
-    /**
-     * @param memberName The member_name
-     */
-    public void setMemberName(String memberName) {
-        this.memberName = memberName;
-    }
-
-    /**
-     * @return The memberImageUrl
-     */
-    public String getMemberImageUrl() {
-        return memberImageUrl;
-    }
-
-    /**
-     * @param memberImageUrl The member_image_url
-     */
-    public void setMemberImageUrl(String memberImageUrl) {
-        this.memberImageUrl = memberImageUrl;
-    }
-
-    @Override
-    public String toString() {
-        return "Entry{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                ", url='" + url + '\'' +
-                ", published='" + published + '\'' +
-                ", imageUrlList='" + imageUrlList + '\'' +
-                ", memberId=" + memberId +
-                ", memberName='" + memberName + '\'' +
-                ", memberImageUrl='" + memberImageUrl + '\'' +
-                '}';
-    }
-
-    protected Entry(Parcel in) {
-        id = in.readByte() == 0x00 ? null : in.readInt();
-        title = in.readString();
-        url = in.readString();
-        published = in.readString();
-        imageUrlList = in.readString();
-        memberId = in.readByte() == 0x00 ? null : in.readInt();
-        memberName = in.readString();
-        memberImageUrl = in.readString();
+    @Nullable
+    public ArrayList<String> getThumbnailUrlList() {
+        if (thumbnailUrlList != null) {
+            ArrayList<String> list = new ArrayList<>();
+            try {
+                JSONArray array = new JSONArray(thumbnailUrlList);
+                final int N = array.length();
+                for (int i = 0; i < N; i++) {
+                    list.add(array.getString(i));
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            return list;
+        }
+        return null;
     }
 
     @Override
@@ -203,36 +149,12 @@ public class Entry implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        if (id == null) {
-            dest.writeByte((byte) (0x00));
-        } else {
-            dest.writeByte((byte) (0x01));
-            dest.writeInt(id);
-        }
         dest.writeString(title);
         dest.writeString(url);
         dest.writeString(published);
         dest.writeString(imageUrlList);
-        if (memberId == null) {
-            dest.writeByte((byte) (0x00));
-        } else {
-            dest.writeByte((byte) (0x01));
-            dest.writeInt(memberId);
-        }
         dest.writeString(memberName);
         dest.writeString(memberImageUrl);
+        dest.writeString(thumbnailUrlList);
     }
-
-    @SuppressWarnings("unused")
-    public static final Parcelable.Creator<Entry> CREATOR = new Parcelable.Creator<Entry>() {
-        @Override
-        public Entry createFromParcel(Parcel in) {
-            return new Entry(in);
-        }
-
-        @Override
-        public Entry[] newArray(int size) {
-            return new Entry[size];
-        }
-    };
 }
