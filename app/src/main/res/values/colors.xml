@@ -2,8 +2,8 @@
 <resources>
     <color name="primary">@color/green_500</color>
     <color name="primary_dark">@color/green_700</color>
-    <color name="accent">@color/yellow_800</color>
-    <color name="accent_dark">@color/yellow_900</color>
+    <color name="accent">@color/purple_A400</color>
+    <color name="accent_dark">@color/purple_A700</color>
 
     <!-- for fab menu -->
     <color name="black_semi_transparent">#B2000000</color>
@@ -14,5 +14,5 @@
 
     <color name="black_transparent">#4d000000</color>
 
-    <drawable name="place_holder">@color/green_200</drawable>
+    <drawable name="place_holder">@color/grey_300</drawable>
 </resources>

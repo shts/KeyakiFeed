@@ -24,7 +24,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:visibility="gone"
-            app:backgroundColor="@color/yellow_900"
+            app:backgroundColor="@color/accent_dark"
             app:corner="leftTop"
             app:labelBottomPadding="3dp"
             app:labelCenterPadding="3dp"
