@@ -53,13 +53,18 @@ public class DataBindingAttributeUtil {
                 imageUrl = urlList.get(0);
             }
         }
-        Picasso.with(imageView.getContext())
-                .load(imageUrl)
-                .fit()
-                .placeholder(R.drawable.place_holder)
-                .error(R.drawable.no_image)
-                .centerCrop()
-                .into(imageView);
+
+        if (TextUtils.isEmpty(imageUrl)) {
+            imageView.setImageResource(R.drawable.no_image);
+        } else {
+            Picasso.with(imageView.getContext())
+                    .load(imageUrl)
+                    .fit()
+                    .placeholder(R.drawable.place_holder)
+                    .error(R.drawable.no_image)
+                    .centerCrop()
+                    .into(imageView);
+        }
     }
 
     @BindingAdapter("reportThumbnailUrl")

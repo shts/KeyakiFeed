@@ -151,7 +151,7 @@ public class BlogFragment extends Fragment {
                     Snackbar.make(binding.coordinator, "ダウンロードする画像がありません", Snackbar.LENGTH_LONG)
                             .show();
                 } else {
-                    binding.fabActionDownload.setColorNormalResId(R.color.primary);
+                    binding.fabActionDownload.setColorNormalResId(R.color.grey_500);
                     binding.fabActionDownload.setTitle("ダウンロード中です ...");
 
                     startActivityForResult(PermissionRequireActivity

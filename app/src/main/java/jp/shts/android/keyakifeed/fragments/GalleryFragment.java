@@ -45,9 +45,10 @@ public class GalleryFragment extends Fragment {
         if (blogImage != null) {
             binding.title.setText(blogImage.getTitle());
             binding.date.setText(blogImage.getPublished());
-            String imageUrl = TextUtils.isEmpty(blogImage.getThumbnailUrl())
-                    ? blogImage.getImageUrl() : blogImage.getThumbnailUrl();
-            PicassoHelper.load(binding.image, imageUrl);
+            // TODO: 縮小サムネイル画像は荒いので実サイズの画像を表示する
+//            String imageUrl = TextUtils.isEmpty(blogImage.getThumbnailUrl())
+//                    ? blogImage.getImageUrl() : blogImage.getThumbnailUrl();
+            PicassoHelper.load(binding.image, blogImage.getImageUrl());
             binding.image.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
